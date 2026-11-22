@@ -8,12 +8,14 @@ import { PermissionPolicyService } from '../../core/services/permissionPolicySer
 import { RateLimiter } from '../../core/services/rateLimiter';
 import { SettingsManagementService } from '../../core/services/settingsManagementService';
 import { StaffManagementService } from '../../core/services/staffManagementService';
+import { TaxonomyService } from '../../core/services/taxonomyService';
 import { UserManagementService } from '../../core/services/userManagementService';
 import { SystemClock } from '../../infrastructure/clock/SystemClock';
 import { envConfig } from '../../infrastructure/config/envConfig';
 import { IndexedDbAdminRepository } from '../../infrastructure/data/IndexedDbAdminRepository';
 import { IndexedDbAuthRepository } from '../../infrastructure/data/IndexedDbAuthRepository';
 import { IndexedDbDataStore } from '../../infrastructure/data/IndexedDbDataStore';
+import { IndexedDbTaxonomyRepository } from '../../infrastructure/data/IndexedDbTaxonomyRepository';
 import { LocalSessionTokenStore } from '../../infrastructure/data/LocalSessionTokenStore';
 import { DatabaseSeeder } from '../../infrastructure/data/seed';
 import { AppLogger } from '../../infrastructure/logging/AppLogger';
@@ -31,6 +33,7 @@ export interface AppContainer {
   databaseSeeder: DatabaseSeeder;
   authRepository: IndexedDbAuthRepository;
   adminRepository: IndexedDbAdminRepository;
+  taxonomyRepository: IndexedDbTaxonomyRepository;
   fileStorage: LocalIndexedDbFileStorage;
   passwordHasher: BrowserPasswordHasher;
   emailSender: DevEmailSender;
@@ -45,6 +48,7 @@ export interface AppContainer {
   userManagementService: UserManagementService;
   settingsManagementService: SettingsManagementService;
   fileUploadService: FileUploadService;
+  taxonomyService: TaxonomyService;
   recordStartupLogOnce: () => void;
   ensureInitializedAtStartup: () => Promise<void>;
 }
@@ -60,6 +64,7 @@ const healthCheckService = new HealthCheckService(dataStore, logger, clock);
 const databaseSeeder = new DatabaseSeeder(dataStore, logger);
 const authRepository = new IndexedDbAuthRepository(dataStore);
 const adminRepository = new IndexedDbAdminRepository(dataStore);
+const taxonomyRepository = new IndexedDbTaxonomyRepository(dataStore);
 const fileStorage = new LocalIndexedDbFileStorage(dataStore, clock);
 const passwordHasher = new BrowserPasswordHasher();
 const sessionTokenStore = new LocalSessionTokenStore(envConfig.sessionStorageKey);
@@ -127,6 +132,12 @@ const fileUploadService = new FileUploadService(
   permissionPolicyService,
   logger,
 );
+const taxonomyService = new TaxonomyService(
+  taxonomyRepository,
+  permissionPolicyService,
+  fileUploadService,
+  logger,
+);
 
 let startupRecordedInSession = false;
 let startupInitPromise: Promise<void> | null = null;
@@ -177,6 +188,7 @@ export const appContainer: AppContainer = {
   databaseSeeder,
   authRepository,
   adminRepository,
+  taxonomyRepository,
   fileStorage,
   passwordHasher,
   emailSender,
@@ -191,6 +203,7 @@ export const appContainer: AppContainer = {
   userManagementService,
   settingsManagementService,
   fileUploadService,
+  taxonomyService,
   recordStartupLogOnce,
   ensureInitializedAtStartup,
 };

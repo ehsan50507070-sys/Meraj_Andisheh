@@ -7,6 +7,7 @@ import { AdminSettingsPage } from '../admin/AdminSettingsPage';
 import { AdminStaffPage } from '../admin/AdminStaffPage';
 import { AdminStorageTestPage } from '../admin/AdminStorageTestPage';
 import { AdminUsersPage } from '../admin/AdminUsersPage';
+import { AdminTaxonomyPage } from '../admin/pages/AdminTaxonomyPage';
 import { canSeeAdminNavItem, findAdminRouteSpec } from '../admin/adminNavConfig';
 import { useAuth } from '../auth/AuthContext';
 import { MainLayout } from '../layouts/MainLayout';
@@ -223,6 +224,8 @@ export function HashRouter({ routes, defaultRoute }: HashRouterProps) {
         return <AdminUsersPage currentRoute={routeState.fullHash} />;
       case 'settings':
         return <AdminSettingsPage currentRoute={routeState.fullHash} />;
+      case 'taxonomy':
+        return <AdminTaxonomyPage currentRoute={routeState.fullHash} />;
       case 'storage-test':
         return <AdminStorageTestPage currentRoute={routeState.fullHash} />;
       default:

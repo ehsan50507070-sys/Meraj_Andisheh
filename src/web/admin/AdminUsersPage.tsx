@@ -13,6 +13,7 @@ import {
   type SelectOption,
   type TableColumn,
 } from '../components/ui';
+import { formatAgeGroupWithRange } from '../resources/ageGroupFormatters';
 import { toPersianDigits } from '../resources/formatters';
 import type { ResourceKey } from '../resources/fa';
 import { t } from '../resources/i18n';
@@ -103,7 +104,7 @@ export function AdminUsersPage({ currentRoute }: AdminUsersPageProps) {
     { value: 'all', label: t('admin.users.filter.ageGroupAll') },
     ...ageGroups.map((group) => ({
       value: String(group.id),
-      label: group.name,
+      label: formatAgeGroupWithRange(group),
     })),
   ];
 
@@ -111,7 +112,8 @@ export function AdminUsersPage({ currentRoute }: AdminUsersPageProps) {
     if (ageGroupId === null) {
       return t('admin.users.noAgeGroup');
     }
-    return ageGroups.find((g) => g.id === ageGroupId)?.name ?? t('admin.users.noAgeGroup');
+    const found = ageGroups.find((g) => g.id === ageGroupId);
+    return found ? formatAgeGroupWithRange(found) : t('admin.users.noAgeGroup');
   };
 
   const columns: TableColumn<AppUser>[] = [

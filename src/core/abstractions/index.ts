@@ -7,3 +7,4 @@ export * from './authRepository';
 export * from './smsSender';
 export * from './adminRepository';
 export * from './fileStorage';
+export * from './taxonomyRepository';

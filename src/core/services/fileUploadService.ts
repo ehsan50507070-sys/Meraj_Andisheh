@@ -129,11 +129,17 @@ export class FileUploadService {
   public async uploadFileAsync(
     actor: AppUser | null,
     input: UploadFileInput,
+    options?: {
+      allowedPermissions?: readonly PermissionKey[];
+      routePath?: string;
+    },
   ): Promise<UploadFileResult> {
+    const allowedPermissions = options?.allowedPermissions ?? STORAGE_TEST_REQUIRED_PERMISSIONS;
+    const routePath = options?.routePath ?? '#/admin/storage-test';
     const auth = await this.policyService.authorizeAnyPermission(
       actor,
-      STORAGE_TEST_REQUIRED_PERMISSIONS,
-      '#/admin/storage-test',
+      allowedPermissions,
+      routePath,
     );
     if (!auth.allowed || !actor) {
       return {
@@ -225,11 +231,17 @@ export class FileUploadService {
   public async deleteFileAsync(
     actor: AppUser | null,
     storageKey: string,
+    options?: {
+      allowedPermissions?: readonly PermissionKey[];
+      routePath?: string;
+    },
   ): Promise<DeleteStoredFileResult> {
+    const allowedPermissions = options?.allowedPermissions ?? STORAGE_TEST_REQUIRED_PERMISSIONS;
+    const routePath = options?.routePath ?? '#/admin/storage-test';
     const auth = await this.policyService.authorizeAnyPermission(
       actor,
-      STORAGE_TEST_REQUIRED_PERMISSIONS,
-      '#/admin/storage-test',
+      allowedPermissions,
+      routePath,
     );
     if (!auth.allowed || !actor) {
       return {

@@ -6,6 +6,7 @@ import { envConfig } from '../../../infrastructure/config/envConfig';
 import { useAuth } from '../../auth/AuthContext';
 import { Alert, Button, FormField } from '../../components/ui';
 import { MainLayout } from '../../layouts/MainLayout';
+import { formatAgeGroupWithRange } from '../../resources/ageGroupFormatters';
 import { toPersianDigits } from '../../resources/formatters';
 import type { ResourceKey } from '../../resources/fa';
 import { t } from '../../resources/i18n';
@@ -433,7 +434,7 @@ export function LoginPage({ currentRoute }: LoginPageProps) {
                 onChange={setAgeGroupId}
                 options={ageGroups.map((group) => ({
                   value: String(group.id),
-                  label: group.name,
+                  label: formatAgeGroupWithRange(group),
                 }))}
                 required
               />

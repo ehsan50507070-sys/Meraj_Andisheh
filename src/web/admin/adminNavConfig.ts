@@ -51,7 +51,6 @@ export const ADMIN_ROUTES: readonly AdminRouteSpec[] = [
     labelKey: 'admin.nav.taxonomy',
     requirement: 'taxonomy.manage',
     permissionDescKey: 'permissions.taxonomy.manage.desc',
-    isPlaceholder: true,
   },
   {
     id: 'requests',

@@ -28,6 +28,7 @@ import { stage4Tests } from '../../tests/stage4.tests';
 import { stage5Tests } from '../../tests/stage5.tests';
 import { stage6Tests } from '../../tests/stage6.tests';
 import { stage7Tests } from '../../tests/stage7.tests';
+import { stage8Tests } from '../../tests/stage8.tests';
 import { runUnitTests } from '../../tests/testRunner';
 import { useAuth } from '../auth/AuthContext';
 import { Alert, Button } from '../components/ui';
@@ -50,6 +51,7 @@ const ALL_UNIT_TESTS = [
   ...stage5Tests,
   ...stage6Tests,
   ...stage7Tests,
+  ...stage8Tests,
 ];
 
 const ARCHITECTURE_LAYERS: ReadonlyArray<{

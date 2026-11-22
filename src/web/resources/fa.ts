@@ -3,7 +3,7 @@ export const faResources = {
   'app.name': 'معراج اندیشه',
   'app.subtitle': 'پلتفرم بانک محتوای فارسی',
   'app.stageLabel': 'مرحله {stage} از {total}',
-  'app.stageName': 'ذخیره‌سازی امن فایل (IFileStorage)، اعتبارسنجی امضای فایل و جداسازی عمومی/خصوصی',
+  'app.stageName': 'مدیریت کامل طبقه‌بندی‌ها: موضوعات درختی، برچسب‌ها، شخصیت‌ها، سطوح اثرگذاری و رده‌های سنی',
   'app.footerNote': 'پلتفرم معراج اندیشه · زیرساخت و سامانه طراحی پایه',
 
   // Themes
@@ -965,6 +965,173 @@ export const faResources = {
   'tests.stage7.deleteFile.name': 'حذف فایل از IFileStorage و بررسی existsAsync',
   'tests.stage7.deleteFile.desc':
     'پس از اجرای deleteAsync روی فایل ذخیره‌شده، مقدار existsAsync برابر false می‌شود و بازخوانی null برمی‌گرداند.',
+
+  // Stage 8: AgeGroup Display Formatting
+  'ageGroup.rangeBounded': '{min} تا {max} سال',
+  'ageGroup.rangeOpenEnded': '{min} سال به بالا',
+  'ageGroup.withRange': '{name} ({range})',
+
+  // Stage 8: Full Taxonomy Management (#/admin/taxonomy)
+  'admin.taxonomy.title': 'مدیریت طبقه‌بندی‌ها و ساختار محتوا',
+  'admin.taxonomy.subtitle':
+    'مدیریت درخت نامحدود موضوعات، برچسب‌ها، شخصیت‌ها، سطوح اثرگذاری و بازه‌های رده‌های سنی با اعمال فوری در فرم‌های سامانه.',
+  'admin.taxonomy.tabs.ariaLabel': 'بخش‌های مدیریت طبقه‌بندی',
+  'admin.taxonomy.tab.topics': 'موضوعات درختی ({count})',
+  'admin.taxonomy.tab.tags': 'برچسب‌ها ({count})',
+  'admin.taxonomy.tab.persons': 'شخصیت‌ها ({count})',
+  'admin.taxonomy.tab.impactLevels': 'سطوح اثرگذاری ({count})',
+  'admin.taxonomy.tab.ageGroups': 'رده‌های سنی ({count})',
+
+  'admin.taxonomy.common.active': 'فعال',
+  'admin.taxonomy.common.inactive': 'غیرفعال',
+  'admin.taxonomy.common.save': 'ذخیره',
+  'admin.taxonomy.common.saving': 'در حال ذخیره...',
+  'admin.taxonomy.common.cancel': 'انصراف',
+  'admin.taxonomy.common.edit': 'ویرایش',
+  'admin.taxonomy.common.delete': 'حذف',
+  'admin.taxonomy.common.actions': 'عملیات',
+  'admin.taxonomy.common.searchPlaceholder': 'جستجو در عنوان یا نامک (Slug)...',
+  'admin.taxonomy.common.slugLabel': 'نامک (Slug)',
+  'admin.taxonomy.common.slugPlaceholder': 'در صورت خالی بودن خودکار از عنوان ساخته می‌شود',
+  'admin.taxonomy.common.sortOrderLabel': 'ترتیب نمایش',
+  'admin.taxonomy.common.confirmDeleteTitle': 'تایید حذف مورد',
+  'admin.taxonomy.common.confirmDeleteSubmit': 'بله، حذف شود',
+
+  // Tab 1: Topics Tree
+  'admin.taxonomy.topics.addRoot': 'افزودن موضوع ریشه',
+  'admin.taxonomy.topics.addChild': 'افزودن زیرموضوع',
+  'admin.taxonomy.topics.editTitle': 'ویرایش موضوع «{name}»',
+  'admin.taxonomy.topics.createRootTitle': 'افزودن موضوع ریشه جدید',
+  'admin.taxonomy.topics.createChildTitle': 'افزودن زیرموضوع برای «{parent}»',
+  'admin.taxonomy.topics.fieldName': 'نام موضوع',
+  'admin.taxonomy.topics.fieldNamePlaceholder': 'مثلاً: نجوم رصدی',
+  'admin.taxonomy.topics.fieldParent': 'موضوع والد',
+  'admin.taxonomy.topics.rootOption': 'بدون والد (موضوع ریشه)',
+  'admin.taxonomy.topics.fieldIcon': 'نام آیکون (اختیاری)',
+  'admin.taxonomy.topics.fieldIconPlaceholder': 'مثلاً: Sparkles یا BookOpen',
+  'admin.taxonomy.topics.fieldActive': 'وضعیت نمایش موضوع',
+  'admin.taxonomy.topics.activateAction': 'فعال‌سازی',
+  'admin.taxonomy.topics.deactivateAction': 'غیرفعال‌سازی',
+  'admin.taxonomy.topics.toggleExpandAria': 'باز و بسته کردن زیرموضوعات {name}',
+  'admin.taxonomy.topics.sortBadge': 'ترتیب: {order}',
+  'admin.taxonomy.topics.contentCountBadge': '{count} محتوا',
+  'admin.taxonomy.topics.empty': 'هنوز هیچ موضوعی تعریف نشده است.',
+  'admin.taxonomy.topics.deleteBody': 'آیا مطمئن هستید که می‌خواهید موضوع «{name}» را حذف کنید؟',
+  'admin.taxonomy.topics.feedback.created': 'موضوع «{name}» با موفقیت ایجاد شد.',
+  'admin.taxonomy.topics.feedback.updated': 'موضوع «{name}» با موفقیت ویرایش شد.',
+  'admin.taxonomy.topics.feedback.toggled': 'وضعیت موضوع «{name}» تغییر یافت.',
+  'admin.taxonomy.topics.feedback.deleted': 'موضوع «{name}» حذف شد.',
+  'admin.taxonomy.topics.deactivatePromptAction': 'غیرفعال کردن این موضوع',
+
+  // Tab 2: Tags
+  'admin.taxonomy.tags.addPlaceholder': 'نام برچسب جدید (مثلاً: تفکر انتقادی)',
+  'admin.taxonomy.tags.addButton': 'افزودن برچسب',
+  'admin.taxonomy.tags.col.name': 'نام برچسب',
+  'admin.taxonomy.tags.col.slug': 'نامک (Slug)',
+  'admin.taxonomy.tags.editTitle': 'ویرایش برچسب «{name}»',
+  'admin.taxonomy.tags.fieldName': 'نام برچسب',
+  'admin.taxonomy.tags.empty': 'هیچ برچسبی یافت نشد.',
+  'admin.taxonomy.tags.deleteBody': 'آیا از حذف برچسب «{name}» اطمینان دارید؟',
+  'admin.taxonomy.tags.feedback.created': 'برچسب «{name}» اضافه شد.',
+  'admin.taxonomy.tags.feedback.updated': 'برچسب «{name}» به‌روزرسانی شد.',
+  'admin.taxonomy.tags.feedback.deleted': 'برچسب «{name}» حذف شد.',
+
+  // Tab 3: Persons
+  'admin.taxonomy.persons.addButton': 'افزودن شخصیت جدید',
+  'admin.taxonomy.persons.createTitle': 'تعریف شخصیت (نویسنده / سخنران / خالق اثر)',
+  'admin.taxonomy.persons.editTitle': 'ویرایش اطلاعات «{name}»',
+  'admin.taxonomy.persons.fieldName': 'نام شخصیت',
+  'admin.taxonomy.persons.fieldNamePlaceholder': 'مثلاً: دکتر علی‌اکبر شهابی',
+  'admin.taxonomy.persons.fieldBio': 'معرفی و سوابق (حداکثر ۱۰۰۰ نویسه)',
+  'admin.taxonomy.persons.fieldBioPlaceholder': 'خلاصه زندگی‌نامه، حوزه‌های فعالیت و آثار...',
+  'admin.taxonomy.persons.bioCounter': '{count} / ۱۰۰۰ نویسه',
+  'admin.taxonomy.persons.fieldPhoto': 'تصویر چهره (عمومی — فقط PNG، JPG، WEBP)',
+  'admin.taxonomy.persons.pickPhoto': 'انتخاب تصویر جدید',
+  'admin.taxonomy.persons.removePhoto': 'حذف تصویر فعلی',
+  'admin.taxonomy.persons.noPhoto': 'بدون تصویر',
+  'admin.taxonomy.persons.noBio': 'معرفی ثبت نشده است.',
+  'admin.taxonomy.persons.empty': 'هیچ شخصیتی ثبت نشده است.',
+  'admin.taxonomy.persons.deleteBody': 'آیا مطمئن هستید که می‌خواهید شخصیت «{name}» و تصویر آن را حذف کنید؟',
+  'admin.taxonomy.persons.feedback.created': 'شخصیت «{name}» با موفقیت ثبت شد.',
+  'admin.taxonomy.persons.feedback.updated': 'اطلاعات شخصیت «{name}» ذخیره شد.',
+  'admin.taxonomy.persons.feedback.deleted': 'شخصیت «{name}» حذف شد.',
+
+  // Tab 4: Impact Levels
+  'admin.taxonomy.impact.addButton': 'افزودن سطح اثرگذاری',
+  'admin.taxonomy.impact.createTitle': 'ایجاد سطح اثرگذاری جدید',
+  'admin.taxonomy.impact.editTitle': 'ویرایش سطح اثرگذاری «{name}»',
+  'admin.taxonomy.impact.fieldName': 'عنوان سطح اثرگذاری',
+  'admin.taxonomy.impact.fieldNamePlaceholder': 'مثلاً: تحول‌ساز',
+  'admin.taxonomy.impact.col.name': 'عنوان سطح',
+  'admin.taxonomy.impact.col.sortOrder': 'ترتیب',
+  'admin.taxonomy.impact.empty': 'هیچ سطح اثرگذاری ثبت نشده است.',
+  'admin.taxonomy.impact.deleteBody': 'آیا از حذف سطح اثرگذاری «{name}» اطمینان دارید؟',
+  'admin.taxonomy.impact.feedback.created': 'سطح اثرگذاری «{name}» اضافه شد.',
+  'admin.taxonomy.impact.feedback.updated': 'سطح اثرگذاری «{name}» به‌روزرسانی شد.',
+  'admin.taxonomy.impact.feedback.deleted': 'سطح اثرگذاری «{name}» حذف شد.',
+
+  // Tab 5: Age Groups
+  'admin.taxonomy.ageGroups.infoBanner':
+    'تغییر نام و بازه سنی در این بخش بلافاصله در فرم‌های ثبت‌نام، فیلتر کاربران و نمایش رده‌های سنی اعمال می‌شود.',
+  'admin.taxonomy.ageGroups.col.key': 'کلید ثابت',
+  'admin.taxonomy.ageGroups.col.name': 'نام نمایشی',
+  'admin.taxonomy.ageGroups.col.range': 'بازه سنی',
+  'admin.taxonomy.ageGroups.col.theme': 'تم سنی',
+  'admin.taxonomy.ageGroups.col.sortOrder': 'ترتیب',
+  'admin.taxonomy.ageGroups.col.status': 'وضعیت',
+  'admin.taxonomy.ageGroups.editTitle': 'ویرایش رده سنی «{name}»',
+  'admin.taxonomy.ageGroups.fieldName': 'نام رده سنی',
+  'admin.taxonomy.ageGroups.fieldMinAge': 'حداقل سن (سال)',
+  'admin.taxonomy.ageGroups.fieldMaxAge': 'حداکثر سن (سال)',
+  'admin.taxonomy.ageGroups.noMaxAgeLabel': 'بدون سقف سنی (مثلاً: ۲۱ سال به بالا)',
+  'admin.taxonomy.ageGroups.fieldTheme': 'تم اختصاصی (از ۳ تم ثابت)',
+  'admin.taxonomy.ageGroups.fieldActive': 'وضعیت رده سنی در فرم‌های عضویت',
+  'admin.taxonomy.ageGroups.feedback.updated': 'رده سنی «{name}» با موفقیت به‌روزرسانی شد.',
+
+  // Stage 8 Errors
+  'admin.taxonomy.error.entityNotFound': 'مورد انتخاب‌شده یافت نشد.',
+  'admin.taxonomy.error.topicNameInvalid': 'نام موضوع الزامی است و نباید بیش از ۱۲۰ نویسه باشد.',
+  'admin.taxonomy.error.topicIconTooLong': 'نام آیکون نباید بیش از ۶۴ نویسه باشد.',
+  'admin.taxonomy.error.sortOrderInvalid': 'ترتیب نمایش باید یک عدد صحیح نامنفی باشد.',
+  'admin.taxonomy.error.parentNotFound': 'موضوع والد انتخاب‌شده یافت نشد.',
+  'admin.taxonomy.error.circularParent':
+    'امکان انتقال موضوع به خودش یا یکی از زیرمجموعه‌هایش وجود ندارد (حلقه درختی غیرمجاز است).',
+  'admin.taxonomy.error.topicHasContent':
+    'این موضوع یا زیرمجموعه‌های آن به محتوای ثبت‌شده متصل است و قابل حذف نیست؛ می‌توانید آن را غیرفعال کنید.',
+  'admin.taxonomy.error.topicHasChildren':
+    'این موضوع دارای زیرمجموعه است؛ ابتدا زیرمجموعه‌ها را حذف یا جابه‌جا کنید.',
+  'admin.taxonomy.error.tagNameInvalid': 'نام برچسب الزامی است و نباید بیش از ۸۰ نویسه باشد.',
+  'admin.taxonomy.error.tagInUse': 'این برچسب در محتواها استفاده شده و قابل حذف نیست.',
+  'admin.taxonomy.error.personNameInvalid': 'نام شخصیت الزامی است و نباید بیش از ۱۲۰ نویسه باشد.',
+  'admin.taxonomy.error.personBioTooLong': 'متن معرفی شخصیت نباید بیش از ۱۰۰۰ نویسه باشد.',
+  'admin.taxonomy.error.personInUse': 'این شخصیت به محتواهای سامانه متصل است و قابل حذف نیست.',
+  'admin.taxonomy.error.impactNameInvalid': 'عنوان سطح اثرگذاری الزامی است و نباید بیش از ۸۰ نویسه باشد.',
+  'admin.taxonomy.error.impactLevelInUse': 'این سطح اثرگذاری در محتواها استفاده شده و قابل حذف نیست.',
+  'admin.taxonomy.error.ageGroupNameInvalid': 'نام رده سنی الزامی است و نباید بیش از ۸۰ نویسه باشد.',
+  'admin.taxonomy.error.ageRangeInvalid':
+    'بازه سنی نامعتبر است؛ حداقل سن باید نامنفی و حداکثر سن باید بزرگ‌تر یا مساوی حداقل سن باشد.',
+  'admin.taxonomy.error.themeKeyInvalid': 'تم انتخاب‌شده باید یکی از سه تم ثابت سامانه باشد.',
+  'admin.taxonomy.error.lastActiveAgeGroup': 'حداقل یک رده سنی فعال باید در سامانه باقی بماند.',
+
+  // Stage 8 Unit Tests
+  'tests.stage8.topicTreeHierarchyAndCycle.name': 'درخت ۳ سطحی موضوعات، جابه‌جایی با فرزندان و منع حلقه درختی',
+  'tests.stage8.topicTreeHierarchyAndCycle.desc':
+    'ساخت درخت ۳ سطحی، انتقال شاخه سطح ۲ همراه با سطح ۳ به والد دیگر، حفظ سلسله‌مراتب و رد ارجاع چرخشی با TOPIC_CIRCULAR_PARENT.',
+  'tests.stage8.topicDeleteGuardAndDisable.name': 'قانون ۶.۷: منع حذف موضوع دارای محتوا، غیرفعال‌سازی و حذف موضوع بدون محتوا',
+  'tests.stage8.topicDeleteGuardAndDisable.desc':
+    'موضوع متصل به محتوا با کد TOPIC_HAS_CONTENT محافظت و با غیرفعال‌سازی بسته می‌شود؛ موضوع بدون محتوا به‌طور کامل حذف می‌گردد.',
+  'tests.stage8.ageGroupUpdateAndValidation.name': 'ویرایش رده سنی، بازتاب زنده بازه و رد بازه یا تم نامعتبر',
+  'tests.stage8.ageGroupUpdateAndValidation.desc':
+    'تغییر بازه ۷–۱۱ به ۶–۱۱ ذخیره و بلافاصله بازخوانی می‌شود؛ حداکثر سن کمتر از حداقل سن و نام تم نامعتبر رد می‌گردند.',
+  'tests.stage8.personBioAndPhotoStorage.name': 'ثبت شخصیت، آپلود عکس معتبر در IFileStorage، رد فایل جعلی و سقف بیو',
+  'tests.stage8.personBioAndPhotoStorage.desc':
+    'شخصیت با عکس PNG معتبر کلید عمومی GUID دریافت می‌کند، جایگزینی عکس فایل قبلی را پاک می‌کند، فایل جعلی و بیوی بالای ۱۰۰۰ نویسه رد می‌شوند.',
+  'tests.stage8.tagAndImpactCrud.name': 'عملیات کامل برچسب و سطح اثرگذاری، یکتاسازی نامک فارسی و حذف',
+  'tests.stage8.tagAndImpactCrud.desc':
+    'ساخت، نامک خودکار فارسی با -2 برای تکراری، ویرایش و حذف برچسب و سطح اثرگذاری با موفقیت تایید می‌شود.',
+  'tests.stage8.taxonomyRbacPolicy.name': 'کنترل دسترسی taxonomy.manage: ۴۰۳ با هشدار برای همکار و ۴۰۴ برای عضو/مهمان',
+  'tests.stage8.taxonomyRbacPolicy.desc':
+    'همکار بدون مجوز ۴۰۳ و لاگ WARN می‌گیرد، همکار دارای مجوز و مدیرکل دسترسی کامل دارند و عضو و مهمان فقط ۴۰۴ می‌گیرند.',
 } as const;
 
 export type ResourceKey = keyof typeof faResources;
