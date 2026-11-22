@@ -686,4 +686,27 @@ export class AuthService {
 
     return user;
   }
+
+  public async updateUserAgeGroup(userId: number, ageGroupId: number): Promise<AppUser | null> {
+    const user = await this.repository.getUserById(userId);
+    if (!user || !user.isActive) {
+      return null;
+    }
+
+    const validAgeGroup = await this.repository.ageGroupExists(ageGroupId);
+    if (!validAgeGroup) {
+      return null;
+    }
+
+    const updated: AppUser = {
+      ...user,
+      ageGroupId,
+    };
+    await this.repository.updateUser(updated);
+    this.logger.info('USER_AGE_GROUP_UPDATED', {
+      userId: updated.id,
+      ageGroupId,
+    });
+    return updated;
+  }
 }

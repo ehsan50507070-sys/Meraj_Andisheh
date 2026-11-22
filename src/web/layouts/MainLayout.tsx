@@ -11,32 +11,20 @@ import {
   X,
 } from 'lucide-react';
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
-import { THEME_KEYS, type ThemeKey } from '../../core/services/themeService';
+import { resolveThemeKey, type ThemeKey } from '../../core/services/themeService';
 import { envConfig } from '../../infrastructure/config/envConfig';
 import { useAuth } from '../auth/AuthContext';
+import { useAge } from '../context/AgeContext';
 import { toPersianDigits } from '../resources/formatters';
 import type { ResourceKey } from '../resources/fa';
 import { t } from '../resources/i18n';
 import { navigateToHash } from '../router/HashRouter';
-import { useTheme } from '../theme/ThemeManager';
 import { Alert, Button } from '../components/ui';
 
 export interface MainLayoutProps {
   currentRoute: string;
   children: ReactNode;
   syncThemeToHash?: boolean;
-}
-
-function getThemeShortKey(theme: ThemeKey): ResourceKey {
-  switch (theme) {
-    case 'playful':
-      return 'theme.playful.short';
-    case 'modern':
-      return 'theme.modern.short';
-    case 'editorial':
-    default:
-      return 'theme.editorial.short';
-  }
 }
 
 function getThemeNameKey(theme: ThemeKey): ResourceKey {
@@ -61,10 +49,14 @@ const SAMPLE_CATEGORIES: readonly ResourceKey[] = [
 export function MainLayout({
   currentRoute,
   children,
-  syncThemeToHash = false,
 }: MainLayoutProps) {
-  const { theme, setTheme } = useTheme();
   const { currentUser, siteTitle, logout } = useAuth();
+  const {
+    effectiveAgeGroup,
+    lastSwitchNotice,
+    clearLastSwitchNotice,
+    openAgeSelector,
+  } = useAge();
   const [searchQuery, setSearchQuery] = useState('');
   const [isPersonalized, setIsPersonalized] = useState(false);
   const [favoritesCount, setFavoritesCount] = useState(0);
@@ -73,6 +65,19 @@ export function MainLayout({
   const [noticeMessage, setNoticeMessage] = useState<string | null>(null);
 
   const categoriesRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (lastSwitchNotice && effectiveAgeGroup) {
+      const themeName = t(getThemeNameKey(resolveThemeKey(effectiveAgeGroup.themeKey)));
+      setNoticeMessage(
+        t('ageGate.switchedNotice', {
+          name: effectiveAgeGroup.name,
+          theme: themeName,
+        }),
+      );
+      clearLastSwitchNotice();
+    }
+  }, [lastSwitchNotice, effectiveAgeGroup, clearLastSwitchNotice]);
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
@@ -95,13 +100,6 @@ export function MainLayout({
   }, []);
 
   const normalizedPath = currentRoute.split('?')[0].replace(/^#/, '') || '/';
-
-  const handleCycleTheme = () => {
-    const currentIndex = THEME_KEYS.indexOf(theme);
-    const nextTheme = THEME_KEYS[(currentIndex + 1) % THEME_KEYS.length];
-    setTheme(nextTheme, syncThemeToHash);
-    setNoticeMessage(t('theme.switchedNotice', { theme: t(getThemeNameKey(nextTheme)) }));
-  };
 
   const handleSearchSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -180,13 +178,17 @@ export function MainLayout({
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <button
               type="button"
-              onClick={handleCycleTheme}
-              title={t('layout.header.ageGroupLabel')}
-              className="inline-flex items-center gap-1.5 min-h-[38px] px-2.5 sm:px-3 py-1.5 text-xs font-medium rounded-[var(--radius-control)] border border-[var(--color-border-strong)] bg-[var(--color-surface-alt)] text-[var(--color-text)] hover:border-[var(--color-muted)] transition-colors whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--color-primary)]"
+              onClick={openAgeSelector}
+              title={t('ageGate.headerAriaLabel')}
+              aria-label={t('ageGate.headerAriaLabel')}
+              className="inline-flex items-center gap-1.5 min-h-[38px] max-w-[140px] sm:max-w-none px-2.5 sm:px-3 py-1.5 text-xs font-medium rounded-[var(--radius-control)] border border-[var(--color-border-strong)] bg-[var(--color-surface-alt)] text-[var(--color-text)] hover:border-[var(--color-muted)] transition-colors whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--color-primary)]"
             >
               <Sparkles className="w-3.5 h-3.5 shrink-0 text-[var(--color-primary)]" aria-hidden="true" />
-              <span className="hidden sm:inline">{t('layout.header.ageGroupLabel')}:</span>
-              <span>{t(getThemeShortKey(theme))}</span>
+              <span className="truncate">
+                {effectiveAgeGroup
+                  ? t('ageGate.headerSwitchLabel', { name: effectiveAgeGroup.name })
+                  : t('ageGate.headerUnselectedLabel')}
+              </span>
             </button>
 
             <button

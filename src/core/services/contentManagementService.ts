@@ -137,6 +137,13 @@ export interface ContentTaxonomyOptions {
   activeAgeGroups: AgeGroup[];
 }
 
+export interface PublicContentSummary {
+  item: ContentItem;
+  ageGroupIds: number[];
+  topicIds: number[];
+  topicNames: string[];
+}
+
 function parseOptionalPositiveMinutes(
   value: number | string | null | undefined,
 ): { valid: boolean; parsed: number | null } {
@@ -1018,5 +1025,44 @@ export class ContentManagementService {
     return all
       .filter((item) => item.status === ContentStatus.Published)
       .sort((a, b) => (b.publishedAt ?? b.createdAt).localeCompare(a.publishedAt ?? a.createdAt));
+  }
+
+  public async listPublicPublishedWithAudience(): Promise<PublicContentSummary[]> {
+    const [allItems, allContentAgeGroups, allContentTopics, allTopics] = await Promise.all([
+      this.contentRepository.getAllContentItems(),
+      this.contentRepository.getAllContentAgeGroups(),
+      this.contentRepository.getAllContentTopics(),
+      this.taxonomyRepository.getAllTopics(),
+    ]);
+
+    const publishedItems = allItems.filter((item) => item.status === ContentStatus.Published);
+    const topicNameById = new Map<number, string>(allTopics.map((topic) => [topic.id, topic.name]));
+
+    const ageGroupsByContent = new Map<number, number[]>();
+    for (const link of allContentAgeGroups) {
+      const arr = ageGroupsByContent.get(link.contentId) ?? [];
+      arr.push(link.ageGroupId);
+      ageGroupsByContent.set(link.contentId, arr);
+    }
+
+    const topicIdsByContent = new Map<number, number[]>();
+    for (const link of allContentTopics) {
+      const arr = topicIdsByContent.get(link.contentId) ?? [];
+      arr.push(link.topicId);
+      topicIdsByContent.set(link.contentId, arr);
+    }
+
+    return publishedItems.map((item) => {
+      const topicIds = topicIdsByContent.get(item.id) ?? [];
+      const topicNames = topicIds
+        .map((id) => topicNameById.get(id))
+        .filter((name): name is string => Boolean(name));
+      return {
+        item,
+        ageGroupIds: ageGroupsByContent.get(item.id) ?? [],
+        topicIds,
+        topicNames,
+      };
+    });
   }
 }

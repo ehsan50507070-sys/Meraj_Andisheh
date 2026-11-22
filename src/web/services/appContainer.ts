@@ -26,6 +26,7 @@ import { AppLogger } from '../../infrastructure/logging/AppLogger';
 import { DevEmailSender } from '../../infrastructure/messaging/DevEmailSender';
 import { DevSmsSender } from '../../infrastructure/messaging/DevSmsSender';
 import { BrowserPasswordHasher } from '../../infrastructure/security/BrowserPasswordHasher';
+import { BrowserAgeCookieStorage } from '../../infrastructure/storage/BrowserAgeCookieStorage';
 import { LocalIndexedDbFileStorage } from '../../infrastructure/storage/LocalIndexedDbFileStorage';
 import { t } from '../resources/i18n';
 
@@ -40,6 +41,7 @@ export interface AppContainer {
   taxonomyRepository: IndexedDbTaxonomyRepository;
   contentRepository: IndexedDbContentRepository;
   fileStorage: LocalIndexedDbFileStorage;
+  agePreferenceStorage: BrowserAgeCookieStorage;
   passwordHasher: BrowserPasswordHasher;
   emailSender: DevEmailSender;
   smsSender: DevSmsSender;
@@ -75,6 +77,7 @@ const adminRepository = new IndexedDbAdminRepository(dataStore);
 const taxonomyRepository = new IndexedDbTaxonomyRepository(dataStore);
 const contentRepository = new IndexedDbContentRepository(dataStore);
 const fileStorage = new LocalIndexedDbFileStorage(dataStore, clock);
+const agePreferenceStorage = new BrowserAgeCookieStorage();
 const passwordHasher = new BrowserPasswordHasher();
 const sessionTokenStore = new LocalSessionTokenStore(envConfig.sessionStorageKey);
 const emailSender = new DevEmailSender(logger, t('logs.devEmailPrefix'));
@@ -216,6 +219,7 @@ export const appContainer: AppContainer = {
   taxonomyRepository,
   contentRepository,
   fileStorage,
+  agePreferenceStorage,
   passwordHasher,
   emailSender,
   smsSender,

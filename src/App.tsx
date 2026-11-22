@@ -1,9 +1,11 @@
 import { envConfig } from './infrastructure/config/envConfig';
 import { AuthProvider } from './web/auth/AuthContext';
+import { AgeGateModal } from './web/components/AgeGateModal';
+import { AgeProvider } from './web/context/AgeContext';
 import { ComponentsLabPage } from './web/pages/ComponentsLabPage';
 import { HealthPage } from './web/pages/HealthPage';
-import { HomePage } from './web/pages/HomePage';
 import { InitialAdminSetupPage } from './web/pages/InitialAdminSetupPage';
+import { PublicHomePreviewPage } from './web/pages/PublicHomePreviewPage';
 import { ChangePasswordPage } from './web/pages/account/ChangePasswordPage';
 import { ConfirmEmailPage } from './web/pages/account/ConfirmEmailPage';
 import { ForgotPasswordPage } from './web/pages/account/ForgotPasswordPage';
@@ -22,7 +24,7 @@ void appContainer.ensureInitializedAtStartup();
 const routes: HashRouteConfig[] = [
   {
     path: '/',
-    render: (currentRoute) => <HomePage currentRoute={currentRoute} />,
+    render: (currentRoute) => <PublicHomePreviewPage currentRoute={currentRoute} />,
   },
   {
     path: '/health',
@@ -71,7 +73,10 @@ const routes: HashRouteConfig[] = [
 export default function App() {
   return (
     <AuthProvider>
-      <HashRouter routes={routes} defaultRoute={envConfig.defaultHashRoute} />
+      <AgeProvider>
+        <HashRouter routes={routes} defaultRoute={envConfig.defaultHashRoute} />
+        <AgeGateModal />
+      </AgeProvider>
     </AuthProvider>
   );
 }

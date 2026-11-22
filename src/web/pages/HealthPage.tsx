@@ -31,8 +31,10 @@ import { stage7Tests } from '../../tests/stage7.tests';
 import { stage8Tests } from '../../tests/stage8.tests';
 import { stage9Tests } from '../../tests/stage9.tests';
 import { stage10Tests } from '../../tests/stage10.tests';
+import { stage11Tests } from '../../tests/stage11.tests';
 import { runUnitTests } from '../../tests/testRunner';
 import { useAuth } from '../auth/AuthContext';
+import { useAge } from '../context/AgeContext';
 import { Alert, Button } from '../components/ui';
 import { MainLayout } from '../layouts/MainLayout';
 import { toPersianDigits } from '../resources/formatters';
@@ -56,6 +58,7 @@ const ALL_UNIT_TESTS = [
   ...stage8Tests,
   ...stage9Tests,
   ...stage10Tests,
+  ...stage11Tests,
 ];
 
 const ARCHITECTURE_LAYERS: ReadonlyArray<{
@@ -132,6 +135,7 @@ function extractSafeHashActionUrl(entry: LogEntry): string | null {
 
 export function HealthPage({ currentRoute }: HealthPageProps) {
   const { currentUser, siteTitle, hasSuperAdmin, hasStaffUser, refreshAuthState } = useAuth();
+  const { clearVisitorAgeCookie } = useAge();
   const [healthStatus, setHealthStatus] = useState<HealthStatus | null>(null);
   const [isCheckingHealth, setIsCheckingHealth] = useState<boolean>(true);
   const [testSuite, setTestSuite] = useState<TestSuiteResult | null>(null);
@@ -244,6 +248,11 @@ export function HealthPage({ currentRoute }: HealthPageProps) {
       setIsResettingDb(false);
       refreshLogs();
     }
+  };
+
+  const handleClearAgeCookie = () => {
+    clearVisitorAgeCookie();
+    setSeedFeedback(t('health.card.seed.clearAgeCookieDone'));
   };
 
   const handleDownloadLogs = () => {
@@ -867,6 +876,16 @@ export function HealthPage({ currentRoute }: HealthPageProps) {
                 {isResettingDb
                   ? t('health.card.seed.resettingButton')
                   : t('health.card.seed.resetButton')}
+              </Button>
+
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleClearAgeCookie}
+                disabled={isReseeding || isResettingDb}
+                startIcon={<Trash2 className="w-4 h-4" />}
+              >
+                {t('health.card.seed.clearAgeCookieButton')}
               </Button>
             </div>
           </div>

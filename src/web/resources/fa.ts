@@ -3,7 +3,7 @@ export const faResources = {
   'app.name': 'معراج اندیشه',
   'app.subtitle': 'پلتفرم بانک محتوای فارسی',
   'app.stageLabel': 'مرحله {stage} از {total}',
-  'app.stageName': 'ورود هوشمند محتوا: متن آماده Prompt، تجزیه‌گر قطعی و پرکردن خودکار فرم پیش‌نویس',
+  'app.stageName': 'دروازه سن، ذخیره‌سازی ma_age و پروفایل، تم سنی فوری و قواعد فیلتر و اولویت‌بندی محتوا',
   'app.footerNote': 'پلتفرم معراج اندیشه · زیرساخت و سامانه طراحی پایه',
 
   // Themes
@@ -1527,6 +1527,87 @@ export const faResources = {
     'پاکسازی XSS متن، اجبار وضعیت Draft و کنترل دسترسی content.manage',
   'tests.stage10.sanitizeDraftAndRbac.desc':
     'کد مخرب script و onerror از متن پاک می‌شود، خروجی همواره Draft است، همکار فاقد مجوز ۴۰۳+WARN و عضو/مهمان ۴۰۴ می‌گیرند.',
+
+  // Stage 11: Age Gate, Cookie/Profile Precedence, Header Switcher & Section 3.2 Rules
+  'ageGate.headerSwitchLabel': 'رده سنی: {name}',
+  'ageGate.headerUnselectedLabel': 'انتخاب رده سنی',
+  'ageGate.headerAriaLabel': 'تغییر رده سنی و فضای بصری سایت',
+  'ageGate.modalFirstVisitTitle': 'به معراج اندیشه خوش آمدید؛ رده سنی خود را انتخاب کنید',
+  'ageGate.modalFirstVisitDesc':
+    'برای نمایش محتوای متناسب با سن شما و تنظیم تم بصری مناسب، لطفاً یکی از رده‌های سنی زیر را انتخاب کنید.',
+  'ageGate.modalSwitchTitle': 'تغییر رده سنی و فضای بصری',
+  'ageGate.modalSwitchDesc':
+    'با انتخاب هر رده سنی، تم کل صفحه و ترتیب نمایش محتواها بلافاصله بدون نیاز به ورود مجدد به‌روزرسانی می‌شوند.',
+  'ageGate.activeBadge': 'رده فعال فعلی',
+  'ageGate.selectCardAction': 'انتخاب و ورود',
+  'ageGate.loadingGroups': 'در حال بارگذاری رده‌های سنی فعال از دیتابیس...',
+  'ageGate.emptyGroups': 'هیچ رده سنی فعالی ثبت نشده است.',
+  'ageGate.switchedNotice': 'رده سنی فعال به «{name}» تغییر یافت و تم «{theme}» اعمال شد.',
+  'ageGate.rangePrefix': 'بازه: {range}',
+  'ageGate.themePrefix': 'فضای بصری: {theme}',
+  'ageGate.closeButton': 'بستن',
+
+  // Stage 11: Public Home Preview (#/)
+  'homePreview.badge': 'صفحه اصلی عمومی · پیش‌نمایش زنده دروازه سن و قواعد بخش ۳.۲',
+  'homePreview.title': 'معراج اندیشه — پلتفرم محتوای متناسب با رده سنی',
+  'homePreview.subtitle':
+    'در این نمای عمومی، تم بصری صفحه و فهرست محتواهای منتشرشده به‌صورت زنده بر اساس رده سنی مؤثر شما (پروفایل یا کوکی ma_age) تنظیم و اولویت‌بندی می‌شوند.',
+  'homePreview.activeAgeLabel': 'رده سنی مؤثر فعلی',
+  'homePreview.activeAgeUnset': 'هنوز انتخاب نشده است',
+  'homePreview.activeThemeLabel': 'تم سنی فعال',
+  'homePreview.activeSourceProfile': 'منبع تشخیص: پروفایل حساب کاربری (اولویت بر کوکی)',
+  'homePreview.activeSourceCookie': 'منبع تشخیص: کوکی مرورگر (ma_age)',
+  'homePreview.activeSourceNone': 'منبع تشخیص: در انتظار انتخاب در دروازه سن',
+  'homePreview.changeAgeButton': 'تغییر رده سنی',
+  'homePreview.childHardFilterNote':
+    'قانون فعال برای رده کودک: فیلتر سخت برقرار است؛ محتواهای مخصوص رده‌های دیگر حذف می‌شوند و تنها محتواهای با هدف کودک یا مناسب همه‌ی رده‌ها نمایش داده می‌شوند.',
+  'homePreview.softPriorityNote':
+    'قانون فعال برای این رده: هیچ محتوایی حذف نمی‌شود؛ محتواها در ۳ گروه اولویت (۱. هدف صریح رده، ۲. مناسب همه‌ی رده‌ها، ۳. سایر رده‌ها) و درون هر گروه بر اساس جدیدترین تاریخ انتشار مرتب می‌شوند.',
+  'homePreview.contentSectionTitle': 'محتواهای منتشرشده مطابق با قواعد سن ({count})',
+  'homePreview.contentSectionDesc':
+    'تغییر رده سنی از دکمه بالای صفحه یا ورود با حساب کاربری، ترتیب و فیلتر این فهرست را همان لحظه بازچینی می‌کند.',
+  'homePreview.loadingContent': 'در حال بارگذاری محتواهای منتشرشده...',
+  'homePreview.emptyContentTitle': 'هنوز محتوای منتشرشده‌ای متناسب با این رده ثبت نشده است.',
+  'homePreview.emptyContentDesc':
+    'پس از انتشار محتوا با رده‌های سنی گوناگون، اثر فیلتر سخت کودک و اولویت‌بندی سه‌گروهی بخش ۳.۲ به‌صورت زنده در این بخش نمایش داده می‌شود.',
+  'homePreview.priorityGroup1': 'گروه اولویت ۱: هدف صریح این رده',
+  'homePreview.priorityGroup2': 'گروه اولویت ۲: مناسب همه‌ی رده‌ها',
+  'homePreview.priorityGroup3': 'گروه اولویت ۳: سایر رده‌های سنی',
+  'homePreview.targetAllAges': 'هدف: همه‌ی رده‌ها',
+  'homePreview.targetLabels': 'هدف: {names}',
+  'homePreview.targetListSeparator': '، ',
+  'homePreview.generalTopic': 'محتوای عمومی',
+
+  // Health Page Age Cookie Helper
+  'health.card.seed.clearAgeCookieButton': 'پاک کردن کوکی رده سنی (ma_age) و تست اولین بازدید',
+  'health.card.seed.clearAgeCookieDone':
+    'کوکی ma_age و حافظه پشتیبان آن پاک شدند؛ اکنون با باز کردن صفحه اصلی (#/) دروازه سن در حالت اولین بازدید نمایش داده می‌شود.',
+
+  // Stage 11 Unit Tests
+  'tests.stage11.abcRulesSection32.name':
+    'اجرای دقیق مثال A/B/C بخش ۳.۲ و ترتیب جدیدترین اول درون هر گروه',
+  'tests.stage11.abcRulesSection32.desc':
+    'برای کودک خروجی فقط [C]، برای نوجوان [A, C, B] و برای بزرگسال [B, C, A] برمی‌گردد؛ درون یک گروه نیز جدیدترین تاریخ انتشار اول قرار می‌گیرد.',
+  'tests.stage11.childHardFilter.name':
+    'فیلتر سخت رده سنی کودک (isContentAllowedForAgeGroup)',
+  'tests.stage11.childHardFilter.desc':
+    'محتوای فقط بزرگسال برای کودک false و برای نوجوان/بزرگسال true است؛ محتوای هدف کودک یا بدون رده هدف برای کودک true برمی‌گرداند.',
+  'tests.stage11.profileOverridesCookie.name':
+    'غلبه کامل رده سنی پروفایل کاربر واردشده بر کوکی ma_age',
+  'tests.stage11.profileOverridesCookie.desc':
+    'حتی اگر کوکی ma_age روی کودک (child) باشد، پس از ورود عضو با رده جوان (youth) رده مؤثر دقیقاً جوان و تم modern می‌شود.',
+  'tests.stage11.firstVisitCookiePersistence.name':
+    'تشخیص اولین بازدید، عدم مزاحمت در مسیرهای پنل/حساب و ذخیره یک‌ساله ma_age',
+  'tests.stage11.firstVisitCookiePersistence.desc':
+    'بدون کاربر و کوکی روی #/ مودال باز می‌شود اما روی #/admin و تغییر رمز باز نمی‌شود؛ با انتخاب کودک کوکی ma_age و تم playful ماندگار می‌شوند.',
+  'tests.stage11.headerSwitchWithoutRelogin.name':
+    'تغییر رده سنی از هدر برای عضو واردشده بدون نیاز به ورود مجدد',
+  'tests.stage11.headerSwitchWithoutRelogin.desc':
+    'تغییر رده عضو واقعی از کودک به بزرگسال مستقیماً ageGroupId را در جدول users به‌روزرسانی می‌کند، تم را editorial می‌نماید و نشست فعال باقی می‌ماند.',
+  'tests.stage11.liveDbAgeGroups.name':
+    'خواندن زنده نام و بازه سنی رده‌ها از دیتابیس بدون هاردکد',
+  'tests.stage11.liveDbAgeGroups.desc':
+    'با ویرایش بازه سنی کودک به ۶ تا ۱۱ در دیتابیس، سرویس همان لحظه minAge=6 را برمی‌گرداند و در پایان تست به حالت قبل برگردانده می‌شود.',
 } as const;
 
 export type ResourceKey = keyof typeof faResources;
