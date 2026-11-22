@@ -3,7 +3,7 @@ export const faResources = {
   'app.name': 'معراج اندیشه',
   'app.subtitle': 'پلتفرم بانک محتوای فارسی',
   'app.stageLabel': 'مرحله {stage} از {total}',
-  'app.stageName': 'مدیریت کامل طبقه‌بندی‌ها: موضوعات درختی، برچسب‌ها، شخصیت‌ها، سطوح اثرگذاری و رده‌های سنی',
+  'app.stageName': 'ورود هوشمند محتوا: متن آماده Prompt، تجزیه‌گر قطعی و پرکردن خودکار فرم پیش‌نویس',
   'app.footerNote': 'پلتفرم معراج اندیشه · زیرساخت و سامانه طراحی پایه',
 
   // Themes
@@ -1132,6 +1132,401 @@ export const faResources = {
   'tests.stage8.taxonomyRbacPolicy.name': 'کنترل دسترسی taxonomy.manage: ۴۰۳ با هشدار برای همکار و ۴۰۴ برای عضو/مهمان',
   'tests.stage8.taxonomyRbacPolicy.desc':
     'همکار بدون مجوز ۴۰۳ و لاگ WARN می‌گیرد، همکار دارای مجوز و مدیرکل دسترسی کامل دارند و عضو و مهمان فقط ۴۰۴ می‌گیرند.',
+
+  // Stage 9: Content Formats & Statuses
+  'content.format.Video': 'ویدیو',
+  'content.format.Audio': 'صوت',
+  'content.format.Article': 'مقاله',
+  'content.format.Image': 'تصویر',
+  'content.format.Pdf': 'فایل PDF',
+  'content.format.Presentation': 'ارائه و اسلاید',
+  'content.format.Book': 'کتاب',
+  'content.format.Film': 'فیلم',
+
+  'content.status.Draft': 'پیش‌نویس',
+  'content.status.Published': 'منتشرشده',
+  'content.status.Archived': 'بایگانی‌شده',
+
+  'content.fileKind.Main': 'فایل اصلی',
+  'content.fileKind.Preview': 'پیش‌نمایش',
+  'content.fileKind.Attachment': 'پیوست',
+
+  'content.storageType.Local': 'آپلود محلی (IFileStorage)',
+  'content.storageType.External': 'لینک خارجی',
+
+  // Stage 9: Admin Content List (#/admin/content)
+  'admin.content.list.title': 'مدیریت محتوا',
+  'admin.content.list.subtitle':
+    'ایجاد، ویرایش، انتشار با اعتبارسنجی، بایگانی امن بدون حذف و جستجوی نرمال‌شده در تمام محتواهای سامانه.',
+  'admin.content.list.addNew': 'افزودن محتوای جدید',
+  'admin.content.list.searchLabel': 'جستجوی زنده (عنوان، نامک، متن و منابع)',
+  'admin.content.list.searchPlaceholder': 'جستجو با ارقام یا حروف عربی/فارسی و نیم‌فاصله...',
+  'admin.content.list.statusFilterLabel': 'فیلتر وضعیت',
+  'admin.content.list.statusAll': 'همه وضعیت‌ها',
+  'admin.content.list.formatFilterLabel': 'فیلتر قالب',
+  'admin.content.list.formatAll': 'همه قالب‌ها',
+  'admin.content.list.topicFilterLabel': 'فیلتر موضوع',
+  'admin.content.list.topicAll': 'همه موضوعات',
+  'admin.content.list.countLabel': 'تعداد نتایج: {count}',
+  'admin.content.list.emptyText': 'هیچ محتوایی مطابق فیلتر فعلی ثبت نشده است.',
+  'admin.content.list.col.title': 'محتوا',
+  'admin.content.list.col.format': 'قالب',
+  'admin.content.list.col.status': 'وضعیت',
+  'admin.content.list.col.stats': 'منابع و فایل‌ها',
+  'admin.content.list.col.updatedAt': 'آخرین تغییر',
+  'admin.content.list.col.actions': 'عملیات',
+  'admin.content.list.sourcesCount': '{count} منبع',
+  'admin.content.list.filesCount': '{count} فایل',
+  'admin.content.list.featuredBadge': 'محتوای شاخص',
+  'admin.content.list.editAction': 'ویرایش',
+  'admin.content.list.publishAction': 'انتشار',
+  'admin.content.list.archiveAction': 'بایگانی',
+  'admin.content.list.restoreAction': 'بازگردانی به پیش‌نویس',
+  'admin.content.list.archiveConfirmTitle': 'تایید بایگانی محتوا',
+  'admin.content.list.archiveConfirmBody':
+    'آیا مطمئن هستید که می‌خواهید «{title}» را بایگانی کنید؟ محتوای بایگانی‌شده از دسترس عمومی خارج می‌شود اما سوابق، منابع و فایل‌های آن هرگز حذف نمی‌شوند.',
+  'admin.content.list.archiveConfirmSubmit': 'بله، بایگانی شود',
+  'admin.content.list.feedback.published': 'محتوای «{title}» با موفقیت منتشر شد.',
+  'admin.content.list.feedback.archived': 'محتوای «{title}» بایگانی شد و از نمایش عمومی خارج گردید.',
+  'admin.content.list.feedback.restored': 'محتوای «{title}» به وضعیت پیش‌نویس بازگردانده شد.',
+
+  // Stage 9: Admin Content Form (#/admin/content/new & /edit/:id)
+  'admin.content.form.createTitle': 'افزودن محتوای جدید',
+  'admin.content.form.editTitle': 'ویرایش محتوا: {title}',
+  'admin.content.form.backToList': 'بازگشت به فهرست محتوا',
+  'admin.content.form.saveDraft': 'ذخیره پیش‌نویس',
+  'admin.content.form.saveChanges': 'ذخیره تغییرات',
+  'admin.content.form.saving': 'در حال ذخیره...',
+  'admin.content.form.publish': 'انتشار محتوا',
+  'admin.content.form.publishing': 'در حال بررسی و انتشار...',
+  'admin.content.form.archive': 'بایگانی',
+  'admin.content.form.restore': 'بازگردانی به پیش‌نویس',
+  'admin.content.form.savedSuccess': 'تغییرات محتوا با موفقیت ذخیره شد.',
+  'admin.content.form.publishedSuccess': 'تمام شرط‌های انتشار تایید شد و محتوا اکنون منتشرشده است.',
+  'admin.content.form.publishChecklistFailedTitle': 'شرایط انتشار کامل نیست؛ وضعیت تغییر نکرد:',
+  'admin.content.form.tabHasErrorBadge': 'نیازمند تکمیل',
+  'admin.content.form.tabsAriaLabel': 'بخش‌های فرم محتوا',
+
+  'admin.content.form.tab.basic': '۱. اطلاعات پایه',
+  'admin.content.form.tab.files': '۲. فایل‌ها',
+  'admin.content.form.tab.sources': '۳. منابع',
+  'admin.content.form.tab.taxonomy': '۴. طبقه‌بندی',
+  'admin.content.form.tab.audience': '۵. مخاطب (رده‌های سنی)',
+
+  // Tab 1: Basic Info & Article Editor
+  'admin.content.field.title': 'عنوان محتوا',
+  'admin.content.field.titlePlaceholder': 'عنوان گویا و استاندارد محتوا (حداکثر ۲۰۰ نویسه)',
+  'admin.content.field.titleCounter': '{count} / ۲۰۰ نویسه',
+  'admin.content.field.slug': 'نشانی یکتا (Slug)',
+  'admin.content.field.slugPlaceholder': 'در صورت خالی بودن از عنوان ساخته می‌شود',
+  'admin.content.field.summary': 'خلاصه محتوا',
+  'admin.content.field.summaryPlaceholder': 'چکیده معرفی محتوا برای کارت‌ها و نتایج جستجو (حداکثر ۶۰۰ نویسه)',
+  'admin.content.field.summaryCounter': '{count} / ۶۰۰ نویسه',
+  'admin.content.field.format': 'قالب محتوا',
+  'admin.content.field.phase2FormatHint':
+    'توجه: فیلدهای تخصصی کتاب و فیلم در فاز ۲ به این فرم اضافه می‌شوند؛ هم‌اکنون می‌توانید با فیلدهای پایه آن را ثبت و منتشر کنید.',
+  'admin.content.field.minutes': 'مدت مطالعه یا تماشا (دقیقه — اختیاری)',
+  'admin.content.field.minutesPlaceholder': 'مثلاً: ۱۲',
+  'admin.content.field.isFeatured': 'نمایش به‌عنوان محتوای شاخص در پیشنهادها',
+  'admin.content.field.thumbnail': 'تصویر شاخص (عمومی — PNG، JPG، WEBP)',
+  'admin.content.field.thumbnailPick': 'انتخاب تصویر شاخص',
+  'admin.content.field.thumbnailChange': 'تغییر تصویر شاخص',
+  'admin.content.field.thumbnailRemove': 'حذف تصویر',
+  'admin.content.field.thumbnailMissing': 'هنوز تصویری انتخاب نشده است (برای انتشار الزامی است)',
+  'admin.content.field.body': 'متن مقاله و محتوای ویرایشگر HTML',
+  'admin.content.field.bodyHint':
+    'تمام کدهای HTML هنگام ذخیره به‌صورت خودکار با فهرست سفید امن پاکسازی می‌شوند.',
+  'admin.content.editor.toolbarLabel': 'ابزارهای قالب‌بندی متن',
+  'admin.content.editor.btnH2': 'تیتر ۲',
+  'admin.content.editor.btnH3': 'تیتر ۳',
+  'admin.content.editor.btnBold': 'ضخیم',
+  'admin.content.editor.btnItalic': 'مورب',
+  'admin.content.editor.btnList': 'فهرست',
+  'admin.content.editor.btnQuote': 'نقل‌قول',
+  'admin.content.editor.btnLink': 'لینک امن',
+  'admin.content.editor.togglePreview': 'پیشنمایش خروجی پاکسازی‌شده',
+  'admin.content.editor.previewTitle': 'پیشنمایش HTML پاکسازی‌شده (ایمن)',
+  'admin.content.editor.previewEmpty': 'متنی برای پیشنمایش وارد نشده است.',
+  'admin.content.editor.linkUrlLabel': 'نشانی پیوند (http:// یا https://)',
+  'admin.content.editor.linkTextLabel': 'متن پیوند',
+  'admin.content.editor.linkInsertSubmit': 'درج پیوند در متن',
+  'admin.content.editor.linkDefaultText': 'مشاهده پیوند',
+
+  // Tab 2: Files (Hybrid Local + External)
+  'admin.content.files.localTitle': 'روش اول: آپلود فایل خصوصی در مخزن امن (IFileStorage)',
+  'admin.content.files.localHint':
+    'پسوند، امضای باینری واقعی (Magic Bytes) و سقف حجم سامانه پیش از ذخیره بررسی می‌شوند.',
+  'admin.content.files.pickFileButton': 'انتخاب و آپلود فایل',
+  'admin.content.files.uploading': 'در حال بررسی امنیتی و آپلود...',
+  'admin.content.files.externalTitle': 'روش دوم: افزودن لینک خارجی (آپارات یا منبع بیرونی)',
+  'admin.content.files.externalUrlLabel': 'نشانی اینترنتی کامل (https://...)',
+  'admin.content.files.externalUrlPlaceholder': 'https://www.aparat.com/v/abc12',
+  'admin.content.files.externalNameLabel': 'نام نمایشی فایل یا ویدیو',
+  'admin.content.files.externalNamePlaceholder': 'مثلاً: ویدیوی جلسه اول در آپارات',
+  'admin.content.files.addExternalButton': 'افزودن لینک خارجی',
+  'admin.content.files.kindLabel': 'نقش فایل',
+  'admin.content.files.downloadableLabel': 'قابل دانلود برای کاربر',
+  'admin.content.files.externalNotDownloadableNote':
+    'لینک‌های خارجی طبق قانون سامانه همواره غیرقابل دانلود ذخیره می‌شوند.',
+  'admin.content.files.embedAllowedBadge': 'میزبان مجاز پخش داخلی (آپارات)',
+  'admin.content.files.externalLinkOnlyBadge': 'مشاهده در منبع',
+  'admin.content.files.empty': 'هنوز هیچ فایلی به این محتوا پیوست نشده است.',
+  'admin.content.files.sortLabel': 'ترتیب',
+  'admin.content.files.remove': 'حذف از فهرست',
+
+  // Tab 3: Sources (Mandatory for Publish)
+  'admin.content.sources.mandatoryBanner':
+    'ثبت حداقل یک منبع معتبر برای انتشار محتوا الزامی است؛ محتوا بدون منبع منتشر نمی‌شود.',
+  'admin.content.sources.titleLabel': 'عنوان منبع',
+  'admin.content.sources.titlePlaceholder': 'نام کتاب، مقاله، سخنرانی یا سایت مرجع (حداکثر ۳۰۰ نویسه)',
+  'admin.content.sources.urlLabel': 'نشانی اینترنتی منبع (اختیاری)',
+  'admin.content.sources.urlPlaceholder': 'https://example.com/reference',
+  'admin.content.sources.noteLabel': 'یادداشت / شماره صفحه یا جلد (اختیاری)',
+  'admin.content.sources.notePlaceholder': 'مثلاً: جلد دوم، صفحه ۴۵ تا ۶۲',
+  'admin.content.sources.addButton': 'افزودن منبع به فهرست',
+  'admin.content.sources.empty': 'هنوز هیچ منبعی ثبت نشده است.',
+  'admin.content.sources.remove': 'حذف منبع',
+
+  // Tab 4: Taxonomy
+  'admin.content.taxonomy.topicsTitle': 'موضوعات درختی (انتخاب حداقل یک مورد برای انتشار الزامی است)',
+  'admin.content.taxonomy.topicsEmpty': 'موضوع فعالی در سامانه ثبت نشده است.',
+  'admin.content.taxonomy.tagsTitle': 'برچسب‌ها',
+  'admin.content.taxonomy.tagsSearchPlaceholder': 'جستجوی برچسب...',
+  'admin.content.taxonomy.personsTitle': 'شخصیت‌ها (نویسنده / سخنران / خالق اثر)',
+  'admin.content.taxonomy.personsSearchPlaceholder': 'جستجوی شخصیت...',
+  'admin.content.taxonomy.impactLevelTitle': 'سطح اثرگذاری محتوا',
+  'admin.content.taxonomy.impactLevelNone': 'بدون انتخاب',
+
+  // Tab 5: Audience (Age Groups)
+  'admin.content.audience.infoBanner':
+    'اگر هیچ رده‌ای انتخاب نشود، این محتوا برای همه‌ی رده‌های سنی (از جمله کودک) نمایش داده خواهد شد.',
+  'admin.content.audience.title': 'انتخاب رده‌های سنی هدف',
+  'admin.content.audience.allAgesSelected': 'وضعیت فعلی: مناسب برای همه رده‌های سنی',
+  'admin.content.audience.specificCountSelected': 'تعداد رده‌های سنی انتخاب‌شده: {count}',
+
+  // Stage 9 Errors
+  'admin.content.error.notFound': 'محتوای درخواستی یافت نشد.',
+  'admin.content.error.invalidMinutes': 'مدت مطالعه یا تماشا باید یک عدد صحیح مثبت باشد.',
+  'admin.content.error.invalidSourceTitle': 'عنوان منبع الزامی است و نباید بیش از ۳۰۰ نویسه باشد.',
+  'admin.content.error.invalidSourceNote': 'یادداشت منبع نباید بیش از ۵۰۰ نویسه باشد.',
+  'admin.content.error.invalidUrl': 'فرمت نشانی اینترنتی معتبر نیست (باید با http:// یا https:// شروع شود).',
+  'admin.content.error.invalidExternalFileUrl': 'نشانی فایل خارجی نامعتبر است.',
+  'admin.content.error.externalFileNameRequired': 'نام نمایشی برای فایل خارجی الزامی است.',
+  'admin.content.error.localFileMissingKey': 'کلید فایل محلی معتبر نیست.',
+  'admin.content.files.moveUp': 'انتقال به بالا در ترتیب فایل‌ها',
+  'admin.content.files.moveDown': 'انتقال به پایین در ترتیب فایل‌ها',
+  'admin.content.form.loading': 'در حال بارگذاری اطلاعات محتوا...',
+  'admin.content.list.loading': 'در حال بارگذاری فهرست محتواها...',
+  'admin.content.common.cancel': 'انصراف',
+  'admin.content.common.yes': 'بله',
+  'admin.content.common.no': 'خیر',
+
+  // Stage 9 Unit Tests
+  'tests.stage9.publishValidAndRejectNoSource.name':
+    'انتشار مقاله کامل و رد مقاله بدون منبع با پیام دقیق',
+  'tests.stage9.publishValidAndRejectNoSource.desc':
+    'مقاله دارای موضوع، تصویر شاخص، متن و منبع به وضعیت Published و publishedAt می‌رسد؛ مقاله بدون منبع در وضعیت Draft مانده و publish.error.noSource برمی‌گرداند.',
+  'tests.stage9.externalAparatVideoPublish.name':
+    'انتشار ویدیو با لینک خارجی آپارات بدون فایل محلی',
+  'tests.stage9.externalAparatVideoPublish.desc':
+    'ویدیوی دارای فایل External با نشانی آپارات منتشر می‌شود، isDownloadable اجباراً false می‌ماند و میزبان آپارات مجاز برای پخش داخلی تشخیص داده می‌شود.',
+  'tests.stage9.htmlSanitizerOnSave.name':
+    'پاکسازی XSS و HTML مخرب هنگام ذخیره محتوا (htmlSanitizer)',
+  'tests.stage9.htmlSanitizerOnSave.desc':
+    'اسکریپت، صفت onerror و پیوند javascript: هنگام ذخیره کاملاً حذف می‌شوند و تگ سالم <p>متن سالم</p> بدون تغییر باقی می‌ماند.',
+  'tests.stage9.archiveInsteadOfDelete.name':
+    'بایگانی امن به‌جای حذف واقعی و خروج از دسترس عمومی',
+  'tests.stage9.archiveInsteadOfDelete.desc':
+    'پس از بایگانی محتوای منتشرشده، getPublicPublishedBySlug مقدار null برمی‌گرداند اما در پنل با وضعیت Archived و قابل بازگشت به Draft باقی می‌ماند.',
+  'tests.stage9.searchNormalizer.name':
+    'ساخت و جستجوی SearchText نرمال‌شده (ي/ك، اعراب، کشیده، نیم‌فاصله و ارقام)',
+  'tests.stage9.searchNormalizer.desc':
+    'عنوان «كتاب عِلْمِ مـعاصر می‌شود ۱۲۳ PDF» نرمال شده و با جستجوهای «کتاب»، «علم»، «می‌شود»، «میشود»، «123» و «pdf» دقیقاً بازیابی می‌شود.',
+  'tests.stage9.contentRbacPolicy.name':
+    'کنترل دسترسی content.manage: ۴۰۳ با هشدار برای همکار و ۴۰۴ برای عضو/مهمان',
+  'tests.stage9.contentRbacPolicy.desc':
+    'همکار بدون کلید content.manage در ساخت، انتشار و بایگانی خطای ۴۰۳ و لاگ WARN می‌گیرد؛ همکار مجاز و مدیرکل موفقند و عضو و مهمان ۴۰۴ می‌گیرند.',
+
+  // Stage 10: Smart Content Import (#/admin/content/smart-import)
+  'admin.content.list.smartImportAction': 'ورود هوشمند محتوا',
+  'admin.smartImport.title': 'ورود هوشمند محتوا',
+  'admin.smartImport.subtitle':
+    'تولید متن آماده (Prompt) برای دریافت خروجی ساختاریافته از ابزارهای هوش مصنوعی دلخواه و تجزیه‌ی قطعی و محلی آن برای پرکردن خودکار فرم پیش‌نویس محتوا (بدون هیچ اتصال شبکه‌ای به API بیرونی).',
+  'admin.smartImport.backToList': 'بازگشت به فهرست محتوا',
+  'admin.smartImport.newFormButton': 'رفتن به فرم دستی جدید',
+
+  // Section 1: Prompt Builder
+  'admin.smartImport.prompt.sectionTitle': 'بخش ۱: متن آماده (Prompt) برای کپی',
+  'admin.smartImport.prompt.sectionDesc':
+    'این متن را کپی کنید و همراه متن خام یا مقاله خود به ابزار هوش مصنوعی مورد نظرتان بدهید تا خروجی دقیقاً با قالب استاندارد معراج اندیشه تولید شود.',
+  'admin.smartImport.prompt.copyButton': 'کپی متن Prompt',
+  'admin.smartImport.prompt.copiedSuccess': 'متن Prompt در حافظه کپی شد.',
+  'admin.smartImport.prompt.copyFailed':
+    'کپی خودکار توسط مرورگر مسدود شد؛ لطفاً متن کادر زیر را به‌صورت دستی انتخاب و کپی کنید.',
+  'admin.smartImport.prompt.includeSiteListsLabel':
+    'افزودن فهرست موضوعات و رده‌های سنی فعلی سایت به انتهای Prompt',
+  'admin.smartImport.prompt.header':
+    'لطفاً متن یا محتوای زیر را تحلیل کن و خروجی را دقیقاً و فقط در قالب ساختاریافته‌ی زیر به زبان فارسی بنویس. هیچ بخش یا برچسب اضافه‌ای خارج از تگ‌های مشخص‌شده تولید نکن و اگر مقداری مشخص نبود، بخش مربوط را خالی بگذار.',
+  'admin.smartImport.prompt.templateBlock': `[شروع قالب]
+[عنوان]
+عنوان گویا و استاندارد محتوا (حداکثر ۲۰۰ نویسه)
+[خلاصه]
+چکیده معرفی محتوا برای کارت‌ها و نتایج جستجو (حداکثر ۶۰۰ نویسه)
+[قالب]
+یکی از مقادیر: مقاله | ویدیو | صوت | اینفوگرافیک | پی‌دی‌اف | پاورپوینت | کتاب | فیلم
+[موضوعات]
+موضوع ۱ > زیرموضوع ۱ ; موضوع ۲
+[برچسب‌ها]
+برچسب ۱، برچسب ۲، برچسب ۳
+[شخصیت‌ها]
+نام شخصیت ۱ ; نام شخصیت ۲
+[رده سنی]
+یک یا چند مورد از رده‌های سنی مجاز (با ویرگول جدا شود)
+[اثرگذاری]
+یکی از سطوح اثرگذاری سایت (مانند کم، متوسط یا زیاد)
+[مدت]
+مدت مطالعه یا تماشا به دقیقه (مثلاً: ۱۲ دقیقه)
+[منابع]
+- عنوان منبع اول | https://example.com/ref | یادداشت یا فصل و صفحه
+- عنوان منبع دوم | | یادداشت منبع بدون نشانی اینترنتی
+[متن]
+<h2>تیتر بخش اول</h2>
+<p>پاراگراف‌های متن اصلی مقاله با تگ‌های ساده HTML مانند p، h2، h3، ul، li و blockquote.</p>
+[پایان قالب]`,
+  'admin.smartImport.prompt.rulesBlock': `قوانین نگارش خروجی:
+۱. دقیقاً از نام برچسب‌های داخل کروشه [...] استفاده کن و ترتیب بخش‌ها را حفظ کن.
+۲. در بخش [موضوعات] از جداکننده «;» و برای سلسله‌مراتب والد و فرزند از «>» استفاده کن.
+۳. در بخش [منابع] هر منبع را در یک خط جدید با «- » بنویس و بخش‌ها را با «|» جدا کن.
+۴. در بخش [متن] از هرگونه script، iframe یا کد مخرب خودداری کن.`,
+  'admin.smartImport.prompt.siteListsHeading': 'فهرست مقادیر فعلی سامانه برای تطبیق دقیق‌تر:',
+  'admin.smartImport.prompt.siteTopicsLabel': 'موضوعات فعال سایت',
+  'admin.smartImport.prompt.siteAgeGroupsLabel': 'رده‌های سنی فعال',
+  'admin.smartImport.prompt.siteImpactLevelsLabel': 'سطوح اثرگذاری',
+  'admin.smartImport.prompt.siteEmptyFallback': 'موردی ثبت نشده است',
+
+  // Section 2: Raw Input & Deterministic Analyzer
+  'admin.smartImport.input.sectionTitle': 'بخش ۲: چسباندن خروجی هوش مصنوعی و تحلیل محلی',
+  'admin.smartImport.input.sectionDesc':
+    'خروجی تولیدشده را در کادر زیر بچسبانید و دکمه‌ی تحلیل را بزنید. تجزیه‌گر به‌صورت کاملاً محلی و قطعی تمام فیلدها را استخراج و بررسی می‌کند.',
+  'admin.smartImport.input.label': 'متن ساختاریافته خروجی',
+  'admin.smartImport.input.placeholder':
+    '[شروع قالب]\n[عنوان]\n...\n[پایان قالب]',
+  'admin.smartImport.input.analyzeButton': 'تحلیل و پیش‌نمایش',
+  'admin.smartImport.input.analyzingButton': 'در حال تحلیل...',
+  'admin.smartImport.input.insertSampleButton': 'درج نمونه‌ی کامل آزمایشی (بخش ۷.۴)',
+  'admin.smartImport.input.clearButton': 'پاک کردن',
+  'admin.smartImport.sampleText': `[شروع قالب]
+[عنوان]
+تحلیل سواد رسانه‌ای و جریان اطلاعات در عصر دیجیتال
+[خلاصه]
+بررسی علمی و کاربردی نحوه تشخیص اخبار جعلی، سوگیری رسانه‌ای و شیوه‌های تحلیل انتقادی پیام‌ها برای مخاطبان نوجوان و بزرگسال.
+[قالب]
+مقاله
+[موضوعات]
+تاریخ > ایران معاصر ; رسانه و فضای مجازی > سواد رسانه‌ای
+[برچسب‌ها]
+تبلیغات، سواد رسانه‌ای
+[شخصیت‌ها]
+دکتر علی شریعتی ; شهید مطهری
+[رده سنی]
+نوجوان، بزرگسال
+[اثرگذاری]
+زیاد
+[مدت]
+۱۲ دقیقه
+[منابع]
+- مبانی سواد رسانه‌ای در عصر شبکه | https://example.com/media-literacy | فصل اول و دوم
+- روش‌های تحلیل گفتمان و پیام | | یادداشت تکمیلی بدون نشانی اینترنتی
+[متن]
+<h2>مقدمه</h2>
+<p>سواد رسانه‌ای مهارتی بنیادین برای فهم پیام‌های پیدا و پنهان در فضای معاصر است.</p>
+<ul><li>پرسشگری درباره منبع پیام</li><li>بررسی شواهد و مستندات تاریخی</li></ul>
+[پایان قالب]`,
+
+  // Section 3: Results, Preview & Suggestions
+  'admin.smartImport.result.sectionTitle': 'بخش ۳: پیش‌نمایش استخراج‌شده و انتقال به فرم',
+  'admin.smartImport.result.draftBadge': 'وضعیت پیش‌فرض: پیش‌نویس (هرگز خودکار منتشر نمی‌شود)',
+  'admin.smartImport.result.transferButton': 'پر کردن فرم محتوا (پیش‌نویس)',
+  'admin.smartImport.result.emptyHint':
+    'پس از چسباندن متن خروجی در بخش ۲ و کلیک روی «تحلیل و پیش‌نمایش»، جزئیات استخراج‌شده، هشدارها و پیشنهادها اینجا نمایش داده می‌شوند.',
+  'admin.smartImport.result.errorsTitle': 'خطاهای ساختار (مانع انتقال به فرم)',
+  'admin.smartImport.result.warningsTitle': 'هشدارهای تطبیق و محدودیت فیلدها',
+  'admin.smartImport.result.fieldTitle': 'عنوان استخراج‌شده',
+  'admin.smartImport.result.fieldSlug': 'نامک پیشنهادی (Slug)',
+  'admin.smartImport.result.fieldFormat': 'قالب تشخیص‌داده‌شده',
+  'admin.smartImport.result.fieldMinutes': 'مدت (دقیقه)',
+  'admin.smartImport.result.fieldMinutesEmpty': 'تعیین‌نشده',
+  'admin.smartImport.result.fieldSummary': 'خلاصه محتوا',
+  'admin.smartImport.result.fieldEmpty': 'خالی',
+  'admin.smartImport.result.matchedTaxonomyTitle': 'طبقه‌بندی‌های تطبیق‌یافته با دیتابیس',
+  'admin.smartImport.result.matchedTopicsLabel': 'موضوعات',
+  'admin.smartImport.result.matchedTagsLabel': 'برچسب‌ها',
+  'admin.smartImport.result.matchedPersonsLabel': 'شخصیت‌ها',
+  'admin.smartImport.result.matchedAgeGroupsLabel': 'رده‌های سنی',
+  'admin.smartImport.result.matchedImpactLabel': 'سطح اثرگذاری',
+  'admin.smartImport.result.noneMatched': 'موردی تطبیق داده نشد',
+  'admin.smartImport.result.sourcesTitle': 'منابع استخراج‌شده ({count})',
+  'admin.smartImport.result.sourcesEmpty': 'منبعی در متن یافت نشد.',
+  'admin.smartImport.result.sourceColTitle': 'عنوان منبع',
+  'admin.smartImport.result.sourceColUrl': 'نشانی اینترنتی',
+  'admin.smartImport.result.sourceColNote': 'یادداشت',
+  'admin.smartImport.result.bodyTitle': 'پیش‌نمایش متن پاکسازی‌شده (HTML ایمن)',
+
+  // Suggestions Card (No Auto-Creation)
+  'admin.smartImport.suggestions.title': 'پیشنهاد ساخت موارد ناموجود',
+  'admin.smartImport.suggestions.noAutoCreateNote':
+    'قانون ایمنی داده: موارد زیر در دیتابیس فعلی یافت نشدند و هیچ‌کدام به‌صورت خودکار ساخته نشده‌اند. در صورت داشتن دسترسی مدیریت طبقه‌بندی می‌توانید با کلیک دستی هر مورد را بسازید یا فرم را بدون آن‌ها پر کنید.',
+  'admin.smartImport.suggestions.noTaxonomyPermissionNote':
+    'شما دسترسی مدیریت طبقه‌بندی (taxonomy.manage) ندارید؛ این فهرست صرفاً جهت اطلاع نمایش داده می‌شود.',
+  'admin.smartImport.suggestions.badge': 'ناموجود در دیتابیس',
+  'admin.smartImport.suggestions.typeTopic': 'موضوع',
+  'admin.smartImport.suggestions.typeTag': 'برچسب',
+  'admin.smartImport.suggestions.typePerson': 'شخصیت',
+  'admin.smartImport.suggestions.topicWithParent': '{parent} > {name}',
+  'admin.smartImport.suggestions.createAndAddAction': 'ساخت این مورد و افزودن به انتخاب‌ها',
+  'admin.smartImport.suggestions.creatingAction': 'در حال ساخت...',
+  'admin.smartImport.suggestions.createdSuccess': 'مورد «{name}» ساخته شد و به انتخاب‌های پیش‌نویس اضافه گردید.',
+
+  // Deterministic Parser Error & Warning Keys
+  'admin.smartImport.error.emptyInput': 'ورودی خالی است؛ لطفاً متن خروجی ساختاریافته را وارد کنید.',
+  'admin.smartImport.error.noRecognizedTags':
+    'هیچ برچسب شناخته‌شده‌ای با قالب [...] در متن یافت نشد. لطفاً از متن آماده Prompt استفاده کنید.',
+  'admin.smartImport.error.titleRequired':
+    'تگ [عنوان] یا مقدار عنوان یافت نشد؛ وجود عنوان برای ساخت پیش‌نویس الزامی است.',
+  'admin.smartImport.warning.unknownFormat':
+    'قالب واردشده در تگ [قالب] معتبر نبود و مقدار پیش‌فرض «مقاله» در نظر گرفته شد.',
+  'admin.smartImport.warning.unmatchedAgeGroup':
+    'یکی از رده‌های سنی واردشده با رده‌های فعال سایت مطابقت نداشت و نادیده گرفته شد.',
+  'admin.smartImport.warning.unmatchedImpactLevel':
+    'سطح اثرگذاری واردشده در فهرست سطوح سایت یافت نشد و بدون انتخاب باقی ماند.',
+
+  // Content Form Prefill Notice
+  'admin.smartImport.formPrefilledBanner':
+    'فیلدهای این فرم از روی «ورود هوشمند محتوا» به‌صورت پیش‌نویس پر شده‌اند. لطفاً پیش از ذخیره یا انتشار، تب‌ها (به‌ویژه تصویر شاخص و فایل‌ها) را بررسی و تکمیل کنید.',
+  'admin.smartImport.formRemainingSuggestionsTitle':
+    'موارد ناموجود باقی‌مانده که به‌صورت خودکار ساخته نشدند:',
+
+  // Stage 10 Unit Tests
+  'tests.stage10.fullSampleParse.name':
+    'تحلیل نمونه کامل بخش ۷.۴ و استخراج دقیق هر ۱۱ بخش',
+  'tests.stage10.fullSampleParse.desc':
+    'عنوان، نامک، خلاصه، قالب مقاله، موضوعات درختی، برچسب‌ها، شخصیت‌ها، رده‌های سنی فعال، سطح اثرگذاری، مدت ۱۲ دقیقه، ۲ منبع و متن HTML به‌درستی استخراج می‌شوند.',
+  'tests.stage10.variantsAndDigits.name':
+    'تحمل تفاوت‌های نگارشی (فاصله در کروشه، ي/ك عربی، ارقام فارسی و جداکننده‌ها)',
+  'tests.stage10.variantsAndDigits.desc':
+    'برچسب‌هایی مانند [ عنوان ]، [رده‌ی سنی] و [برچسب ها] با حروف ي/ك عربی و ارقام انگلیسی/فارسی بدون خطا تجزیه و تطبیق داده می‌شوند.',
+  'tests.stage10.noAutoCreateMissingTaxonomy.name':
+    'ممانعت از ساخت خودکار موضوع، برچسب یا شخصیت ناموجود در دیتابیس',
+  'tests.stage10.noAutoCreateMissingTaxonomy.desc':
+    'موارد ناموجود فقط در لیست suggestions ثبت می‌شوند و تعداد رکوردهای موضوع، برچسب و شخصیت در دیتابیس بدون تغییر باقی می‌ماند.',
+  'tests.stage10.invalidInputAndEmptyTitle.name':
+    'رد ورودی خالی، بی‌ساختار و بدون [عنوان] بدون ذخیره هیچ رکوردی',
+  'tests.stage10.invalidInputAndEmptyTitle.desc':
+    'ورودی خالی، متن بدون برچسب [...] و متن فاقد [عنوان] با isValid=false و خطای دقیق رد می‌شوند و محتوایی در دیتابیس ثبت نمی‌گردد.',
+  'tests.stage10.sanitizeDraftAndRbac.name':
+    'پاکسازی XSS متن، اجبار وضعیت Draft و کنترل دسترسی content.manage',
+  'tests.stage10.sanitizeDraftAndRbac.desc':
+    'کد مخرب script و onerror از متن پاک می‌شود، خروجی همواره Draft است، همکار فاقد مجوز ۴۰۳+WARN و عضو/مهمان ۴۰۴ می‌گیرند.',
 } as const;
 
 export type ResourceKey = keyof typeof faResources;

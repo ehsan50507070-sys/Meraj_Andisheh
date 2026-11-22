@@ -8,3 +8,5 @@ export * from './smsSender';
 export * from './adminRepository';
 export * from './fileStorage';
 export * from './taxonomyRepository';
+export * from './searchNormalizer';
+export * from './contentRepository';

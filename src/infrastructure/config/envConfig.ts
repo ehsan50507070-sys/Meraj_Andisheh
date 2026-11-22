@@ -52,7 +52,7 @@ export const envConfig: EnvConfig = Object.freeze({
   isDevelopment,
   isProduction: currentEnvironment === 'production',
   isDevPreview: resolveDevPreviewFlag(isDevelopment),
-  stageNumber: 8,
+  stageNumber: 10,
   totalStages: 31,
   databaseName: 'MerajAndishehDB',
   databaseVersion: 6,

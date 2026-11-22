@@ -5,5 +5,6 @@ export * from './ContentCard';
 export * from './FormField';
 export * from './Modal';
 export * from './Pagination';
+export * from './SanitizedHtmlPreview';
 export * from './Table';
 export * from './Tag';

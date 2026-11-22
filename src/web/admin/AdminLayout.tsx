@@ -85,7 +85,10 @@ export function AdminLayout({ currentRoute, children }: AdminLayoutProps) {
   const renderSidebarLinks = (closeOnClick: boolean) => (
     <nav aria-label={t('admin.sidebar.ariaLabel')} className="space-y-1">
       {visibleItems.map((item) => {
-        const isActive = normalizedPath === item.path.toLowerCase();
+        const itemPath = item.path.toLowerCase();
+        const isActive =
+          normalizedPath === itemPath ||
+          (item.id === 'content' && normalizedPath.startsWith('/admin/content/'));
         return (
           <a
             key={item.id}

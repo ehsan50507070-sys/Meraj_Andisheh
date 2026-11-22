@@ -42,7 +42,6 @@ export const ADMIN_ROUTES: readonly AdminRouteSpec[] = [
     labelKey: 'admin.nav.content',
     requirement: 'content.manage',
     permissionDescKey: 'permissions.content.manage.desc',
-    isPlaceholder: true,
   },
   {
     id: 'taxonomy',
@@ -133,7 +132,18 @@ export const ADMIN_ROUTES: readonly AdminRouteSpec[] = [
 
 export function findAdminRouteSpec(normalizedPath: string): AdminRouteSpec | null {
   const lower = normalizedPath.toLowerCase();
-  return ADMIN_ROUTES.find((item) => item.path.toLowerCase() === lower) ?? null;
+  const exact = ADMIN_ROUTES.find((item) => item.path.toLowerCase() === lower);
+  if (exact) {
+    return exact;
+  }
+  if (
+    lower === '/admin/content/new' ||
+    lower === '/admin/content/smart-import' ||
+    /^\/admin\/content\/edit\/\d+$/.test(lower)
+  ) {
+    return ADMIN_ROUTES.find((item) => item.id === 'content') ?? null;
+  }
+  return null;
 }
 
 export function canSeeAdminNavItem(

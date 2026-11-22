@@ -7,6 +7,9 @@ import { AdminSettingsPage } from '../admin/AdminSettingsPage';
 import { AdminStaffPage } from '../admin/AdminStaffPage';
 import { AdminStorageTestPage } from '../admin/AdminStorageTestPage';
 import { AdminUsersPage } from '../admin/AdminUsersPage';
+import { AdminContentFormPage } from '../admin/pages/AdminContentFormPage';
+import { AdminContentListPage } from '../admin/pages/AdminContentListPage';
+import { AdminSmartImportPage } from '../admin/pages/AdminSmartImportPage';
 import { AdminTaxonomyPage } from '../admin/pages/AdminTaxonomyPage';
 import { canSeeAdminNavItem, findAdminRouteSpec } from '../admin/adminNavConfig';
 import { useAuth } from '../auth/AuthContext';
@@ -226,6 +229,21 @@ export function HashRouter({ routes, defaultRoute }: HashRouterProps) {
         return <AdminSettingsPage currentRoute={routeState.fullHash} />;
       case 'taxonomy':
         return <AdminTaxonomyPage currentRoute={routeState.fullHash} />;
+      case 'content': {
+        const lowerPath = routeState.path.toLowerCase();
+        if (lowerPath === '/admin/content/smart-import') {
+          return <AdminSmartImportPage currentRoute={routeState.fullHash} />;
+        }
+        if (lowerPath === '/admin/content/new') {
+          return <AdminContentFormPage currentRoute={routeState.fullHash} />;
+        }
+        const editMatch = lowerPath.match(/^\/admin\/content\/edit\/(\d+)$/);
+        if (editMatch) {
+          const contentId = Number.parseInt(editMatch[1], 10);
+          return <AdminContentFormPage currentRoute={routeState.fullHash} contentId={contentId} />;
+        }
+        return <AdminContentListPage currentRoute={routeState.fullHash} />;
+      }
       case 'storage-test':
         return <AdminStorageTestPage currentRoute={routeState.fullHash} />;
       default:

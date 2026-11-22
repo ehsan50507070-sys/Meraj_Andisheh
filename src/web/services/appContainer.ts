@@ -1,12 +1,15 @@
 import { AuthService } from '../../core/services/authService';
 import { ContentIntegrityService } from '../../core/services/contentIntegrityService';
+import { ContentManagementService } from '../../core/services/contentManagementService';
 import { FileUploadService } from '../../core/services/fileUploadService';
 import { HealthCheckService } from '../../core/services/HealthCheckService';
 import { InitialSuperAdminService } from '../../core/services/initialSuperAdminService';
 import { OtpService } from '../../core/services/otpService';
 import { PermissionPolicyService } from '../../core/services/permissionPolicyService';
 import { RateLimiter } from '../../core/services/rateLimiter';
+import { SearchNormalizer } from '../../core/services/searchNormalizer';
 import { SettingsManagementService } from '../../core/services/settingsManagementService';
+import { SmartImportService } from '../../core/services/smartImportService';
 import { StaffManagementService } from '../../core/services/staffManagementService';
 import { TaxonomyService } from '../../core/services/taxonomyService';
 import { UserManagementService } from '../../core/services/userManagementService';
@@ -14,6 +17,7 @@ import { SystemClock } from '../../infrastructure/clock/SystemClock';
 import { envConfig } from '../../infrastructure/config/envConfig';
 import { IndexedDbAdminRepository } from '../../infrastructure/data/IndexedDbAdminRepository';
 import { IndexedDbAuthRepository } from '../../infrastructure/data/IndexedDbAuthRepository';
+import { IndexedDbContentRepository } from '../../infrastructure/data/IndexedDbContentRepository';
 import { IndexedDbDataStore } from '../../infrastructure/data/IndexedDbDataStore';
 import { IndexedDbTaxonomyRepository } from '../../infrastructure/data/IndexedDbTaxonomyRepository';
 import { LocalSessionTokenStore } from '../../infrastructure/data/LocalSessionTokenStore';
@@ -34,11 +38,13 @@ export interface AppContainer {
   authRepository: IndexedDbAuthRepository;
   adminRepository: IndexedDbAdminRepository;
   taxonomyRepository: IndexedDbTaxonomyRepository;
+  contentRepository: IndexedDbContentRepository;
   fileStorage: LocalIndexedDbFileStorage;
   passwordHasher: BrowserPasswordHasher;
   emailSender: DevEmailSender;
   smsSender: DevSmsSender;
   rateLimiter: RateLimiter;
+  searchNormalizer: SearchNormalizer;
   authService: AuthService;
   otpService: OtpService;
   initialSuperAdminService: InitialSuperAdminService;
@@ -49,6 +55,8 @@ export interface AppContainer {
   settingsManagementService: SettingsManagementService;
   fileUploadService: FileUploadService;
   taxonomyService: TaxonomyService;
+  contentManagementService: ContentManagementService;
+  smartImportService: SmartImportService;
   recordStartupLogOnce: () => void;
   ensureInitializedAtStartup: () => Promise<void>;
 }
@@ -65,12 +73,14 @@ const databaseSeeder = new DatabaseSeeder(dataStore, logger);
 const authRepository = new IndexedDbAuthRepository(dataStore);
 const adminRepository = new IndexedDbAdminRepository(dataStore);
 const taxonomyRepository = new IndexedDbTaxonomyRepository(dataStore);
+const contentRepository = new IndexedDbContentRepository(dataStore);
 const fileStorage = new LocalIndexedDbFileStorage(dataStore, clock);
 const passwordHasher = new BrowserPasswordHasher();
 const sessionTokenStore = new LocalSessionTokenStore(envConfig.sessionStorageKey);
 const emailSender = new DevEmailSender(logger, t('logs.devEmailPrefix'));
 const smsSender = new DevSmsSender(logger, t('logs.devSmsPrefix'));
 const rateLimiter = new RateLimiter(clock, 20, 60 * 1000);
+const searchNormalizer = new SearchNormalizer();
 
 const authService = new AuthService(
   authRepository,
@@ -138,6 +148,21 @@ const taxonomyService = new TaxonomyService(
   fileUploadService,
   logger,
 );
+const contentManagementService = new ContentManagementService(
+  contentRepository,
+  taxonomyRepository,
+  permissionPolicyService,
+  fileUploadService,
+  searchNormalizer,
+  clock,
+  logger,
+);
+const smartImportService = new SmartImportService(
+  taxonomyRepository,
+  permissionPolicyService,
+  searchNormalizer,
+  logger,
+);
 
 let startupRecordedInSession = false;
 let startupInitPromise: Promise<void> | null = null;
@@ -189,11 +214,13 @@ export const appContainer: AppContainer = {
   authRepository,
   adminRepository,
   taxonomyRepository,
+  contentRepository,
   fileStorage,
   passwordHasher,
   emailSender,
   smsSender,
   rateLimiter,
+  searchNormalizer,
   authService,
   otpService,
   initialSuperAdminService,
@@ -204,6 +231,8 @@ export const appContainer: AppContainer = {
   settingsManagementService,
   fileUploadService,
   taxonomyService,
+  contentManagementService,
+  smartImportService,
   recordStartupLogOnce,
   ensureInitializedAtStartup,
 };
