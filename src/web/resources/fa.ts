@@ -3,7 +3,7 @@ export const faResources = {
   'app.name': 'معراج اندیشه',
   'app.subtitle': 'پلتفرم بانک محتوای فارسی',
   'app.stageLabel': 'مرحله {stage} از {total}',
-  'app.stageName': 'پوسته پنل مدیریت، دسترسی بخش‌بخش همکاران، مدیریت کاربران و تنظیمات',
+  'app.stageName': 'ذخیره‌سازی امن فایل (IFileStorage)، اعتبارسنجی امضای فایل و جداسازی عمومی/خصوصی',
   'app.footerNote': 'پلتفرم معراج اندیشه · زیرساخت و سامانه طراحی پایه',
 
   // Themes
@@ -114,9 +114,9 @@ export const faResources = {
   'health.card.architecture.subtitle': 'جداسازی دقیق مسئولیت‌ها و جهت وابستگی یک‌طرفه به سمت هسته',
   'health.card.architecture.layerReady': 'فعال',
   'health.card.architecture.core.title': 'Core',
-  'health.card.architecture.core.desc': 'مدل‌های دامنه، احراز هویت، OTP، مجوزهای همکاران و سرویس‌های مدیریت سامانه',
+  'health.card.architecture.core.desc': 'مدل‌های دامنه، احراز هویت، مجوزها، اعتبارسنجی فایل، Magic Bytes و سرویس ذخیره امن',
   'health.card.architecture.infrastructure.title': 'Infrastructure',
-  'health.card.architecture.infrastructure.desc': 'Migration نسخه ۵ IndexedDB، جدول دسترسی‌ها، Seed، ارسال پیامک/ایمیل و ثبت وقایع',
+  'health.card.architecture.infrastructure.desc': 'Migration نسخه ۶ IndexedDB، LocalIndexedDbFileStorage، Seed، پیامک/ایمیل و لاگ',
   'health.card.architecture.web.title': 'Web',
   'health.card.architecture.web.desc': 'موتور تم سنی، چیدمان، ورود یکپارچه، ثبت‌نام، صفحات خطا و مسیریاب Hash',
   'health.card.architecture.tests.title': 'Tests',
@@ -861,6 +861,110 @@ export const faResources = {
   'tests.stage6.settingsAndFeatureFlags.name': 'تغییر کلید ماژول، ذخیره تنظیمات عددی و رد مقدار نامعتبر',
   'tests.stage6.settingsAndFeatureFlags.desc':
     'روشن کردن ماژول Comments و تغییر Home.ItemsPerShelf به‌درستی ذخیره و بازیابی می‌شود و مقدار غیرعددی یا منفی رد می‌گردد.',
+
+  // Stage 7: Secure File Storage, Validation & Public/Private Isolation
+  'admin.nav.storageTest': 'آزمایشگاه ذخیره امن فایل',
+  'admin.home.storageTestDesc':
+    'آزمایش آپلود فایل، بررسی امضای واقعی (Magic Bytes)، سقف حجم و جداسازی مسیر عمومی/خصوصی',
+
+  'storage.category.video': 'ویدیو',
+  'storage.category.audio': 'صوت',
+  'storage.category.image': 'تصویر',
+  'storage.category.document': 'سند',
+  'storage.category.presentation': 'ارائه',
+  'storage.category.archive': 'بسته فشرده',
+
+  'storage.visibility.public': 'عمومی (تصویر شاخص)',
+  'storage.visibility.private': 'خصوصی (صندوق امن)',
+
+  'storage.size.bytes': '{value} بایت',
+  'storage.size.kb': '{value} کیلوبایت',
+  'storage.size.mb': '{value} مگابایت',
+
+  'storage.error.emptyFile': 'فایل خالی قابل آپلود و ذخیره نیست.',
+  'storage.error.missingExtension': 'فایل فاقد پسوند معتبر است و رد شد.',
+  'storage.error.forbiddenExtension':
+    'این پسوند به دلایل امنیتی در فهرست پسوندهای ممنوع قرار دارد و مسدود شد.',
+  'storage.error.unsupportedExtension':
+    'پسوند فایل در فهرست قالب‌های مجاز سامانه نیست و رد شد.',
+  'storage.error.signatureMismatch':
+    'عدم تطابق امضای واقعی فایل (Magic Bytes) با پسوند ادعاشده یا شناسایی ساختار مخرب؛ آپلود مسدود شد.',
+  'storage.error.fileTooLarge': 'حجم فایل از سقف مجاز تنظیم‌شده در سامانه بیشتر است.',
+  'storage.error.publicOnlyImages':
+    'در فضای عمومی (تصویر شاخص) فقط قالب‌های تصویری مجاز (PNG، JPG، WEBP) پذیرفته می‌شوند.',
+  'storage.error.generic': 'خطا در اعتبارسنجی یا ذخیره فایل.',
+
+  // AdminStorageTestPage (#/admin/storage-test)
+  'admin.storage.title': 'ابزار آزمایش ذخیره امن فایل (IFileStorage)',
+  'admin.storage.subtitle':
+    'بررسی پسوند مجاز، امضای باینری واقعی (Magic Bytes)، سقف حجم زنده و جداسازی مسیر عمومی تصاویر شاخص از فایل‌های خصوصی.',
+  'admin.storage.limitsBadgeVideo': 'سقف ویدیو: {mb} مگابایت',
+  'admin.storage.limitsBadgeOther': 'سقف سایر قالب‌ها: {mb} مگابایت',
+  'admin.storage.visibilityLabel': 'نوع فضای ذخیره‌سازی',
+  'admin.storage.visibilityPrivateOption': 'فایل محتوا (خصوصی — همه‌ی پسوندهای مجاز)',
+  'admin.storage.visibilityPublicOption': 'تصویر شاخص (عمومی — فقط تصویر)',
+  'admin.storage.dropzoneTitle': 'فایل را اینجا رها کنید یا از سیستم انتخاب کنید',
+  'admin.storage.dropzoneHint':
+    'کلید ذخیره‌سازی به‌صورت GUID تصادفی تولید می‌شود و نام اصلی فایل هرگز در مسیر ذخیره قرار نمی‌گیرد.',
+  'admin.storage.pickFileButton': 'انتخاب فایل از دستگاه',
+  'admin.storage.uploadingLabel': 'در حال اعتبارسنجی و ذخیره...',
+  'admin.storage.simTitle': 'شبیه‌سازی سریع تست‌های امنیتی',
+  'admin.storage.simSubtitle':
+    'با یک کلیک سناریوهای استاندارد و مخرب را بدون نیاز به ساخت دستی فایل امتحان کنید:',
+  'admin.storage.simValidPdf': 'تست آپلود PDF معتبر',
+  'admin.storage.simFakeExePdf': 'تست فایل EXE تغییرنام‌یافته به PDF',
+  'admin.storage.simValidPublicPng': 'تست آپلود تصویر شاخص PNG معتبر',
+  'admin.storage.simOversizedFile': 'تست فایل بیش از سقف حجم',
+  'admin.storage.uploadSuccess':
+    'فایل «{name}» با موفقیت اعتبارسنجی و با کلید تصادفی زیر ذخیره شد:',
+  'admin.storage.uploadRejectedTitle': 'آپلود رد شد',
+  'admin.storage.tableTitle': 'فایل‌های ذخیره‌شده در IFileStorage ({count})',
+  'admin.storage.emptyTable': 'هنوز هیچ فایلی در مخزن ذخیره نشده است.',
+  'admin.storage.col.storageKey': 'کلید ذخیره‌سازی (GUID)',
+  'admin.storage.col.originalName': 'نام اصلی (فقط در متادیتا)',
+  'admin.storage.col.category': 'دسته',
+  'admin.storage.col.size': 'حجم',
+  'admin.storage.col.visibility': 'دسترسی',
+  'admin.storage.col.actions': 'عملیات',
+  'admin.storage.openPublicAction': 'تست باز کردن از نشانی عمومی',
+  'admin.storage.deleteAction': 'حذف',
+  'admin.storage.deletedSuccess': 'فایل با موفقیت از مخزن حذف شد.',
+
+  // Public Media Route (#/media/:storageKey)
+  'media.public.badge': 'مسیر عمومی تصویر شاخص',
+  'media.public.title': 'نمایش رسانه عمومی',
+  'media.public.denied':
+    'دسترسی عمومی به این کلید مجاز نیست؛ فایل‌های خصوصی و غیرتصویری از مسیر عمومی مسدود هستند.',
+  'media.public.notFound': 'فایل درخواستی یافت نشد یا از مخزن حذف شده است.',
+  'media.public.deniedTitle': '۴۰۴ / عدم دسترسی عمومی',
+  'media.public.metaKey': 'کلید عمومی',
+  'media.public.metaMime': 'نوع MIME',
+  'media.public.metaSize': 'حجم فایل',
+  'media.public.metaCreatedAt': 'زمان ثبت (شمسی)',
+  'media.public.backHome': 'بازگشت به صفحه اصلی',
+
+  // Stage 7 Unit Tests
+  'tests.stage7.validPdfUpload.name': 'آپلود PDF معتبر، تولید کلید UUID و تطابق بایت‌ها',
+  'tests.stage7.validPdfUpload.desc':
+    'آپلود PDF با امضای %PDF-1.4 موفق می‌شود، کلید بدون نام اصلی و با قالب UUID ساخته می‌شود و بایت‌های بازخوانی عیناً برابر ورودی است.',
+  'tests.stage7.renamedExeRejected.name': 'رد فایل اجرایی EXE تغییرنام‌یافته به PDF',
+  'tests.stage7.renamedExeRejected.desc':
+    'فایل با نام invoice.pdf اما با بایت‌های 4D 5A در ابتدا فوراً با کد FILE_SIGNATURE_MISMATCH رد می‌شود.',
+  'tests.stage7.forbiddenExtensions.name': 'رد پسوندهای ممنوع (.exe، .js، .html، .svg، .bat)',
+  'tests.stage7.forbiddenExtensions.desc':
+    'تمام پسوندهای خطرناک و اجرایی فهرست سیاه فوراً با کد FORBIDDEN_EXTENSION رد می‌شوند.',
+  'tests.stage7.magicBytesFormats.name': 'بررسی امضای واقعی PNG، JPG، WEBP، MP4، MP3 و DOCX/ZIP',
+  'tests.stage7.magicBytesFormats.desc':
+    'قالب‌های مجاز با Magic Bytes معتبر پذیرفته شده و با بایت‌های جعلی یا اسکریپتی رد می‌شوند.',
+  'tests.stage7.sizeLimits.name': 'اعمال سقف حجم خوانده‌شده از SiteSetting',
+  'tests.stage7.sizeLimits.desc':
+    'فایل غیر‌ویدیویی بالای Upload.MaxOtherMb (۱۰۱ مگابایت) و ویدیوی بالای Upload.MaxVideoMb (۵۰۱ مگابایت) با کد FILE_TOO_LARGE رد می‌شوند.',
+  'tests.stage7.publicPrivateIsolation.name': 'جداسازی مسیر عمومی تصاویر از فایل‌های خصوصی',
+  'tests.stage7.publicPrivateIsolation.desc':
+    'تصویر شاخص عمومی باز می‌شود، فایل PDF خصوصی از مسیر عمومی رد و لاگ می‌شود و آپلود PDF با حالت public مسدود می‌گردد.',
+  'tests.stage7.deleteFile.name': 'حذف فایل از IFileStorage و بررسی existsAsync',
+  'tests.stage7.deleteFile.desc':
+    'پس از اجرای deleteAsync روی فایل ذخیره‌شده، مقدار existsAsync برابر false می‌شود و بازخوانی null برمی‌گرداند.',
 } as const;
 
 export type ResourceKey = keyof typeof faResources;

@@ -112,4 +112,35 @@ export class PermissionPolicyService {
 
     return { allowed: false, statusCode: 403 };
   }
+
+  public async authorizeAnyPermission(
+    user: AppUser | null,
+    requiredKeys: readonly PermissionKey[],
+    routePath: string,
+    options?: { logDenied?: boolean },
+  ): Promise<PolicyAuthorizationResult> {
+    if (!user || !user.isActive || user.role === 'Member') {
+      return { allowed: false, statusCode: 404 };
+    }
+
+    if (user.role === 'SuperAdmin') {
+      return { allowed: true, statusCode: 200 };
+    }
+
+    const granted = await this.getUserPermissions(user);
+    if (requiredKeys.some((key) => granted.includes(key))) {
+      return { allowed: true, statusCode: 200 };
+    }
+
+    if (options?.logDenied !== false) {
+      this.logger.warn('ADMIN_ACCESS_DENIED', {
+        userId: user.id,
+        displayName: user.displayName,
+        routePath,
+        requiredPermission: requiredKeys.join(' | '),
+      });
+    }
+
+    return { allowed: false, statusCode: 403 };
+  }
 }

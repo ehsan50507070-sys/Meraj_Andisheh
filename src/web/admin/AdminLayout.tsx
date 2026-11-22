@@ -5,6 +5,7 @@ import {
   FileText,
   FolderTree,
   Globe,
+  HardDriveUpload,
   Home,
   Inbox,
   KeyRound,
@@ -54,6 +55,8 @@ function renderNavIcon(id: string) {
       return <Globe className={iconClass} aria-hidden="true" />;
     case 'settings':
       return <Settings className={iconClass} aria-hidden="true" />;
+    case 'storage-test':
+      return <HardDriveUpload className={iconClass} aria-hidden="true" />;
     case 'backup':
       return <Archive className={iconClass} aria-hidden="true" />;
     case 'staff':

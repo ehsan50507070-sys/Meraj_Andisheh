@@ -1,5 +1,6 @@
 import { AuthService } from '../../core/services/authService';
 import { ContentIntegrityService } from '../../core/services/contentIntegrityService';
+import { FileUploadService } from '../../core/services/fileUploadService';
 import { HealthCheckService } from '../../core/services/HealthCheckService';
 import { InitialSuperAdminService } from '../../core/services/initialSuperAdminService';
 import { OtpService } from '../../core/services/otpService';
@@ -19,6 +20,7 @@ import { AppLogger } from '../../infrastructure/logging/AppLogger';
 import { DevEmailSender } from '../../infrastructure/messaging/DevEmailSender';
 import { DevSmsSender } from '../../infrastructure/messaging/DevSmsSender';
 import { BrowserPasswordHasher } from '../../infrastructure/security/BrowserPasswordHasher';
+import { LocalIndexedDbFileStorage } from '../../infrastructure/storage/LocalIndexedDbFileStorage';
 import { t } from '../resources/i18n';
 
 export interface AppContainer {
@@ -29,6 +31,7 @@ export interface AppContainer {
   databaseSeeder: DatabaseSeeder;
   authRepository: IndexedDbAuthRepository;
   adminRepository: IndexedDbAdminRepository;
+  fileStorage: LocalIndexedDbFileStorage;
   passwordHasher: BrowserPasswordHasher;
   emailSender: DevEmailSender;
   smsSender: DevSmsSender;
@@ -41,6 +44,7 @@ export interface AppContainer {
   staffManagementService: StaffManagementService;
   userManagementService: UserManagementService;
   settingsManagementService: SettingsManagementService;
+  fileUploadService: FileUploadService;
   recordStartupLogOnce: () => void;
   ensureInitializedAtStartup: () => Promise<void>;
 }
@@ -56,6 +60,7 @@ const healthCheckService = new HealthCheckService(dataStore, logger, clock);
 const databaseSeeder = new DatabaseSeeder(dataStore, logger);
 const authRepository = new IndexedDbAuthRepository(dataStore);
 const adminRepository = new IndexedDbAdminRepository(dataStore);
+const fileStorage = new LocalIndexedDbFileStorage(dataStore, clock);
 const passwordHasher = new BrowserPasswordHasher();
 const sessionTokenStore = new LocalSessionTokenStore(envConfig.sessionStorageKey);
 const emailSender = new DevEmailSender(logger, t('logs.devEmailPrefix'));
@@ -116,6 +121,12 @@ const settingsManagementService = new SettingsManagementService(
   logger,
   permissionPolicyService,
 );
+const fileUploadService = new FileUploadService(
+  fileStorage,
+  adminRepository,
+  permissionPolicyService,
+  logger,
+);
 
 let startupRecordedInSession = false;
 let startupInitPromise: Promise<void> | null = null;
@@ -166,6 +177,7 @@ export const appContainer: AppContainer = {
   databaseSeeder,
   authRepository,
   adminRepository,
+  fileStorage,
   passwordHasher,
   emailSender,
   smsSender,
@@ -178,6 +190,7 @@ export const appContainer: AppContainer = {
   staffManagementService,
   userManagementService,
   settingsManagementService,
+  fileUploadService,
   recordStartupLogOnce,
   ensureInitializedAtStartup,
 };

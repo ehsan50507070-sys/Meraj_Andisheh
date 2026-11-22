@@ -8,19 +8,28 @@ import { getPermissionLabelKey } from './adminNavConfig';
 
 interface AdminForbiddenPageProps {
   currentRoute: string;
-  requiredPermission: PermissionKey | 'SuperAdminOnly';
+  requiredPermission: PermissionKey | readonly PermissionKey[] | 'SuperAdminOnly';
 }
 
 export function AdminForbiddenPage({
   currentRoute,
   requiredPermission,
 }: AdminForbiddenPageProps) {
-  const permissionText =
-    requiredPermission === 'SuperAdminOnly'
-      ? t('admin.forbidden.superAdminOnlyLabel')
-      : t('admin.forbidden.requiredPermissionLabel', {
-          permission: t(getPermissionLabelKey(requiredPermission)),
-        });
+  let permissionText: string;
+  if (requiredPermission === 'SuperAdminOnly') {
+    permissionText = t('admin.forbidden.superAdminOnlyLabel');
+  } else if (Array.isArray(requiredPermission)) {
+    const labels = requiredPermission
+      .map((key) => t(getPermissionLabelKey(key)))
+      .join(' / ');
+    permissionText = t('admin.forbidden.requiredPermissionLabel', {
+      permission: labels,
+    });
+  } else {
+    permissionText = t('admin.forbidden.requiredPermissionLabel', {
+      permission: t(getPermissionLabelKey(requiredPermission as PermissionKey)),
+    });
+  }
 
   return (
     <AdminLayout currentRoute={currentRoute}>

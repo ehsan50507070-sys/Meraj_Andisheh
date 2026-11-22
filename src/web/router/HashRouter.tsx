@@ -5,11 +5,13 @@ import { AdminHomePage } from '../admin/AdminHomePage';
 import { AdminModulePlaceholderPage } from '../admin/AdminModulePlaceholderPage';
 import { AdminSettingsPage } from '../admin/AdminSettingsPage';
 import { AdminStaffPage } from '../admin/AdminStaffPage';
+import { AdminStorageTestPage } from '../admin/AdminStorageTestPage';
 import { AdminUsersPage } from '../admin/AdminUsersPage';
 import { canSeeAdminNavItem, findAdminRouteSpec } from '../admin/adminNavConfig';
 import { useAuth } from '../auth/AuthContext';
 import { MainLayout } from '../layouts/MainLayout';
 import { NotFoundPage } from '../pages/NotFoundPage';
+import { PublicMediaPage } from '../pages/PublicMediaPage';
 import { ChangePasswordPage } from '../pages/account/ChangePasswordPage';
 import { appContainer } from '../services/appContainer';
 import { ThemeManager } from '../theme/ThemeManager';
@@ -124,7 +126,10 @@ export function HashRouter({ routes, defaultRoute }: HashRouterProps) {
       return;
     }
 
-    const logKey = `${currentUser?.id ?? 'none'}:${matchedAdminSpec.path}:${matchedAdminSpec.requirement}`;
+    const reqId = Array.isArray(matchedAdminSpec.requirement)
+      ? matchedAdminSpec.requirement.join('|')
+      : matchedAdminSpec.requirement;
+    const logKey = `${currentUser?.id ?? 'none'}:${matchedAdminSpec.path}:${reqId}`;
     if (lastDeniedLogKeyRef.current === logKey) {
       return;
     }
@@ -135,7 +140,16 @@ export function HashRouter({ routes, defaultRoute }: HashRouterProps) {
         currentUser,
         routeState.fullHash,
       );
-    } else if (matchedAdminSpec.requirement !== 'shell') {
+    } else if (Array.isArray(matchedAdminSpec.requirement)) {
+      void appContainer.permissionPolicyService.authorizeAnyPermission(
+        currentUser,
+        matchedAdminSpec.requirement,
+        routeState.fullHash,
+      );
+    } else if (
+      typeof matchedAdminSpec.requirement === 'string' &&
+      matchedAdminSpec.requirement !== 'shell'
+    ) {
       void appContainer.permissionPolicyService.authorizePermission(
         currentUser,
         matchedAdminSpec.requirement,
@@ -154,6 +168,18 @@ export function HashRouter({ routes, defaultRoute }: HashRouterProps) {
 
   if (mustForcePasswordChange) {
     return <ChangePasswordPage currentRoute="#/account/change-password" />;
+  }
+
+  // Public Media Route (#/media/:storageKey)
+  if (normalizedRouteLower.startsWith('/media/')) {
+    const rawKey = routeState.path.slice('/media/'.length);
+    let decodedKey = rawKey;
+    try {
+      decodedKey = decodeURIComponent(rawKey);
+    } catch {
+      decodedKey = rawKey;
+    }
+    return <PublicMediaPage currentRoute={routeState.fullHash} storageKey={decodedKey} />;
   }
 
   if (isAdminRoute) {
@@ -197,12 +223,15 @@ export function HashRouter({ routes, defaultRoute }: HashRouterProps) {
         return <AdminUsersPage currentRoute={routeState.fullHash} />;
       case 'settings':
         return <AdminSettingsPage currentRoute={routeState.fullHash} />;
+      case 'storage-test':
+        return <AdminStorageTestPage currentRoute={routeState.fullHash} />;
       default:
         return (
           <AdminModulePlaceholderPage
             currentRoute={routeState.fullHash}
             sectionTitleKey={matchedAdminSpec.labelKey}
             permissionKey={
+              typeof matchedAdminSpec.requirement === 'string' &&
               matchedAdminSpec.requirement !== 'shell' &&
               matchedAdminSpec.requirement !== 'superadmin'
                 ? matchedAdminSpec.requirement

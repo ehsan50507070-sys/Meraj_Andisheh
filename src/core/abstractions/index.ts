@@ -6,3 +6,4 @@ export * from './passwordHasher';
 export * from './authRepository';
 export * from './smsSender';
 export * from './adminRepository';
+export * from './fileStorage';

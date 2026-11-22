@@ -19,6 +19,7 @@ export const STORE_NAMES = {
   SESSIONS: 'sessions',
   OTP_CODES: 'otpCodes',
   STAFF_PERMISSIONS: 'staffPermissions',
+  STORED_FILES: 'storedFiles',
 } as const;
 
 export const STAGE3_OBJECT_STORES: readonly string[] = [
@@ -50,6 +51,10 @@ export const STAGE5_OBJECT_STORES: readonly string[] = [
 
 export const STAGE6_OBJECT_STORES: readonly string[] = [
   STORE_NAMES.STAFF_PERMISSIONS,
+] as const;
+
+export const STAGE7_OBJECT_STORES: readonly string[] = [
+  STORE_NAMES.STORED_FILES,
 ] as const;
 
 interface IndexSpec {
@@ -259,6 +264,18 @@ const STAGE6_STORE_SPECS: readonly StoreSpec[] = [
   },
 ];
 
+const STAGE7_STORE_SPECS: readonly StoreSpec[] = [
+  {
+    name: STORE_NAMES.STORED_FILES,
+    keyPath: 'storageKey',
+    indexes: [
+      { name: 'by_visibility', keyPath: 'visibility' },
+      { name: 'by_category', keyPath: 'category' },
+      { name: 'by_createdAt', keyPath: 'createdAt' },
+    ],
+  },
+];
+
 export const DATABASE_MIGRATIONS: readonly MigrationStep[] = [
   {
     version: 1,
@@ -297,6 +314,14 @@ export const DATABASE_MIGRATIONS: readonly MigrationStep[] = [
     version: 5,
     up: (db, transaction) => {
       for (const spec of STAGE6_STORE_SPECS) {
+        ensureStore(db, transaction, spec);
+      }
+    },
+  },
+  {
+    version: 6,
+    up: (db, transaction) => {
+      for (const spec of STAGE7_STORE_SPECS) {
         ensureStore(db, transaction, spec);
       }
     },

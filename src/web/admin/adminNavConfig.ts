@@ -2,7 +2,11 @@ import type { AppUser } from '../../core/domain/auth';
 import type { PermissionKey } from '../../core/domain/permissions';
 import type { ResourceKey } from '../resources/fa';
 
-export type AdminAccessRequirement = 'shell' | 'superadmin' | PermissionKey;
+export type AdminAccessRequirement =
+  | 'shell'
+  | 'superadmin'
+  | PermissionKey
+  | readonly PermissionKey[];
 
 export interface AdminRouteSpec {
   id: string;
@@ -102,6 +106,14 @@ export const ADMIN_ROUTES: readonly AdminRouteSpec[] = [
     permissionDescKey: 'permissions.settings.manage.desc',
   },
   {
+    id: 'storage-test',
+    path: '/admin/storage-test',
+    hash: '#/admin/storage-test',
+    labelKey: 'admin.nav.storageTest',
+    requirement: ['content.manage', 'settings.manage'],
+    permissionDescKey: 'admin.home.storageTestDesc',
+  },
+  {
     id: 'backup',
     path: '/admin/backup',
     hash: '#/admin/backup',
@@ -145,7 +157,10 @@ export function canSeeAdminNavItem(
   if (requirement === 'superadmin') {
     return false;
   }
-  return userPermissions.includes(requirement);
+  if (Array.isArray(requirement)) {
+    return requirement.some((key) => userPermissions.includes(key));
+  }
+  return userPermissions.includes(requirement as PermissionKey);
 }
 
 export function getPermissionLabelKey(key: PermissionKey): ResourceKey {
