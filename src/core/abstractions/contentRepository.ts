@@ -1,7 +1,9 @@
 import type {
   ContentFile,
   ContentItem,
+  ContentPerson,
   ContentSource,
+  ContentTag,
   ContentTopic,
 } from '../domain/content';
 
@@ -41,9 +43,11 @@ export interface IContentRepository {
   replaceContentTopics(contentId: number, topicIds: number[]): Promise<void>;
 
   getTagIdsByContentId(contentId: number): Promise<number[]>;
+  getAllContentTags(): Promise<ContentTag[]>;
   replaceContentTags(contentId: number, tagIds: number[]): Promise<void>;
 
   getPersonIdsByContentId(contentId: number): Promise<number[]>;
+  getAllContentPersons(): Promise<ContentPerson[]>;
   replaceContentPersons(contentId: number, personIds: number[]): Promise<void>;
 
   getAgeGroupIdsByContentId(contentId: number): Promise<number[]>;

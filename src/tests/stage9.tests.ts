@@ -456,6 +456,9 @@ class MemoryStage9ContentRepository implements IContentRepository {
   public async getTagIdsByContentId(contentId: number): Promise<number[]> {
     return this.contentTags.filter((x) => x.contentId === contentId).map((x) => x.tagId);
   }
+  public async getAllContentTags(): Promise<ContentTag[]> {
+    return [...this.contentTags];
+  }
   public async replaceContentTags(contentId: number, tagIds: number[]): Promise<void> {
     this.contentTags = this.contentTags.filter((x) => x.contentId !== contentId);
     for (const tagId of tagIds) {
@@ -465,6 +468,9 @@ class MemoryStage9ContentRepository implements IContentRepository {
 
   public async getPersonIdsByContentId(contentId: number): Promise<number[]> {
     return this.contentPersons.filter((x) => x.contentId === contentId).map((x) => x.personId);
+  }
+  public async getAllContentPersons(): Promise<ContentPerson[]> {
+    return [...this.contentPersons];
   }
   public async replaceContentPersons(contentId: number, personIds: number[]): Promise<void> {
     this.contentPersons = this.contentPersons.filter((x) => x.contentId !== contentId);

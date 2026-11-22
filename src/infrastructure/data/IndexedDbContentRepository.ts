@@ -150,6 +150,10 @@ export class IndexedDbContentRepository implements IContentRepository {
     return links.map((link) => link.tagId);
   }
 
+  public async getAllContentTags(): Promise<ContentTag[]> {
+    return this.dataStore.getAll<ContentTag>(STORE_NAMES.CONTENT_TAGS);
+  }
+
   public async replaceContentTags(contentId: number, tagIds: number[]): Promise<void> {
     const existing = await this.dataStore.getAllByIndex<ContentTag>(
       STORE_NAMES.CONTENT_TAGS,
@@ -175,6 +179,10 @@ export class IndexedDbContentRepository implements IContentRepository {
       contentId,
     );
     return links.map((link) => link.personId);
+  }
+
+  public async getAllContentPersons(): Promise<ContentPerson[]> {
+    return this.dataStore.getAll<ContentPerson>(STORE_NAMES.CONTENT_PERSONS);
   }
 
   public async replaceContentPersons(contentId: number, personIds: number[]): Promise<void> {

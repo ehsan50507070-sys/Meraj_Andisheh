@@ -3,9 +3,11 @@ import { AuthProvider } from './web/auth/AuthContext';
 import { AgeGateModal } from './web/components/AgeGateModal';
 import { AgeProvider } from './web/context/AgeContext';
 import { ComponentsLabPage } from './web/pages/ComponentsLabPage';
+import { ContentBankPage } from './web/pages/ContentBankPage';
 import { HealthPage } from './web/pages/HealthPage';
 import { InitialAdminSetupPage } from './web/pages/InitialAdminSetupPage';
 import { PublicHomePreviewPage } from './web/pages/PublicHomePreviewPage';
+import { SearchResultsPage } from './web/pages/SearchResultsPage';
 import { ChangePasswordPage } from './web/pages/account/ChangePasswordPage';
 import { ConfirmEmailPage } from './web/pages/account/ConfirmEmailPage';
 import { ForgotPasswordPage } from './web/pages/account/ForgotPasswordPage';
@@ -25,6 +27,14 @@ const routes: HashRouteConfig[] = [
   {
     path: '/',
     render: (currentRoute) => <PublicHomePreviewPage currentRoute={currentRoute} />,
+  },
+  {
+    path: '/content',
+    render: (currentRoute) => <ContentBankPage currentRoute={currentRoute} />,
+  },
+  {
+    path: '/search',
+    render: (currentRoute) => <SearchResultsPage currentRoute={currentRoute} />,
   },
   {
     path: '/health',

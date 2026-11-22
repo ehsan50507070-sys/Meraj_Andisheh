@@ -1,19 +1,19 @@
 import {
-  ChevronDown,
   Heart,
   KeyRound,
   LogOut,
   Menu,
-  Search,
   SlidersHorizontal,
   Sparkles,
   User,
   X,
 } from 'lucide-react';
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { resolveThemeKey, type ThemeKey } from '../../core/services/themeService';
 import { envConfig } from '../../infrastructure/config/envConfig';
 import { useAuth } from '../auth/AuthContext';
+import { HeaderSearchBox } from '../components/HeaderSearchBox';
+import { TopicMegaMenu, TopicMobileAccordion } from '../components/TopicMegaMenu';
 import { useAge } from '../context/AgeContext';
 import { toPersianDigits } from '../resources/formatters';
 import type { ResourceKey } from '../resources/fa';
@@ -39,13 +39,6 @@ function getThemeNameKey(theme: ThemeKey): ResourceKey {
   }
 }
 
-const SAMPLE_CATEGORIES: readonly ResourceKey[] = [
-  'layout.nav.category.science',
-  'layout.nav.category.literature',
-  'layout.nav.category.history',
-  'layout.nav.category.skills',
-];
-
 export function MainLayout({
   currentRoute,
   children,
@@ -57,14 +50,10 @@ export function MainLayout({
     clearLastSwitchNotice,
     openAgeSelector,
   } = useAge();
-  const [searchQuery, setSearchQuery] = useState('');
   const [isPersonalized, setIsPersonalized] = useState(false);
   const [favoritesCount, setFavoritesCount] = useState(0);
-  const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [noticeMessage, setNoticeMessage] = useState<string | null>(null);
-
-  const categoriesRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (lastSwitchNotice && effectiveAgeGroup) {
@@ -79,37 +68,9 @@ export function MainLayout({
     }
   }, [lastSwitchNotice, effectiveAgeGroup, clearLastSwitchNotice]);
 
-  useEffect(() => {
-    const handleOutsideClick = (event: MouseEvent) => {
-      if (categoriesRef.current && !categoriesRef.current.contains(event.target as Node)) {
-        setCategoriesOpen(false);
-      }
-    };
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setCategoriesOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleOutsideClick);
-    window.addEventListener('keydown', handleEscape);
-    return () => {
-      document.removeEventListener('mousedown', handleOutsideClick);
-      window.removeEventListener('keydown', handleEscape);
-    };
-  }, []);
-
   const normalizedPath = currentRoute.split('?')[0].replace(/^#/, '') || '/';
-
-  const handleSearchSubmit = (event: FormEvent) => {
-    event.preventDefault();
-    const trimmed = searchQuery.trim();
-    if (trimmed) {
-      setNoticeMessage(t('layout.nav.searchNotice', { query: trimmed }));
-    } else {
-      setNoticeMessage(t('layout.nav.sampleNoticeDesc'));
-    }
-  };
+  const isContentBankActive =
+    normalizedPath === '/content' || normalizedPath.startsWith('/content/');
 
   const handleSampleAction = () => {
     setNoticeMessage(t('layout.nav.sampleNoticeDesc'));
@@ -149,30 +110,12 @@ export function MainLayout({
             </a>
           </div>
 
-          {/* Center: Sample Search Input (Desktop) */}
-          <form
-            onSubmit={handleSearchSubmit}
-            className="hidden md:flex flex-1 max-w-md items-center relative"
-          >
-            <label htmlFor="header-search-input" className="sr-only">
-              {t('layout.header.searchAriaLabel')}
-            </label>
-            <input
-              id="header-search-input"
-              type="search"
-              value={searchQuery}
-              onChange={(event) => setSearchQuery(event.target.value)}
-              placeholder={t('layout.header.searchPlaceholder')}
-              className="w-full min-h-[40px] pr-9 pl-3 py-1.5 text-sm bg-[var(--color-surface-alt)] text-[var(--color-text)] placeholder:text-[var(--color-muted)] border border-[var(--color-border)] rounded-[var(--radius-control)] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--color-primary)]"
-            />
-            <button
-              type="submit"
-              aria-label={t('layout.header.searchAction')}
-              className="absolute right-2.5 text-[var(--color-muted)] hover:text-[var(--color-text)] p-1"
-            >
-              <Search className="w-4 h-4" aria-hidden="true" />
-            </button>
-          </form>
+          {/* Center: Live Autocomplete Search Input (Desktop) */}
+          <HeaderSearchBox
+            currentRoute={currentRoute}
+            inputId="header-search-input"
+            className="hidden md:block flex-1 max-w-md"
+          />
 
           {/* Left (RTL End): Age switcher, personalization, favorites, account */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
@@ -295,44 +238,8 @@ export function MainLayout({
           {/* Desktop / Tablet Nav Row */}
           <div className="hidden md:flex items-center justify-between gap-4 py-2.5">
             <div className="flex items-center gap-5 min-w-0">
-              {/* Categories Dropdown */}
-              <div className="relative" ref={categoriesRef}>
-                <button
-                  type="button"
-                  aria-expanded={categoriesOpen}
-                  aria-haspopup="menu"
-                  onClick={() => setCategoriesOpen((prev) => !prev)}
-                  className="inline-flex items-center gap-1.5 min-h-[36px] px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-[var(--radius-control)] bg-[var(--color-surface-alt)] text-[var(--color-text)] border border-[var(--color-border)] hover:border-[var(--color-border-strong)] transition-colors whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--color-primary)]"
-                >
-                  <span>{t('layout.nav.categoriesButton')}</span>
-                  <ChevronDown
-                    className={`w-4 h-4 transition-transform duration-150 ${categoriesOpen ? 'rotate-180' : ''}`}
-                    aria-hidden="true"
-                  />
-                </button>
-
-                {categoriesOpen && (
-                  <div
-                    role="menu"
-                    className="absolute right-0 mt-2 w-60 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-control)] shadow-[var(--shadow-modal)] py-1.5 z-30"
-                  >
-                    {SAMPLE_CATEGORIES.map((categoryKey) => (
-                      <button
-                        key={categoryKey}
-                        type="button"
-                        role="menuitem"
-                        onClick={() => {
-                          setCategoriesOpen(false);
-                          handleSampleAction();
-                        }}
-                        className="w-full text-right px-4 py-2 text-sm text-[var(--color-text)] hover:bg-[var(--color-surface-alt)] transition-colors"
-                      >
-                        {t(categoryKey)}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+              {/* Live Topics Mega Menu */}
+              <TopicMegaMenu />
 
               <div className="flex items-center gap-5 text-sm">
                 <a
@@ -346,13 +253,16 @@ export function MainLayout({
                   {t('layout.nav.home')}
                 </a>
 
-                <button
-                  type="button"
-                  onClick={handleSampleAction}
-                  className="whitespace-nowrap shrink-0 py-1 text-[var(--color-muted)] hover:text-[var(--color-text)] hover:underline underline-offset-4 transition-colors"
+                <a
+                  href="#/content"
+                  className={`whitespace-nowrap shrink-0 py-1 hover:underline underline-offset-4 transition-colors ${
+                    isContentBankActive
+                      ? 'font-bold text-[var(--color-text)] underline'
+                      : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
+                  }`}
                 >
                   {t('layout.nav.contentBank')}
-                </button>
+                </a>
 
                 <a
                   href="#/health"
@@ -388,31 +298,16 @@ export function MainLayout({
             </span>
           </div>
 
-          {/* Mobile Search + Compact Nav Links */}
+          {/* Mobile Live Search + Compact Nav Links */}
           <div className="md:hidden py-2.5 space-y-2.5">
-            <form onSubmit={handleSearchSubmit} className="relative">
-              <label htmlFor="mobile-search-input" className="sr-only">
-                {t('layout.header.searchAriaLabel')}
-              </label>
-              <input
-                id="mobile-search-input"
-                type="search"
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder={t('layout.header.searchPlaceholder')}
-                className="w-full min-h-[40px] pr-9 pl-3 py-1.5 text-sm bg-[var(--color-surface-alt)] text-[var(--color-text)] placeholder:text-[var(--color-muted)] border border-[var(--color-border)] rounded-[var(--radius-control)] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--color-primary)]"
-              />
-              <button
-                type="submit"
-                aria-label={t('layout.header.searchAction')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-muted)] p-1"
-              >
-                <Search className="w-4 h-4" aria-hidden="true" />
-              </button>
-            </form>
+            <HeaderSearchBox
+              currentRoute={currentRoute}
+              inputId="mobile-search-input"
+              onNavigate={() => setMobileMenuOpen(false)}
+            />
 
             {mobileMenuOpen && (
-              <div className="pt-2 border-t border-[var(--color-border)] space-y-2">
+              <div className="pt-2 border-t border-[var(--color-border)] space-y-2.5">
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
                   <a
                     href="#/"
@@ -425,16 +320,17 @@ export function MainLayout({
                   >
                     {t('layout.nav.home')}
                   </a>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      handleSampleAction();
-                    }}
-                    className="py-1 text-[var(--color-muted)] whitespace-nowrap"
+                  <a
+                    href="#/content"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`py-1 whitespace-nowrap ${
+                      isContentBankActive
+                        ? 'font-bold text-[var(--color-text)] underline underline-offset-4'
+                        : 'text-[var(--color-muted)]'
+                    }`}
                   >
                     {t('layout.nav.contentBank')}
-                  </button>
+                  </a>
                   <a
                     href="#/health"
                     onClick={() => setMobileMenuOpen(false)}
@@ -461,21 +357,7 @@ export function MainLayout({
                   )}
                 </div>
 
-                <div className="pt-1 flex flex-wrap gap-2">
-                  {SAMPLE_CATEGORIES.map((categoryKey) => (
-                    <button
-                      key={categoryKey}
-                      type="button"
-                      onClick={() => {
-                        setMobileMenuOpen(false);
-                        handleSampleAction();
-                      }}
-                      className="text-xs px-2.5 py-1.5 rounded-[var(--radius-tag)] bg-[var(--color-surface-alt)] text-[var(--color-text)] border border-[var(--color-border)]"
-                    >
-                      {t(categoryKey)}
-                    </button>
-                  ))}
-                </div>
+                <TopicMobileAccordion onNavigate={() => setMobileMenuOpen(false)} />
 
                 {currentUser && (
                   <div className="pt-2 border-t border-[var(--color-border)] flex flex-wrap items-center gap-2">
@@ -552,13 +434,9 @@ export function MainLayout({
                   </a>
                 </li>
                 <li>
-                  <button
-                    type="button"
-                    onClick={handleSampleAction}
-                    className="hover:text-[var(--color-text)] hover:underline underline-offset-4"
-                  >
+                  <a href="#/content" className="hover:text-[var(--color-text)] hover:underline underline-offset-4">
                     {t('layout.footer.linkContentBank')}
-                  </button>
+                  </a>
                 </li>
                 <li>
                   <a href="#/health" className="hover:text-[var(--color-text)] hover:underline underline-offset-4">

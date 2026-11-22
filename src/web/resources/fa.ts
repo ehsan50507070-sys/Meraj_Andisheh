@@ -3,7 +3,7 @@ export const faResources = {
   'app.name': 'معراج اندیشه',
   'app.subtitle': 'پلتفرم بانک محتوای فارسی',
   'app.stageLabel': 'مرحله {stage} از {total}',
-  'app.stageName': 'دروازه سن، ذخیره‌سازی ma_age و پروفایل، تم سنی فوری و قواعد فیلتر و اولویت‌بندی محتوا',
+  'app.stageName': 'بانک محتوا، فیلترهای درختی، مگامنوی موضوعات و جستجوی زنده',
   'app.footerNote': 'پلتفرم معراج اندیشه · زیرساخت و سامانه طراحی پایه',
 
   // Themes
@@ -1608,6 +1608,128 @@ export const faResources = {
     'خواندن زنده نام و بازه سنی رده‌ها از دیتابیس بدون هاردکد',
   'tests.stage11.liveDbAgeGroups.desc':
     'با ویرایش بازه سنی کودک به ۶ تا ۱۱ در دیتابیس، سرویس همان لحظه minAge=6 را برمی‌گرداند و در پایان تست به حالت قبل برگردانده می‌شود.',
+
+  // Stage 12: Topic Mega Menu, Live Header Search, Content Bank (#/content), Search Results (#/search) & Placeholder Detail
+  'megaMenu.title': 'دسته‌بندی موضوعات',
+  'megaMenu.allCatalogLink': 'مشاهده همه در بانک محتوا',
+  'megaMenu.loading': 'در حال بارگذاری موضوعات...',
+  'megaMenu.empty': 'موضوع فعالی ثبت نشده است.',
+  'megaMenu.closeAria': 'بستن منوی موضوعات',
+
+  'liveSearch.placeholder': 'جستجو در عنوان، موضوع، شخصیت یا کلیدواژه...',
+  'liveSearch.pagePlaceholder': 'عبارت مورد نظر را وارد کنید (ارقام فارسی، عربی و انگلیسی پشتیبانی می‌شوند)...',
+  'liveSearch.button': 'جستجو',
+  'liveSearch.loading': 'در حال جستجو...',
+  'liveSearch.empty': 'پیشنهادی برای این عبارت یافت نشد؛ کلید Enter را بزنید.',
+  'liveSearch.kind.content': 'محتوا',
+  'liveSearch.kind.topic': 'موضوع',
+  'liveSearch.kind.person': 'شخصیت',
+  'liveSearch.viewAllResults': 'مشاهده همه نتایج جستجو برای «{query}»',
+
+  'catalog.format.Video': 'ویدیو',
+  'catalog.format.Audio': 'صوت',
+  'catalog.format.Article': 'مقاله',
+  'catalog.format.Image': 'اینفوگرافیک / تصویر',
+  'catalog.format.Pdf': 'PDF',
+  'catalog.format.Presentation': 'پاورپوینت / ارائه',
+  'catalog.format.Book': 'کتاب',
+  'catalog.format.Film': 'فیلم',
+
+  'catalog.breadcrumb.ariaLabel': 'مسیر راهنما',
+  'catalog.breadcrumb.home': 'خانه',
+  'catalog.breadcrumb.bank': 'بانک محتوا',
+  'catalog.breadcrumb.search': 'نتایج جستجو',
+
+  'catalog.page.title': 'بانک محتوا',
+  'catalog.page.subtitle':
+    'مرور، فیلتر چندگانه و کاوش در محتواهای منتشرشده متناسب با رده سنی فعال شما.',
+  'catalog.searchPage.title': 'نتایج جستجو',
+  'catalog.searchPage.titleWithQuery': 'نتایج جستجو برای «{query}»',
+  'catalog.searchPage.subtitle':
+    'جستجوی نرمال‌شده فارسی (با پشتیبانی از ی/ک عربی، اعراب، نیم‌فاصله و همه نوع ارقام) همراه با ستون فیلترهای ترکیبی.',
+  'catalog.searchPage.inputLabel': 'جستجو در بانک محتوا',
+
+  'catalog.resultsCount': '{count} محتوا یافت شد',
+  'catalog.loading': 'در حال بارگذاری بانک محتوا...',
+  'catalog.empty.title': 'هیچ محتوایی با این فیلترها یافت نشد.',
+  'catalog.empty.desc':
+    'می‌توانید برخی فیلترهای انتخاب‌شده را حذف کنید یا عبارت جستجو را تغییر دهید.',
+  'catalog.empty.resetButton': 'پاک کردن همه فیلترها',
+
+  'catalog.sort.label': 'مرتب‌سازی بر اساس:',
+  'catalog.sort.latest': 'تازه‌ترین',
+  'catalog.sort.most_viewed': 'پربازدیدترین',
+  'catalog.sort.most_liked': 'پرلایک‌ترین',
+
+  'catalog.filters.title': 'فیلترها',
+  'catalog.filters.mobileButton': 'فیلترها',
+  'catalog.filters.mobileButtonCount': 'فیلترها ({count})',
+  'catalog.filters.closeMobileAria': 'بستن ستون فیلترها',
+  'catalog.filters.applyMobileButton': 'نمایش نتایج ({count})',
+  'catalog.filters.clearAll': 'پاک کردن همه فیلترها',
+  'catalog.filters.activeChipsAria': 'فیلترهای فعال',
+  'catalog.filters.removeChipAria': 'حذف فیلتر {label}',
+  'catalog.filters.expandSectionAria': 'باز یا بسته کردن بخش {title}',
+  'catalog.filters.expandBranchAria': 'باز یا بسته کردن زیرموضوعات {name}',
+
+  'catalog.filters.section.topics': 'موضوعات',
+  'catalog.filters.section.formats': 'قالب محتوا',
+  'catalog.filters.section.tags': 'برچسب‌ها',
+  'catalog.filters.section.persons': 'شخصیت‌ها',
+  'catalog.filters.section.impacts': 'میزان اثرگذاری',
+  'catalog.filters.section.ages': 'رده سنی هدف',
+
+  'catalog.filters.searchTopicsPlaceholder': 'جستجو در موضوعات...',
+  'catalog.filters.searchTagsPlaceholder': 'جستجو در برچسب‌ها...',
+  'catalog.filters.searchPersonsPlaceholder': 'جستجو در شخصیت‌ها...',
+  'catalog.filters.noMatchInList': 'موردی با این نام یافت نشد.',
+  'catalog.filters.childSafetyNotice':
+    'فیلتر ایمنی رده کودک فعال است: محتواهای مخصوص رده‌های دیگر هرگز نمایش داده نمی‌شوند.',
+
+  'catalog.chip.query': 'جستجو: {value}',
+  'catalog.chip.topic': 'موضوع: {value}',
+  'catalog.chip.format': 'قالب: {value}',
+  'catalog.chip.tag': 'برچسب: {value}',
+  'catalog.chip.person': 'شخصیت: {value}',
+  'catalog.chip.impact': 'اثرگذاری: {value}',
+  'catalog.chip.age': 'رده سنی: {value}',
+
+  'catalog.generalTopic': 'محتوای عمومی',
+
+  // Stage 12 Temporary Content Detail Placeholder (#/content/:slug)
+  'contentDetailPlaceholder.badge': 'پیش‌نمایش مرحله ۱۲',
+  'contentDetailPlaceholder.noticeTitle': 'پخش‌کننده و جزئیات کامل در مرحله ۱۳ ساخته می‌شود',
+  'contentDetailPlaceholder.noticeDesc':
+    'در مرحله ۱۳ این مسیر به صفحه‌ی کامل پخش ویدیو/صوت، مشاهده کتاب و فیلم، منابع، ثبت بازدید و دانلود امضاشده ارتقا می‌یابد.',
+  'contentDetailPlaceholder.backToBank': 'بازگشت به بانک محتوا',
+  'contentDetailPlaceholder.topicsLabel': 'موضوعات',
+  'contentDetailPlaceholder.durationLabel': 'مدت مطالعه / تماشا',
+
+  // Stage 12 Unit Tests
+  'tests.stage12.example38Subtree.name':
+    'اجرای مثال دقیق بخش ۳.۸ (شمول زیرموضوع‌ها و منطق AND/OR)',
+  'tests.stage12.example38Subtree.desc':
+    'انتخاب موضوع والد «تاریخ» و «رسانه» همراه با قالب ویدیو فقط ویدیوهای متصل به تاریخ، ایران معاصر یا رسانه را برمی‌گرداند و اقتصاد یا مقالات را حذف می‌کند.',
+  'tests.stage12.searchNormalization37.name':
+    'نرمال‌سازی کامل جستجوی فارسی (ك/ي عربی، اعراب، نیم‌فاصله و ارقام سه‌گانه)',
+  'tests.stage12.searchNormalization37.desc':
+    'عبارت‌های «كتاب/کتاب»، «میشود/می‌شود/می شود»، «عِلْم/عـلـم/علم» و «۱۲۳/123» دقیقاً نتایج یکسان برمی‌گردانند.',
+  'tests.stage12.liveAutocomplete.name':
+    'پیشنهاد زنده (Autocomplete): آستانه ۲ نویسه، سقف ۸ مورد و فیلتر کودک',
+  'tests.stage12.liveAutocomplete.desc':
+    'ورودی ۱ نویسه‌ای آرایه خالی است، ورودی ۲+ نویسه‌ای حداکثر ۸ پیشنهاد برمی‌گرداند و کاربر کودک پیشنهاد غیرمجاز دریافت نمی‌کند.',
+  'tests.stage12.childHardFilterCatalogAndSearch.name':
+    'غیرقابل دور زدن بودن فیلتر سخت کودک در بانک محتوا و جستجو',
+  'tests.stage12.childHardFilterCatalogAndSearch.desc':
+    'برای کاربر کودک، محتوای فاقد هدف کودک نه در بانک محتوا، نه در جستجو و نه حتی با انتخاب فیلتر سنی بزرگسال نمایش داده نمی‌شود.',
+  'tests.stage12.sortingAndPagination.name':
+    'مرتب‌سازی سه‌گانه (تازه‌ترین/پربازدیدترین/پرلایک‌ترین) و صفحه‌بندی ۱۲تایی',
+  'tests.stage12.sortingAndPagination.desc':
+    'صفحه اول دقیقاً ۱۲ مورد و صفحه دوم باقیمانده را برمی‌گرداند و ترتیب تازه‌ترین (اولویت ۳گروهی سنی)، پربازدیدترین و پرلایک‌ترین متمایز است.',
+  'tests.stage12.performance1000Items.name':
+    'تست کارایی بانک محتوا با ۱۰۰۰ محتوای آزمایشی زیر ۲ ثانیه',
+  'tests.stage12.performance1000Items.desc':
+    'فیلتر چندگانه، جستجوی فارسی، قواعد سنی، مرتب‌سازی و صفحه‌بندی روی ۱۰۰۰ محتوای منتشرشده همراه با روابط کامل زیر ۲۰۰۰ میلی‌ثانیه اجرا می‌شود.',
 } as const;
 
 export type ResourceKey = keyof typeof faResources;

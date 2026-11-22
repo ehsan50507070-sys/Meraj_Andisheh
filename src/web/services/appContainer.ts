@@ -1,4 +1,5 @@
 import { AuthService } from '../../core/services/authService';
+import { ContentCatalogService } from '../../core/services/contentCatalogService';
 import { ContentIntegrityService } from '../../core/services/contentIntegrityService';
 import { ContentManagementService } from '../../core/services/contentManagementService';
 import { FileUploadService } from '../../core/services/fileUploadService';
@@ -8,6 +9,7 @@ import { OtpService } from '../../core/services/otpService';
 import { PermissionPolicyService } from '../../core/services/permissionPolicyService';
 import { RateLimiter } from '../../core/services/rateLimiter';
 import { SearchNormalizer } from '../../core/services/searchNormalizer';
+import { SearchSuggestionService } from '../../core/services/searchSuggestionService';
 import { SettingsManagementService } from '../../core/services/settingsManagementService';
 import { SmartImportService } from '../../core/services/smartImportService';
 import { StaffManagementService } from '../../core/services/staffManagementService';
@@ -58,6 +60,8 @@ export interface AppContainer {
   fileUploadService: FileUploadService;
   taxonomyService: TaxonomyService;
   contentManagementService: ContentManagementService;
+  contentCatalogService: ContentCatalogService;
+  searchSuggestionService: SearchSuggestionService;
   smartImportService: SmartImportService;
   recordStartupLogOnce: () => void;
   ensureInitializedAtStartup: () => Promise<void>;
@@ -160,6 +164,17 @@ const contentManagementService = new ContentManagementService(
   clock,
   logger,
 );
+const contentCatalogService = new ContentCatalogService(
+  contentRepository,
+  taxonomyRepository,
+  adminRepository,
+  searchNormalizer,
+);
+const searchSuggestionService = new SearchSuggestionService(
+  contentRepository,
+  taxonomyRepository,
+  searchNormalizer,
+);
 const smartImportService = new SmartImportService(
   taxonomyRepository,
   permissionPolicyService,
@@ -236,6 +251,8 @@ export const appContainer: AppContainer = {
   fileUploadService,
   taxonomyService,
   contentManagementService,
+  contentCatalogService,
+  searchSuggestionService,
   smartImportService,
   recordStartupLogOnce,
   ensureInitializedAtStartup,
