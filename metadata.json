@@ -1,0 +1,6 @@
+{
+  "name": "معراج اندیشه",
+  "description": "پلتفرم بانک محتوای فارسی معراج اندیشه — مرحله ۱: اسکلت پروژه، معماری چهارلایه و پایش سلامت",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

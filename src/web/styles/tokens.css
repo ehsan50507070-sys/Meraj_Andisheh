@@ -1,0 +1,144 @@
+/* Age-adaptive theme tokens for Meraj Andisheh (playful | modern | editorial) */
+/* Every text-on-background pair satisfies WCAG AA (>= 4.5:1) */
+
+:root,
+html[data-theme='editorial'] {
+  --radius-card: 8px;
+  --radius-control: 8px;
+  --radius-tag: 6px;
+  --font-scale: 1;
+
+  --color-bg: #F8FAFC;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F1F5F9;
+
+  --color-primary: #14213D;
+  --color-primary-button: #14213D;
+  --color-primary-hover: #0F172A;
+  --color-on-primary: #FFFFFF;
+
+  --color-accent: #10B981;
+  --color-on-accent: #0F172A;
+
+  --color-text: #1E293B;
+  --color-muted: #475569;
+  --color-border: #E2E8F0;
+  --color-border-strong: #CBD5E1;
+
+  --color-danger: #B91C1C;
+  --color-danger-hover: #991B1B;
+  --color-on-danger: #FFFFFF;
+
+  --color-info-bg: #E0F2FE;
+  --color-info-text: #075985;
+  --color-info-border: #BAE6FD;
+
+  --color-success-bg: #DCFCE7;
+  --color-success-text: #166534;
+  --color-success-border: #BBF7D0;
+
+  --color-warning-bg: #FEF3C7;
+  --color-warning-text: #92400E;
+  --color-warning-border: #FDE68A;
+
+  --color-error-bg: #FEE2E2;
+  --color-error-text: #991B1B;
+  --color-error-border: #FECACA;
+
+  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-modal: 0 20px 40px -12px rgba(15, 23, 42, 0.22);
+}
+
+html[data-theme='playful'] {
+  --radius-card: 24px;
+  --radius-control: 14px;
+  --radius-tag: 10px;
+  --font-scale: 1.125;
+
+  --color-bg: #FFF8EC;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #FFF2DA;
+
+  --color-primary: #FF7A00;
+  --color-primary-button: #FF7A00;
+  --color-primary-hover: #E56B00;
+  --color-on-primary: #1A1A24;
+
+  --color-accent: #1FB6FF;
+  --color-on-accent: #1A1A24;
+
+  --color-text: #2B2B3A;
+  --color-muted: #5A5A6E;
+  --color-border: #EADBC2;
+  --color-border-strong: #DCC49F;
+
+  --color-danger: #B91C1C;
+  --color-danger-hover: #991B1B;
+  --color-on-danger: #FFFFFF;
+
+  --color-info-bg: #E0F2FE;
+  --color-info-text: #075985;
+  --color-info-border: #BAE6FD;
+
+  --color-success-bg: #DCFCE7;
+  --color-success-text: #166534;
+  --color-success-border: #BBF7D0;
+
+  --color-warning-bg: #FEF3C7;
+  --color-warning-text: #92400E;
+  --color-warning-border: #FDE68A;
+
+  --color-error-bg: #FEE2E2;
+  --color-error-text: #991B1B;
+  --color-error-border: #FECACA;
+
+  --shadow-card: 0 4px 14px rgba(180, 118, 36, 0.08);
+  --shadow-modal: 0 24px 44px -12px rgba(43, 43, 58, 0.24);
+}
+
+html[data-theme='modern'] {
+  --radius-card: 14px;
+  --radius-control: 10px;
+  --radius-tag: 8px;
+  --font-scale: 1;
+
+  --color-bg: #0F1226;
+  --color-surface: #1A1F3D;
+  --color-surface-alt: #23294F;
+
+  --color-primary: #7C5CFF;
+  --color-primary-button: #6640F2;
+  --color-primary-hover: #5832E5;
+  --color-on-primary: #FFFFFF;
+
+  --color-accent: #00E0B8;
+  --color-on-accent: #0F1226;
+
+  --color-text: #F2F4FF;
+  --color-muted: #9AA3C7;
+  --color-border: #2E355E;
+  --color-border-strong: #404A80;
+
+  --color-danger: #B91C1C;
+  --color-danger-hover: #991B1B;
+  --color-on-danger: #FFFFFF;
+
+  --color-info-bg: #132B4A;
+  --color-info-text: #BAE6FD;
+  --color-info-border: #1E4474;
+
+  --color-success-bg: #0F3329;
+  --color-success-text: #A7F3D0;
+  --color-success-border: #195443;
+
+  --color-warning-bg: #3B2609;
+  --color-warning-text: #FDE68A;
+  --color-warning-border: #634011;
+
+  --color-error-bg: #3F141B;
+  --color-error-text: #FECACA;
+  --color-error-border: #6B212D;
+
+  --shadow-card: 0 4px 18px rgba(4, 6, 18, 0.35);
+  --shadow-modal: 0 24px 48px -12px rgba(4, 6, 18, 0.72);
+}
