@@ -107,6 +107,26 @@ class MemoryStage8FileStorage implements IFileStorage {
     return { bytes: copy, metadata: { ...found.metadata } };
   }
 
+  public async openReadRangeAsync(
+    storageKey: string,
+    startByte: number,
+    endByte: number,
+  ) {
+    const found = this.entries.get(storageKey);
+    if (!found) return null;
+    const totalBytes = found.bytes.byteLength;
+    const safeStart = Math.max(0, Math.min(Math.floor(startByte), Math.max(0, totalBytes - 1)));
+    const safeEnd = Math.max(safeStart, Math.min(Math.floor(endByte), Math.max(0, totalBytes - 1)));
+    const sliced = totalBytes === 0 ? new Uint8Array(0) : found.bytes.slice(safeStart, safeEnd + 1);
+    return {
+      chunk: sliced,
+      totalBytes,
+      startByte: safeStart,
+      endByte: safeEnd,
+      mimeType: found.metadata.mimeType,
+    };
+  }
+
   public async getMetadataAsync(storageKey: string): Promise<StoredFileMetadata | null> {
     const found = this.entries.get(storageKey);
     return found ? { ...found.metadata } : null;

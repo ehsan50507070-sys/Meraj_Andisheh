@@ -14,7 +14,7 @@ import { AdminTaxonomyPage } from '../admin/pages/AdminTaxonomyPage';
 import { canSeeAdminNavItem, findAdminRouteSpec } from '../admin/adminNavConfig';
 import { useAuth } from '../auth/AuthContext';
 import { MainLayout } from '../layouts/MainLayout';
-import { ContentDetailPlaceholderPage } from '../pages/ContentDetailPlaceholderPage';
+import { ContentDetailPage } from '../pages/ContentDetailPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 import { PublicMediaPage } from '../pages/PublicMediaPage';
 import { ChangePasswordPage } from '../pages/account/ChangePasswordPage';
@@ -187,7 +187,7 @@ export function HashRouter({ routes, defaultRoute }: HashRouterProps) {
     return <PublicMediaPage currentRoute={routeState.fullHash} storageKey={decodedKey} />;
   }
 
-  // Public Content Detail Placeholder Route (#/content/:slug)
+  // Public Content Detail Route (#/content/:slug)
   if (normalizedRouteLower.startsWith('/content/')) {
     const rawSlug = routeState.path.slice('/content/'.length);
     let decodedSlug = rawSlug;
@@ -200,7 +200,7 @@ export function HashRouter({ routes, defaultRoute }: HashRouterProps) {
       return <NotFoundPage currentRoute={routeState.fullHash} />;
     }
     return (
-      <ContentDetailPlaceholderPage
+      <ContentDetailPage
         currentRoute={routeState.fullHash}
         slug={decodedSlug}
       />

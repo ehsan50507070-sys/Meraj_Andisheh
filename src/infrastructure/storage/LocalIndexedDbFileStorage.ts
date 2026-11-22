@@ -108,6 +108,66 @@ export class LocalIndexedDbFileStorage implements IFileStorage {
     };
   }
 
+  public async openReadRangeAsync(
+    storageKey: string,
+    startByte: number,
+    endByte: number,
+  ): Promise<{
+    chunk: Uint8Array;
+    totalBytes: number;
+    startByte: number;
+    endByte: number;
+    mimeType: string;
+  } | null> {
+    const record = await this.dataStore.getByKey<StoredFileRecord>(
+      STORE_NAMES.STORED_FILES,
+      storageKey,
+    );
+    if (!record) {
+      return null;
+    }
+
+    const bytesCopy =
+      record.data instanceof ArrayBuffer
+        ? new Uint8Array(record.data.slice(0))
+        : new Uint8Array(record.data);
+    const totalBytes = bytesCopy.byteLength;
+    if (totalBytes === 0) {
+      return {
+        chunk: new Uint8Array(0),
+        totalBytes: 0,
+        startByte: 0,
+        endByte: 0,
+        mimeType: record.mimeType,
+      };
+    }
+
+    const safeStart = Math.max(0, Math.min(Math.floor(startByte), totalBytes - 1));
+    const safeEnd = Math.max(safeStart, Math.min(Math.floor(endByte), totalBytes - 1));
+
+    if (typeof Blob !== 'undefined') {
+      const blob = new Blob([bytesCopy.buffer as ArrayBuffer], { type: record.mimeType });
+      const slicedBlob = blob.slice(safeStart, safeEnd + 1);
+      const slicedBuffer = await slicedBlob.arrayBuffer();
+      return {
+        chunk: new Uint8Array(slicedBuffer),
+        totalBytes,
+        startByte: safeStart,
+        endByte: safeEnd,
+        mimeType: record.mimeType,
+      };
+    }
+
+    const slice = bytesCopy.slice(safeStart, safeEnd + 1);
+    return {
+      chunk: slice,
+      totalBytes,
+      startByte: safeStart,
+      endByte: safeEnd,
+      mimeType: record.mimeType,
+    };
+  }
+
   public async getMetadataAsync(storageKey: string): Promise<StoredFileMetadata | null> {
     const record = await this.dataStore.getByKey<StoredFileRecord>(
       STORE_NAMES.STORED_FILES,

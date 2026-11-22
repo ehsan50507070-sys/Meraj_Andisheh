@@ -20,6 +20,7 @@ import type { HealthStatus } from '../../core/domain/HealthStatus';
 import type { LogEntry, LogLevel } from '../../core/domain/LogEntry';
 import type { TestSuiteResult } from '../../core/domain/TestResult';
 import { envConfig } from '../../infrastructure/config/envConfig';
+import { seedDevAllFormatsSamplesAsync } from '../../infrastructure/data/devStage13Samples';
 import type { SeedSummary } from '../../infrastructure/data/seed';
 import { stage1Tests } from '../../tests/stage1.tests';
 import { stage2Tests } from '../../tests/stage2.tests';
@@ -33,6 +34,7 @@ import { stage9Tests } from '../../tests/stage9.tests';
 import { stage10Tests } from '../../tests/stage10.tests';
 import { stage11Tests } from '../../tests/stage11.tests';
 import { stage12Tests } from '../../tests/stage12.tests';
+import { stage13Tests } from '../../tests/stage13.tests';
 import { runUnitTests } from '../../tests/testRunner';
 import { useAuth } from '../auth/AuthContext';
 import { useAge } from '../context/AgeContext';
@@ -61,6 +63,7 @@ const ALL_UNIT_TESTS = [
   ...stage10Tests,
   ...stage11Tests,
   ...stage12Tests,
+  ...stage13Tests,
 ];
 
 const ARCHITECTURE_LAYERS: ReadonlyArray<{
@@ -148,6 +151,7 @@ export function HealthPage({ currentRoute }: HealthPageProps) {
   const [isReseeding, setIsReseeding] = useState<boolean>(false);
   const [isResettingDb, setIsResettingDb] = useState<boolean>(false);
   const [isCreatingDevStaff, setIsCreatingDevStaff] = useState<boolean>(false);
+  const [isSeedingSamples, setIsSeedingSamples] = useState<boolean>(false);
   const [seedFeedback, setSeedFeedback] = useState<string | null>(null);
   const [devStaffFeedback, setDevStaffFeedback] = useState<string | null>(null);
 
@@ -255,6 +259,34 @@ export function HealthPage({ currentRoute }: HealthPageProps) {
   const handleClearAgeCookie = () => {
     clearVisitorAgeCookie();
     setSeedFeedback(t('health.card.seed.clearAgeCookieDone'));
+  };
+
+  const handleSeedDevSamples = async () => {
+    if (!envConfig.isDevelopment) {
+      return;
+    }
+    setIsSeedingSamples(true);
+    try {
+      const result = await seedDevAllFormatsSamplesAsync({
+        authRepository: appContainer.authRepository,
+        contentRepository: appContainer.contentRepository,
+        taxonomyRepository: appContainer.taxonomyRepository,
+        fileStorage: appContainer.fileStorage,
+        searchNormalizer: appContainer.searchNormalizer,
+        clock: appContainer.clock,
+      });
+      await refreshSeedSummary();
+      setSeedFeedback(
+        result.insertedCount > 0
+          ? t('health.card.seed.devSamplesSuccess', {
+              count: toPersianDigits(result.insertedCount),
+            })
+          : t('health.card.seed.devSamplesAlreadySeeded'),
+      );
+    } finally {
+      setIsSeedingSamples(false);
+      refreshLogs();
+    }
   };
 
   const handleDownloadLogs = () => {
@@ -884,11 +916,25 @@ export function HealthPage({ currentRoute }: HealthPageProps) {
                 variant="secondary"
                 size="sm"
                 onClick={handleClearAgeCookie}
-                disabled={isReseeding || isResettingDb}
+                disabled={isReseeding || isResettingDb || isSeedingSamples}
                 startIcon={<Trash2 className="w-4 h-4" />}
               >
                 {t('health.card.seed.clearAgeCookieButton')}
               </Button>
+
+              {envConfig.isDevelopment && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleSeedDevSamples}
+                  disabled={isReseeding || isResettingDb || isSeedingSamples}
+                  startIcon={<FileText className="w-4 h-4" />}
+                >
+                  {isSeedingSamples
+                    ? t('health.card.seed.devSamplesRunning')
+                    : t('health.card.seed.devSamplesButton')}
+                </Button>
+              )}
             </div>
           </div>
 

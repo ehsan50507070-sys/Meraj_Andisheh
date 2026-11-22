@@ -93,3 +93,43 @@ export function validateExternalUrl(
     displayMode: isEmbedAllowed ? 'embed' : 'external_link',
   };
 }
+
+/**
+ * Extracts a safe embed iframe URL strictly for aparat.com links.
+ * Returns null for any non-aparat host or invalid URL format.
+ */
+export function resolveAparatEmbedUrl(rawUrl: string | null | undefined): string | null {
+  const validation = validateExternalUrl(rawUrl, ['aparat.com']);
+  if (!validation.isValid || !validation.normalizedUrl || !validation.isEmbedAllowed) {
+    return null;
+  }
+
+  let parsed: URL;
+  try {
+    parsed = new URL(validation.normalizedUrl);
+  } catch {
+    return null;
+  }
+
+  const host = parsed.hostname.toLowerCase();
+  if (host !== 'aparat.com' && !host.endsWith('.aparat.com')) {
+    return null;
+  }
+
+  const pathname = parsed.pathname.trim();
+  const patterns: readonly RegExp[] = [
+    /^\/v\/([a-zA-Z0-9_-]{3,64})(?:\/|$)/i,
+    /^\/video\/video\/embed\/videohash\/([a-zA-Z0-9_-]{3,64})(?:\/|$)/i,
+    /^\/embed\/([a-zA-Z0-9_-]{3,64})(?:\/|$)/i,
+  ];
+
+  for (const regex of patterns) {
+    const match = pathname.match(regex);
+    if (match && match[1]) {
+      const videoHash = match[1];
+      return `https://www.aparat.com/video/video/embed/videohash/${encodeURIComponent(videoHash)}/vt/frame`;
+    }
+  }
+
+  return null;
+}

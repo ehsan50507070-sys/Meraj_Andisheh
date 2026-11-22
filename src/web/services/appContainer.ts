@@ -1,5 +1,6 @@
 import { AuthService } from '../../core/services/authService';
 import { ContentCatalogService } from '../../core/services/contentCatalogService';
+import { ContentDetailService } from '../../core/services/contentDetailService';
 import { ContentIntegrityService } from '../../core/services/contentIntegrityService';
 import { ContentManagementService } from '../../core/services/contentManagementService';
 import { FileUploadService } from '../../core/services/fileUploadService';
@@ -15,6 +16,7 @@ import { SmartImportService } from '../../core/services/smartImportService';
 import { StaffManagementService } from '../../core/services/staffManagementService';
 import { TaxonomyService } from '../../core/services/taxonomyService';
 import { UserManagementService } from '../../core/services/userManagementService';
+import { ViewTrackerService } from '../../core/services/viewTrackerService';
 import { SystemClock } from '../../infrastructure/clock/SystemClock';
 import { envConfig } from '../../infrastructure/config/envConfig';
 import { IndexedDbAdminRepository } from '../../infrastructure/data/IndexedDbAdminRepository';
@@ -22,6 +24,7 @@ import { IndexedDbAuthRepository } from '../../infrastructure/data/IndexedDbAuth
 import { IndexedDbContentRepository } from '../../infrastructure/data/IndexedDbContentRepository';
 import { IndexedDbDataStore } from '../../infrastructure/data/IndexedDbDataStore';
 import { IndexedDbTaxonomyRepository } from '../../infrastructure/data/IndexedDbTaxonomyRepository';
+import { IndexedDbViewEventRepository } from '../../infrastructure/data/IndexedDbViewEventRepository';
 import { LocalSessionTokenStore } from '../../infrastructure/data/LocalSessionTokenStore';
 import { DatabaseSeeder } from '../../infrastructure/data/seed';
 import { AppLogger } from '../../infrastructure/logging/AppLogger';
@@ -29,6 +32,7 @@ import { DevEmailSender } from '../../infrastructure/messaging/DevEmailSender';
 import { DevSmsSender } from '../../infrastructure/messaging/DevSmsSender';
 import { BrowserPasswordHasher } from '../../infrastructure/security/BrowserPasswordHasher';
 import { BrowserAgeCookieStorage } from '../../infrastructure/storage/BrowserAgeCookieStorage';
+import { BrowserVisitorIdStorage } from '../../infrastructure/storage/BrowserVisitorIdStorage';
 import { LocalIndexedDbFileStorage } from '../../infrastructure/storage/LocalIndexedDbFileStorage';
 import { t } from '../resources/i18n';
 
@@ -42,8 +46,10 @@ export interface AppContainer {
   adminRepository: IndexedDbAdminRepository;
   taxonomyRepository: IndexedDbTaxonomyRepository;
   contentRepository: IndexedDbContentRepository;
+  viewEventRepository: IndexedDbViewEventRepository;
   fileStorage: LocalIndexedDbFileStorage;
   agePreferenceStorage: BrowserAgeCookieStorage;
+  visitorIdStorage: BrowserVisitorIdStorage;
   passwordHasher: BrowserPasswordHasher;
   emailSender: DevEmailSender;
   smsSender: DevSmsSender;
@@ -61,6 +67,8 @@ export interface AppContainer {
   taxonomyService: TaxonomyService;
   contentManagementService: ContentManagementService;
   contentCatalogService: ContentCatalogService;
+  contentDetailService: ContentDetailService;
+  viewTrackerService: ViewTrackerService;
   searchSuggestionService: SearchSuggestionService;
   smartImportService: SmartImportService;
   recordStartupLogOnce: () => void;
@@ -80,8 +88,10 @@ const authRepository = new IndexedDbAuthRepository(dataStore);
 const adminRepository = new IndexedDbAdminRepository(dataStore);
 const taxonomyRepository = new IndexedDbTaxonomyRepository(dataStore);
 const contentRepository = new IndexedDbContentRepository(dataStore);
+const viewEventRepository = new IndexedDbViewEventRepository(dataStore);
 const fileStorage = new LocalIndexedDbFileStorage(dataStore, clock);
 const agePreferenceStorage = new BrowserAgeCookieStorage();
+const visitorIdStorage = new BrowserVisitorIdStorage();
 const passwordHasher = new BrowserPasswordHasher();
 const sessionTokenStore = new LocalSessionTokenStore(envConfig.sessionStorageKey);
 const emailSender = new DevEmailSender(logger, t('logs.devEmailPrefix'));
@@ -170,6 +180,17 @@ const contentCatalogService = new ContentCatalogService(
   adminRepository,
   searchNormalizer,
 );
+const contentDetailService = new ContentDetailService(
+  contentRepository,
+  taxonomyRepository,
+  fileStorage,
+);
+const viewTrackerService = new ViewTrackerService(
+  viewEventRepository,
+  contentRepository,
+  clock,
+  logger,
+);
 const searchSuggestionService = new SearchSuggestionService(
   contentRepository,
   taxonomyRepository,
@@ -233,8 +254,10 @@ export const appContainer: AppContainer = {
   adminRepository,
   taxonomyRepository,
   contentRepository,
+  viewEventRepository,
   fileStorage,
   agePreferenceStorage,
+  visitorIdStorage,
   passwordHasher,
   emailSender,
   smsSender,
@@ -252,6 +275,8 @@ export const appContainer: AppContainer = {
   taxonomyService,
   contentManagementService,
   contentCatalogService,
+  contentDetailService,
+  viewTrackerService,
   searchSuggestionService,
   smartImportService,
   recordStartupLogOnce,

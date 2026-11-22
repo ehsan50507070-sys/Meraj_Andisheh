@@ -3,7 +3,7 @@ export const faResources = {
   'app.name': 'معراج اندیشه',
   'app.subtitle': 'پلتفرم بانک محتوای فارسی',
   'app.stageLabel': 'مرحله {stage} از {total}',
-  'app.stageName': 'بانک محتوا، فیلترهای درختی، مگامنوی موضوعات و جستجوی زنده',
+  'app.stageName': 'صفحه کامل جزئیات محتوا، پخش‌کننده ۷ قالب، منابع و ثبت بازدید ۳۰ دقیقه‌ای',
   'app.footerNote': 'پلتفرم معراج اندیشه · زیرساخت و سامانه طراحی پایه',
 
   // Themes
@@ -1730,6 +1730,107 @@ export const faResources = {
     'تست کارایی بانک محتوا با ۱۰۰۰ محتوای آزمایشی زیر ۲ ثانیه',
   'tests.stage12.performance1000Items.desc':
     'فیلتر چندگانه، جستجوی فارسی، قواعد سنی، مرتب‌سازی و صفحه‌بندی روی ۱۰۰۰ محتوای منتشرشده همراه با روابط کامل زیر ۲۰۰۰ میلی‌ثانیه اجرا می‌شود.',
+
+  // Stage 13: Full Content Detail Page (#/content/:slug), 7 Format Players, Sources, Share & ViewTracker
+  'contentDetail.meta.publishedAt': 'تاریخ انتشار',
+  'contentDetail.meta.viewCount': '{count} بازدید',
+  'contentDetail.meta.duration': '{minutes} دقیقه مطالعه / تماشا',
+  'contentDetail.meta.impactLevel': 'سطح اثرگذاری',
+  'contentDetail.meta.targetAges': 'مناسب برای',
+  'contentDetail.meta.allAges': 'همه رده‌های سنی',
+  'contentDetail.meta.backToBank': 'بازگشت به بانک محتوا',
+
+  'contentDetail.share.button': 'اشتراک‌گذاری',
+  'contentDetail.share.copyButton': 'کپی لینک',
+  'contentDetail.share.copiedMessage': 'نشانی صفحه در کلیپ‌بورد کپی شد.',
+  'contentDetail.share.sharedMessage': 'پنجره اشتراک‌گذاری باز شد.',
+  'contentDetail.share.copyError': 'امکان کپی خودکار وجود ندارد؛ نشانی را از نوار آدرس کپی کنید.',
+
+  'contentDetail.taxonomy.topicsTitle': 'موضوعات',
+  'contentDetail.taxonomy.tagsTitle': 'برچسب‌ها',
+  'contentDetail.taxonomy.personsTitle': 'شخصیت‌ها و صاحب‌نظران',
+
+  'contentDetail.sources.title': 'منبع و مستندات معتبر',
+  'contentDetail.sources.subtitle':
+    'تمامی مطالب این محتوا مستند به منابع و مآخذ زیر استنباط و گردآوری شده است.',
+  'contentDetail.sources.empty': 'منبعی برای این محتوا ثبت نشده است.',
+  'contentDetail.sources.openLink': 'مشاهده سند منبع',
+  'contentDetail.sources.notePrefix': 'یادداشت / صفحه',
+
+  'contentDetail.article.title': 'متن کامل محتوا',
+  'contentDetail.attachments.title': 'فایل‌های پیوست و اسناد همراه',
+  'contentDetail.related.title': 'محتوای مرتبط',
+  'contentDetail.related.subtitle': 'سایر محتواهای منتشرشده هم‌موضوع متناسب با رده سنی شما',
+
+  'contentDetail.player.loading': 'در حال آماده‌سازی پخش‌کننده...',
+  'contentDetail.player.noMedia': 'فایل یا لینک اصلی برای پخش ثبت نشده است.',
+  'contentDetail.player.externalCta': 'مشاهده در منبع اصلی',
+  'contentDetail.player.externalHostLabel': 'پخش در نشانی خارجی معتبر',
+  'contentDetail.player.speedLabel': 'سرعت پخش',
+  'contentDetail.player.speedOption': '{rate}×',
+  'contentDetail.player.play': 'پخش',
+  'contentDetail.player.pause': 'توقف',
+  'contentDetail.player.forward15': '۱۵ ثانیه جلو',
+  'contentDetail.player.backward15': '۱۵ ثانیه عقب',
+  'contentDetail.player.seekAria': 'نوار زمان پخش',
+  'contentDetail.player.fileNameLabel': 'نام فایل',
+  'contentDetail.player.fileSizeLabel': 'حجم فایل',
+  'contentDetail.player.fileTypeLabel': 'نوع فایل',
+
+  'contentDetail.image.zoomIn': 'بزرگنمایی (+)',
+  'contentDetail.image.zoomOut': 'کوچک‌نمایی (-)',
+  'contentDetail.image.zoomReset': '۱۰۰٪',
+  'contentDetail.image.zoomPercent': '{percent}٪',
+  'contentDetail.image.fullscreen': 'تمام‌صفحه',
+  'contentDetail.image.closeFullscreen': 'خروج از تمام‌صفحه',
+
+  'contentDetail.pdf.prevPage': 'صفحه قبل',
+  'contentDetail.pdf.nextPage': 'صفحه بعد',
+  'contentDetail.pdf.pageIndicator': 'صفحه {current} از {total}',
+  'contentDetail.pdf.fallbackHint': 'نمایش استاندارد مرورگر برای سند PDF',
+  'contentDetail.pdf.renderError': 'در رندر صفحه‌به‌صفحه خطایی رخ داد؛ نمایشگر جایگزین فعال شد.',
+
+  'contentDetail.presentation.previewHeading': 'پیش‌نمایش اسلایدهای ارائه (PDF)',
+  'contentDetail.presentation.cardTitle': 'مشخصات فایل ارائه',
+  'contentDetail.presentation.downloadDisabledNotice':
+    'دانلود فایل اصلی برای اعضا در مرحله ۱۴ فعال می‌شود',
+
+  'contentDetail.document.cardTitle': 'مشخصات سند و فایل همراه',
+  'contentDetail.document.downloadDisabledNotice':
+    'دانلود فایل اصلی برای اعضا در مرحله ۱۴ فعال می‌شود',
+
+  'contentDetail.sizeUnit.bytes': '{value} بایت',
+  'contentDetail.sizeUnit.kb': '{value} کیلوبایت',
+  'contentDetail.sizeUnit.mb': '{value} مگابایت',
+
+  'health.card.seed.devSamplesButton': 'درج نمونه آزمایشی همه ۷ قالب محتوا',
+  'health.card.seed.devSamplesRunning': 'در حال درج نمونه‌ها...',
+  'health.card.seed.devSamplesSuccess':
+    '{count} محتوای نمونه در ۷ قالب (ویدیو محلی، آپارات، صوت، تصویر، PDF، پاورپوینت، سند و مقاله) با منابع معتبر درج شد.',
+  'health.card.seed.devSamplesAlreadySeeded':
+    'نمونه‌های آزمایشی ۷ قالب از پیش در پایگاه داده موجود هستند.',
+
+  // Stage 13 Unit Tests
+  'tests.stage13.viewRule30Min.name':
+    'اجرای دقیق مثال ۳.۹ (قاعده ۳۰ دقیقه‌ای بازدید و ثبت موضوع ریشه)',
+  'tests.stage13.viewRule30Min.desc':
+    'بازدیدهای ۱۰:۰۰، ۱۰:۱۵ و ۱۰:۴۰ دقیقاً ۲ بازدید شمرده‌شده ثبت می‌کنند (۱۰:۰۰ و ۱۰:۴۰) و ageGroupId به همراه primaryTopicId ریشه ذخیره می‌شوند.',
+  'tests.stage13.botFilter.name':
+    'فیلتر ربات‌ها در سرویس ثبت بازدید (isKnownBotUserAgent)',
+  'tests.stage13.botFilter.desc':
+    'درخواست‌های Googlebot و curl به‌عنوان ربات تشخیص داده شده (skippedAsBot=true) و شمارنده viewCount را تغییر نمی‌دهند.',
+  'tests.stage13.childSafetyDetail404.name':
+    'ایمنی کودک و محتوای غیرمنتشر در نشانی مستقیم #/content/:slug',
+  'tests.stage13.childSafetyDetail404.desc':
+    'محتوای بزرگسال برای کودک و محتوای پیش‌نویس یا بایگانی برای همه وضعیت not_found (۴۰۴) برمی‌گردانند و هیچ بازدیدی ثبت نمی‌شود.',
+  'tests.stage13.relatedContents.name':
+    'محتوای مرتبط: سقف ۶ مورد، قواعد سن و پنهان‌سازی در نبود مرتبط',
+  'tests.stage13.relatedContents.desc':
+    'از میان ۸ محتوای هم‌موضوع حداکثر ۶ مورد بدون خود محتوا برمی‌گردد، برای کودک فیلتر سخت اعمال می‌شود و بدون هم‌موضوع آرایه خالی است.',
+  'tests.stage13.aparatAndRangeSeek.name':
+    'تبدیل امن Embed آپارات و خواندن بازه بایت (openReadRangeAsync)',
+  'tests.stage13.aparatAndRangeSeek.desc':
+    'لینک آپارات به نشانی embed مجاز تبدیل و دامنه غیرمجاز رد می‌شود؛ openReadRangeAsync دقیقاً بایت‌های میانی فایل را برمی‌گرداند.',
 } as const;
 
 export type ResourceKey = keyof typeof faResources;
