@@ -15,6 +15,7 @@ export interface AuthContextValue {
   currentUser: AppUser | null;
   userPermissions: PermissionKey[];
   siteTitle: string;
+  siteSubtitle: string;
   isCommentsEnabled: boolean;
   isContentRequestsEnabled: boolean;
   hasSuperAdmin: boolean;
@@ -32,6 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<AppUser | null>(null);
   const [userPermissions, setUserPermissions] = useState<PermissionKey[]>([]);
   const [siteTitle, setSiteTitle] = useState<string>(() => t('app.name'));
+  const [siteSubtitle, setSiteSubtitle] = useState<string>(() => t('app.subtitle'));
   const [isCommentsEnabled, setIsCommentsEnabled] = useState<boolean>(false);
   const [isContentRequestsEnabled, setIsContentRequestsEnabled] =
     useState<boolean>(false);
@@ -41,10 +43,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshSiteTitle = useCallback(async () => {
     await appContainer.ensureInitializedAtStartup();
-    const resolvedTitle = await appContainer.settingsManagementService.getPublicSiteTitle(
-      t('app.name'),
-    );
+    const [resolvedTitle, resolvedSubtitle] = await Promise.all([
+      appContainer.settingsManagementService.getPublicSiteTitle(t('app.name')),
+      appContainer.settingsManagementService.getPublicSiteSubtitle(t('app.subtitle')),
+    ]);
     setSiteTitle(resolvedTitle);
+    setSiteSubtitle(resolvedSubtitle);
   }, []);
 
   const refreshFeatureFlags = useCallback(async () => {
@@ -66,6 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       superAdminExists,
       staffExists,
       resolvedTitle,
+      resolvedSubtitle,
       commentsEnabled,
       contentRequestsEnabled,
     ] = await Promise.all([
@@ -73,6 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       appContainer.initialSuperAdminService.hasSuperAdmin(),
       appContainer.initialSuperAdminService.hasStaffUser(),
       appContainer.settingsManagementService.getPublicSiteTitle(t('app.name')),
+      appContainer.settingsManagementService.getPublicSiteSubtitle(t('app.subtitle')),
       appContainer.settingsManagementService.getPublicFeatureFlagState('Comments'),
       appContainer.settingsManagementService.getPublicFeatureFlagState(
         'ContentRequests',
@@ -84,6 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setHasSuperAdmin(superAdminExists);
     setHasStaffUser(staffExists);
     setSiteTitle(resolvedTitle);
+    setSiteSubtitle(resolvedSubtitle);
     setIsCommentsEnabled(commentsEnabled);
     setIsContentRequestsEnabled(contentRequestsEnabled);
     setIsAuthReady(true);
@@ -104,6 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         currentUser,
         userPermissions,
         siteTitle,
+        siteSubtitle,
         isCommentsEnabled,
         isContentRequestsEnabled,
         hasSuperAdmin,

@@ -8,8 +8,10 @@ import { ContentRequestService } from '../../core/services/contentRequestService
 import { DownloadService } from '../../core/services/downloadService';
 import { FileUploadService } from '../../core/services/fileUploadService';
 import { HealthCheckService } from '../../core/services/HealthCheckService';
+import { HomePageService } from '../../core/services/homePageService';
 import { InitialSuperAdminService } from '../../core/services/initialSuperAdminService';
 import { InteractionService } from '../../core/services/interactionService';
+import { LayoutManagementService } from '../../core/services/layoutManagementService';
 import { OtpService } from '../../core/services/otpService';
 import { PermissionPolicyService } from '../../core/services/permissionPolicyService';
 import { ProfileService } from '../../core/services/profileService';
@@ -33,11 +35,13 @@ import { IndexedDbContentRequestRepository } from '../../infrastructure/data/Ind
 import { IndexedDbDataStore } from '../../infrastructure/data/IndexedDbDataStore';
 import { IndexedDbDownloadEventRepository } from '../../infrastructure/data/IndexedDbDownloadEventRepository';
 import { IndexedDbInteractionRepository } from '../../infrastructure/data/IndexedDbInteractionRepository';
+import { IndexedDbLayoutRepository } from '../../infrastructure/data/IndexedDbLayoutRepository';
 import { IndexedDbTaxonomyRepository } from '../../infrastructure/data/IndexedDbTaxonomyRepository';
 import { IndexedDbViewEventRepository } from '../../infrastructure/data/IndexedDbViewEventRepository';
 import { STORE_NAMES } from '../../infrastructure/data/migrations';
 import { LocalSessionTokenStore } from '../../infrastructure/data/LocalSessionTokenStore';
 import { DatabaseSeeder } from '../../infrastructure/data/seed';
+import { ensureStage18LayoutSeededAsync } from '../../infrastructure/data/stage18LayoutSeed';
 import { AppLogger } from '../../infrastructure/logging/AppLogger';
 import { DevEmailSender } from '../../infrastructure/messaging/DevEmailSender';
 import { DevSmsSender } from '../../infrastructure/messaging/DevSmsSender';
@@ -63,6 +67,7 @@ export interface AppContainer {
   interactionRepository: IndexedDbInteractionRepository;
   commentRepository: IndexedDbCommentRepository;
   contentRequestRepository: IndexedDbContentRequestRepository;
+  layoutRepository: IndexedDbLayoutRepository;
   accountCleanupRepository: IndexedDbAccountCleanupRepository;
   downloadTokenProtector: HmacDownloadTokenProtector;
   fileStorage: LocalIndexedDbFileStorage;
@@ -91,6 +96,8 @@ export interface AppContainer {
   interactionService: InteractionService;
   commentService: CommentService;
   contentRequestService: ContentRequestService;
+  homePageService: HomePageService;
+  layoutManagementService: LayoutManagementService;
   profileService: ProfileService;
   searchSuggestionService: SearchSuggestionService;
   smartImportService: SmartImportService;
@@ -116,6 +123,7 @@ const downloadEventRepository = new IndexedDbDownloadEventRepository(dataStore);
 const interactionRepository = new IndexedDbInteractionRepository(dataStore);
 const commentRepository = new IndexedDbCommentRepository(dataStore);
 const contentRequestRepository = new IndexedDbContentRequestRepository(dataStore);
+const layoutRepository = new IndexedDbLayoutRepository(dataStore);
 const accountCleanupRepository = new IndexedDbAccountCleanupRepository(dataStore);
 const downloadTokenProtector = new HmacDownloadTokenProtector();
 const fileStorage = new LocalIndexedDbFileStorage(dataStore, clock);
@@ -257,6 +265,22 @@ const contentRequestService = new ContentRequestService({
   logger,
   deletedDisplayName: t('user.deletedDisplayName'),
 });
+const homePageService = new HomePageService({
+  layoutRepository,
+  contentRepository,
+  taxonomyRepository,
+  adminRepository,
+  viewEventRepository,
+  clock,
+});
+const layoutManagementService = new LayoutManagementService({
+  layoutRepository,
+  taxonomyRepository,
+  permissionPolicyService,
+  fileUploadService,
+  fileStorage,
+  logger,
+});
 const profileService = new ProfileService({
   authRepository,
   contentRepository,
@@ -352,6 +376,7 @@ function ensureInitializedAtStartup(): Promise<void> {
         await databaseSeeder.seed(t('logs.seedExecuted'));
         await ensureStage16CommentsDefaultFlagAsync(dataStore);
         await ensureStage17ContentRequestsDefaultFlagAsync(dataStore);
+        await ensureStage18LayoutSeededAsync(dataStore);
         await initialSuperAdminService.bootstrapFromEnvIfConfigured(
           envConfig.initialSuperAdminEmail,
           envConfig.initialSuperAdminTempPassword,
@@ -382,6 +407,7 @@ export const appContainer: AppContainer = {
   interactionRepository,
   commentRepository,
   contentRequestRepository,
+  layoutRepository,
   accountCleanupRepository,
   downloadTokenProtector,
   fileStorage,
@@ -410,6 +436,8 @@ export const appContainer: AppContainer = {
   interactionService,
   commentService,
   contentRequestService,
+  homePageService,
+  layoutManagementService,
   profileService,
   searchSuggestionService,
   smartImportService,

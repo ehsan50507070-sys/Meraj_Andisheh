@@ -28,6 +28,9 @@ export const STORE_NAMES = {
   COMMENT_REPORTS: 'commentReports',
   BLOCKED_WORDS: 'blockedWords',
   CONTENT_REQUESTS: 'contentRequests',
+  HERO_SLIDES: 'heroSlides',
+  HOME_SHELVES: 'homeShelves',
+  STATIC_PAGES: 'staticPages',
 } as const;
 
 export const STAGE3_OBJECT_STORES: readonly string[] = [
@@ -86,6 +89,12 @@ export const STAGE16_OBJECT_STORES: readonly string[] = [
 
 export const STAGE17_OBJECT_STORES: readonly string[] = [
   STORE_NAMES.CONTENT_REQUESTS,
+] as const;
+
+export const STAGE18_OBJECT_STORES: readonly string[] = [
+  STORE_NAMES.HERO_SLIDES,
+  STORE_NAMES.HOME_SHELVES,
+  STORE_NAMES.STATIC_PAGES,
 ] as const;
 
 interface IndexSpec {
@@ -402,6 +411,39 @@ const STAGE17_STORE_SPECS: readonly StoreSpec[] = [
   },
 ];
 
+const STAGE18_STORE_SPECS: readonly StoreSpec[] = [
+  {
+    name: STORE_NAMES.HERO_SLIDES,
+    keyPath: 'id',
+    autoIncrement: true,
+    indexes: [
+      { name: 'by_sortOrder', keyPath: 'sortOrder' },
+      { name: 'by_isActive', keyPath: 'isActive' },
+      { name: 'by_ageGroupId', keyPath: 'ageGroupId' },
+    ],
+  },
+  {
+    name: STORE_NAMES.HOME_SHELVES,
+    keyPath: 'id',
+    autoIncrement: true,
+    indexes: [
+      { name: 'by_sortOrder', keyPath: 'sortOrder' },
+      { name: 'by_isVisible', keyPath: 'isVisible' },
+      { name: 'by_type', keyPath: 'type' },
+    ],
+  },
+  {
+    name: STORE_NAMES.STATIC_PAGES,
+    keyPath: 'id',
+    autoIncrement: true,
+    indexes: [
+      { name: 'by_slug', keyPath: 'slug', unique: true },
+      { name: 'by_showInFooter', keyPath: 'showInFooter' },
+      { name: 'by_sortOrder', keyPath: 'sortOrder' },
+    ],
+  },
+];
+
 export const DATABASE_MIGRATIONS: readonly MigrationStep[] = [
   {
     version: 1,
@@ -521,6 +563,14 @@ export const DATABASE_MIGRATIONS: readonly MigrationStep[] = [
           value: '1',
           updatedAtUtc: new Date().toISOString(),
         });
+      }
+    },
+  },
+  {
+    version: 12,
+    up: (db, transaction) => {
+      for (const spec of STAGE18_STORE_SPECS) {
+        ensureStore(db, transaction, spec);
       }
     },
   },

@@ -18,6 +18,7 @@ export interface TrackViewResult {
 export interface IViewEventRepository {
   createViewEvent(event: Omit<ViewEvent, 'id'>): Promise<ViewEvent>;
   getViewEventsByContentId(contentId: number): Promise<ViewEvent[]>;
+  getAllViewEvents(): Promise<ViewEvent[]>;
 }
 
 export interface IViewTracker {

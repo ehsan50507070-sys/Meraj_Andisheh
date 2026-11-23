@@ -50,6 +50,7 @@ import { IndexedDbContentRequestRepository } from '../infrastructure/data/Indexe
 import { IndexedDbDataStore } from '../infrastructure/data/IndexedDbDataStore';
 import { IndexedDbTaxonomyRepository } from '../infrastructure/data/IndexedDbTaxonomyRepository';
 import {
+  DATABASE_MIGRATIONS,
   STAGE17_OBJECT_STORES,
   STORE_NAMES,
 } from '../infrastructure/data/migrations';
@@ -1242,12 +1243,16 @@ export const stage17Tests: UnitTestCase[] = [
         'Stored title intact after flag toggle',
       );
 
+      assert(
+        DATABASE_MIGRATIONS.some((m) => m.version === 11),
+        'Migration version 11 must be registered for Stage 17',
+      );
+      assert(
+        envConfig.databaseVersion >= 11,
+        `envConfig.databaseVersion must be >= 11 for Stage 17 (actual=${envConfig.databaseVersion})`,
+      );
+
       if (typeof indexedDB !== 'undefined') {
-        assertEqual(
-          envConfig.databaseVersion,
-          11,
-          'envConfig.databaseVersion must be 11 in Stage 17',
-        );
         const dataStore = new IndexedDbDataStore(
           envConfig.databaseName,
           envConfig.databaseVersion,
@@ -1257,7 +1262,7 @@ export const stage17Tests: UnitTestCase[] = [
         for (const requiredStore of STAGE17_OBJECT_STORES) {
           assert(
             storeNames.includes(requiredStore),
-            `ObjectStore ${requiredStore} must exist in IndexedDB v11`,
+            `ObjectStore ${requiredStore} must exist in IndexedDB v${envConfig.databaseVersion}`,
           );
         }
 

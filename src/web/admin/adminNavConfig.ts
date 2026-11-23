@@ -82,7 +82,6 @@ export const ADMIN_ROUTES: readonly AdminRouteSpec[] = [
     labelKey: 'admin.nav.layout',
     requirement: 'layout.manage',
     permissionDescKey: 'permissions.layout.manage.desc',
-    isPlaceholder: true,
   },
   {
     id: 'portals',

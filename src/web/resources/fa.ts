@@ -3,8 +3,8 @@ export const faResources = {
   'app.name': 'معراج اندیشه',
   'app.subtitle': 'پلتفرم بانک محتوای فارسی',
   'app.stageLabel': 'مرحله {stage} از {total}',
-  'app.stageName': 'درخواست محتوا، پیگیری وضعیت در پروفایل و پنل مدیریت درخواست‌ها',
-  'app.footerNote': 'پلتفرم معراج اندیشه · زیرساخت و سامانه طراحی پایه',
+  'app.stageName': 'صفحه اصلی، اسلایدر، قفسه‌ها، صفحات ثابت و مدیریت ظاهر',
+  'app.footerNote': 'پلتفرم معراج اندیشه · بانک محتوای فارسی متناسب با هر رده سنی',
 
   // Themes
   'theme.label': 'تم سنی',
@@ -54,9 +54,12 @@ export const faResources = {
   'layout.footer.linkHome': 'صفحه اصلی',
   'layout.footer.linkContentBank': 'بانک محتوا',
   'layout.footer.linkRequests': 'درخواست محتوا',
+  'layout.footer.linkAccount': 'حساب کاربری / ورود',
+  'layout.footer.linkProfile': 'پروفایل کاربری',
   'layout.footer.linkHealth': 'پایش سلامت سامانه',
   'layout.footer.linkComponents': 'آزمایشگاه کامپوننت‌ها',
-  'layout.footer.supportTitle': 'تماس و قوانین',
+  'layout.footer.supportTitle': 'راهنما و قوانین',
+  'layout.footer.noStaticPages': 'در حال حاضر صفحه‌ی راهنمایی ثبت نشده است.',
   'layout.footer.linkAbout': 'درباره معراج اندیشه',
   'layout.footer.linkContact': 'ارتباط با ما',
   'layout.footer.linkTerms': 'قوانین استفاده',
@@ -2385,6 +2388,187 @@ export const faResources = {
     'کلید ماژول ContentRequests (غیرفعالسازی بدون حذف داده) و ماندگاری IndexedDB v11',
   'tests.stage17.featureFlagAndIdbV11.desc':
     'خاموشی ماژول ثبت، نمایش و پنل را با ۴۰۴ غیرفعال اما داده‌ها را دست‌نخورده حفظ می‌کند و ObjectStore نسخه ۱۱ (contentRequests) راستی‌آزمایی می‌شود.',
+
+  // Stage 18: Full Home Page (#/), HeroSlider, HomeShelves, Static Pages (#/p/:slug), Final Footer & Layout Admin (#/admin/layout)
+  'home.page.loading': 'در حال بارگذاری اسلایدر و قفسه‌های صفحه اصلی...',
+  'home.page.activeAgeStrip': 'نمایش متناسب با رده‌ی سنی: {age}',
+  'home.page.unsetAgeStrip': 'همه‌ی رده‌های سنی فعال (انتخاب رده سنی)',
+  'home.page.changeAgeLink': 'تغییر رده سنی',
+  'home.page.viewAllShelf': 'مشاهده همه',
+  'home.page.generalTopic': 'عمومی',
+  'home.page.trendingViewsBadge': '{count} بازدید این هفته',
+  'home.page.emptyFallbackTitle': 'هنوز محتوای منتشرشده‌ای متناسب با این رده‌ی سنی در صفحه اصلی نمایش داده نمی‌شود.',
+  'home.page.emptyFallbackBody':
+    'می‌توانید بانک محتوا را مرور کنید یا موضوع مورد نظر خود را برای تیم تحریریه پیشنهاد دهید.',
+  'home.page.exploreCatalogButton': 'ورود به بانک محتوا',
+  'home.page.requestContentButton': 'ثبت درخواست محتوا',
+
+  'home.slider.ariaLabel': 'اسلایدر ویژه صفحه اصلی',
+  'home.slider.prevAria': 'اسلاید قبلی',
+  'home.slider.nextAria': 'اسلاید بعدی',
+  'home.slider.dotAria': 'نمایش اسلاید {index}',
+  'home.slider.ageTargetBadge': 'ویژه‌ی رده‌ی سنی {age}',
+  'home.slider.ctaLabel': 'مشاهده و ادامه',
+
+  'staticPage.breadcrumbHome': 'صفحه اصلی',
+  'staticPage.loading': 'در حال بارگذاری صفحه...',
+  'staticPage.badge': 'صفحه‌ی اطلاع‌رسانی',
+  'staticPage.backHomeButton': 'بازگشت به صفحه اصلی',
+  'staticPage.browseCatalogButton': 'مرور بانک محتوا',
+
+  // Admin Layout Management (#/admin/layout)
+  'admin.layout.title': 'مدیریت ظاهر و جانمایی صفحه اصلی',
+  'admin.layout.subtitle':
+    'تنظیم اسلایدر بالای صفحه، ترتیب و نوع قفسه‌های محتوایی صفحه اصلی و مدیریت صفحات ثابت فوتر.',
+  'admin.layout.tabs.ariaLabel': 'بخش‌های مدیریت ظاهر و جانمایی',
+  'admin.layout.tab.slides': 'اسلایدر صفحه اصلی',
+  'admin.layout.tab.shelves': 'قفسه‌های صفحه اصلی',
+  'admin.layout.tab.pages': 'صفحات ثابت (فوتر)',
+
+  // Tab 1: Hero Slides
+  'admin.layout.slides.sectionTitle': 'مدیریت اسلایدهای صفحه اصلی ({count})',
+  'admin.layout.slides.addButton': 'افزودن اسلاید جدید',
+  'admin.layout.slides.emptyTitle': 'هنوز هیچ اسلایدی ثبت نشده است.',
+  'admin.layout.slides.emptyBody': 'یک اسلاید جدید برای نمایش در بخش بالای صفحه اصلی ایجاد کنید.',
+  'admin.layout.slides.allAgesLabel': 'همه‌ی رده‌های سنی',
+  'admin.layout.slides.activeBadge': 'فعال',
+  'admin.layout.slides.inactiveBadge': 'غیرفعال',
+  'admin.layout.slides.noImagePlaceholder': 'بدون تصویر (پس‌زمینه تم)',
+  'admin.layout.slides.moveUp': 'بالا',
+  'admin.layout.slides.moveDown': 'پایین',
+  'admin.layout.slides.toggleEnable': 'فعالسازی',
+  'admin.layout.slides.toggleDisable': 'غیرفعالسازی',
+  'admin.layout.slides.editButton': 'ویرایش',
+  'admin.layout.slides.deleteButton': 'حذف',
+  'admin.layout.slides.sortBadge': 'ترتیب: {order}',
+
+  'admin.layout.slides.modalCreateTitle': 'افزودن اسلاید جدید',
+  'admin.layout.slides.modalEditTitle': 'ویرایش اسلاید',
+  'admin.layout.slides.titleLabel': 'عنوان اصلی اسلاید',
+  'admin.layout.slides.titlePlaceholder': 'حداکثر ۱۵۰ نویسه...',
+  'admin.layout.slides.subtitleLabel': 'زیرعنوان توضیحی (اختیاری)',
+  'admin.layout.slides.subtitlePlaceholder': 'توضیح کوتاه تا ۳۰۰ نویسه...',
+  'admin.layout.slides.linkLabel': 'نشانی مقصد دکمه (لینک داخلی یا https)',
+  'admin.layout.slides.linkPlaceholder': '#/content یا https://example.com',
+  'admin.layout.slides.linkHint': 'لینک داخلی با #/ یا نشانی معتبر با http:// یا https:// وارد شود.',
+  'admin.layout.slides.ageGroupLabel': 'رده‌ی سنی هدف',
+  'admin.layout.slides.ageGroupAllOption': 'همه‌ی رده‌های سنی (عمومی)',
+  'admin.layout.slides.sortOrderLabel': 'شماره ترتیب نمایش',
+  'admin.layout.slides.isActiveLabel': 'اسلاید فعال باشد و در صفحه اصلی نمایش داده شود',
+  'admin.layout.slides.imageLabel': 'تصویر پس‌زمینه اسلاید (اختیاری - PNG/JPG/WebP)',
+  'admin.layout.slides.uploadImageButton': 'انتخاب تصویر جدید',
+  'admin.layout.slides.removeImageButton': 'حذف تصویر',
+  'admin.layout.slides.imageKeepHint': 'در صورت عدم بارگذاری تصویر، پس‌زمینه‌ی هماهنگ با تم رده‌ی سنی نمایش داده می‌شود.',
+
+  // Tab 2: Home Shelves
+  'admin.layout.shelves.sectionTitle': 'قفسه‌های صفحه اصلی ({count})',
+  'admin.layout.shelves.addButton': 'افزودن قفسه جدید',
+  'admin.layout.shelves.emptyTitle': 'هیچ قفسه‌ای تعریف نشده است.',
+  'admin.layout.shelves.emptyBody': 'قفسه‌های نمایشی صفحه اصلی را از اینجا ایجاد و مرتب کنید.',
+  'admin.layout.shelves.stage20Note':
+    'توجه: قفسه‌ی «پیشنهادهای شما (Personalized)» در این مرحله در صفحه اصلی عمومی مخفی نگه داشته می‌شود و موتور پیشنهادگر آن در مرحله‌ی ۲۰ فعال خواهد شد.',
+  'admin.layout.shelves.visibleBadge': 'نمایشی',
+  'admin.layout.shelves.hiddenBadge': 'مخفی',
+  'admin.layout.shelves.stage20Badge': 'فعال در مرحله ۲۰',
+  'admin.layout.shelves.typeLabel': 'نوع قفسه',
+  'admin.layout.shelves.type.Personalized': 'پیشنهادهای شخصی‌سازی‌شده (Personalized)',
+  'admin.layout.shelves.type.Trending': 'برترین‌های هفته (۷ روز اخیر)',
+  'admin.layout.shelves.type.Latest': 'تازه‌ترین محتواها',
+  'admin.layout.shelves.type.ByTopic': 'بر اساس موضوع مشخص',
+  'admin.layout.shelves.type.Featured': 'برگزیده‌ها (Featured)',
+  'admin.layout.shelves.topicBadge': 'موضوع: {name}',
+  'admin.layout.shelves.hideAction': 'مخفی کردن',
+  'admin.layout.shelves.showAction': 'نمایش دادن',
+
+  'admin.layout.shelves.modalCreateTitle': 'افزودن قفسه جدید',
+  'admin.layout.shelves.modalEditTitle': 'ویرایش قفسه',
+  'admin.layout.shelves.titleLabel': 'عنوان نمایشی قفسه',
+  'admin.layout.shelves.titlePlaceholder': 'مثلاً: تازه‌های تاریخ (حداکثر ۱۲۰ نویسه)',
+  'admin.layout.shelves.topicLabel': 'موضوع مرتبط (الزامی برای قفسه موضوعی)',
+  'admin.layout.shelves.topicPlaceholder': 'یک موضوع انتخاب کنید...',
+  'admin.layout.shelves.sortOrderLabel': 'ترتیب نمایش',
+  'admin.layout.shelves.isVisibleLabel': 'قفسه در صفحه اصلی نمایش داده شود (در صورت داشتن محتوا)',
+
+  // Tab 3: Static Pages
+  'admin.layout.pages.sectionTitle': 'صفحات ثابت سامانه ({count})',
+  'admin.layout.pages.addButton': 'ایجاد صفحه ثابت جدید',
+  'admin.layout.pages.emptyTitle': 'هیچ صفحه‌ی ثابتی ثبت نشده است.',
+  'admin.layout.pages.emptyBody': 'صفحاتی مانند درباره‌ی ما، تماس با ما و قوانین را از اینجا بسازید.',
+  'admin.layout.pages.inFooterBadge': 'نمایش در فوتر',
+  'admin.layout.pages.notInFooterBadge': 'خارج از فوتر',
+  'admin.layout.pages.previewLink': 'پیش‌نمایش صفحه',
+  'admin.layout.pages.slugLabel': 'نشانی اختصاصی (Slug)',
+
+  'admin.layout.pages.modalCreateTitle': 'ایجاد صفحه ثابت جدید',
+  'admin.layout.pages.modalEditTitle': 'ویرایش صفحه ثابت',
+  'admin.layout.pages.titleLabel': 'عنوان صفحه',
+  'admin.layout.pages.titlePlaceholder': 'مثلاً: سوالات متداول (حداکثر ۱۵۰ نویسه)',
+  'admin.layout.pages.slugInputLabel': 'اسلاگ نشانی (#/p/slug)',
+  'admin.layout.pages.slugPlaceholder': 'در صورت خالی بودن، خودکار از عنوان ساخته می‌شود',
+  'admin.layout.pages.bodyLabel': 'محتوای HTML ایمن صفحه',
+  'admin.layout.pages.bodyPlaceholder': '<h2>عنوان بخش</h2><p>متن صفحه را وارد کنید...</p>',
+  'admin.layout.pages.bodySanitizeHint':
+    'تگ‌های ناامن (مانند script، style، iframe و رویدادهای onclick) هنگام ذخیره به‌صورت خودکار پاکسازی می‌شوند.',
+  'admin.layout.pages.showInFooterLabel': 'پیوند این صفحه در ستون راهنمای فوتر نمایش داده شود',
+  'admin.layout.pages.sortOrderLabel': 'ترتیب در فوتر',
+
+  // Common Layout Admin Actions & Feedback
+  'admin.layout.cancelButton': 'انصراف',
+  'admin.layout.saveButton': 'ذخیره تغییرات',
+  'admin.layout.savingButton': 'در حال ذخیره...',
+  'admin.layout.confirmDeleteSlide': 'آیا از حذف این اسلاید اطمینان دارید؟ تصویر پیوست آن نیز پاک خواهد شد.',
+  'admin.layout.confirmDeleteShelf': 'آیا از حذف این قفسه اطمینان دارید؟',
+  'admin.layout.confirmDeletePage': 'آیا از حذف این صفحه‌ی ثابت اطمینان دارید؟ پیوند آن از فوتر برداشته می‌شود.',
+
+  'admin.layout.feedback.slideSaved': 'اسلاید با موفقیت ذخیره شد.',
+  'admin.layout.feedback.slideDeleted': 'اسلاید با موفقیت حذف شد.',
+  'admin.layout.feedback.slideReordered': 'ترتیب اسلایدها بروزرسانی شد.',
+  'admin.layout.feedback.shelfSaved': 'قفسه با موفقیت ذخیره شد.',
+  'admin.layout.feedback.shelfDeleted': 'قفسه با موفقیت حذف شد.',
+  'admin.layout.feedback.shelfReordered': 'ترتیب قفسه‌ها بروزرسانی شد.',
+  'admin.layout.feedback.pageSaved': 'صفحه‌ی ثابت پس از پاکسازی امنیتی ذخیره شد.',
+  'admin.layout.feedback.pageDeleted': 'صفحه‌ی ثابت با موفقیت حذف شد.',
+
+  'admin.layout.error.notFound': 'آیتم مورد نظر یافت نشد.',
+  'admin.layout.error.slideTitleInvalid': 'عنوان اسلاید باید بین ۱ تا ۱۵۰ نویسه باشد.',
+  'admin.layout.error.slideSubtitleInvalid': 'زیرعنوان اسلاید نباید بیشتر از ۳۰۰ نویسه باشد.',
+  'admin.layout.error.slideLinkInvalid':
+    'نشانی مقصد اسلاید معتبر نیست؛ فقط لینک داخلی (#/...) یا نشانی http/https مجاز است.',
+  'admin.layout.error.slideAgeGroupInvalid': 'رده‌ی سنی انتخاب‌شده معتبر نیست.',
+  'admin.layout.error.slideImageInvalid': 'تصویر انتخاب‌شده معتبر نیست (فقط PNG/JPG/WebP مجاز است).',
+  'admin.layout.error.shelfTitleInvalid': 'عنوان قفسه باید بین ۱ تا ۱۲۰ نویسه باشد.',
+  'admin.layout.error.shelfTypeInvalid': 'نوع قفسه معتبر نیست.',
+  'admin.layout.error.shelfTopicRequired': 'برای قفسه‌ی موضوعی، انتخاب یک موضوع معتبر الزامی است.',
+  'admin.layout.error.staticPageTitleInvalid': 'عنوان صفحه باید بین ۱ تا ۱۵۰ نویسه باشد.',
+  'admin.layout.error.staticPageSlugInvalid': 'اسلاگ صفحه باید معتبر و حداکثر ۱۲۰ نویسه باشد.',
+  'admin.layout.error.staticPageSlugDuplicate': 'این اسلاگ قبلاً برای صفحه‌ی دیگری ثبت شده است.',
+  'admin.layout.error.staticPageBodyInvalid': 'متن ایمن صفحه نمی‌تواند خالی باشد.',
+
+  // Stage 18 Unit Tests
+  'tests.stage18.seedAndPersonalizedHidden.name':
+    'Seed یک‌باره مرحله‌ی ۱۸ (۴ صفحه ثابت، قفسه‌ها و ۲ اسلاید) و پنهان‌ماندن Personalized',
+  'tests.stage18.seedAndPersonalizedHidden.desc':
+    'اجرای دو بار seed لایهٔ ظاهر رکورد تکراری نمی‌سازد، در حالت معمولی قفسه Personalized نمایش داده نمی‌شود و قفسه‌های خالی نیز مخفی می‌مانند.',
+  'tests.stage18.trending7DayAlgorithm.name':
+    'الگوریتم «برترین‌های هفته» (پنجره دقیق ۷ روز اخیر روی ViewEvent با فیلتر سنی)',
+  'tests.stage18.trending7DayAlgorithm.desc':
+    'بازدیدهای ۲ روز پیش شمرده و بر اساس بیشترین بازدید ۷ روزه مرتب می‌شوند، بازدیدهای ۸ روز پیش حذف و برای کودک محتوای بزرگسالان فیلتر سخت می‌شود.',
+  'tests.stage18.heroAgeTargetingAndSafeLink.name':
+    'فیلتر رده سنی HeroSlide (عمومی vs اختصاصی) و مسدودسازی لینک javascript ناامن',
+  'tests.stage18.heroAgeTargetingAndSafeLink.desc':
+    'اسلاید کودک برای بزرگسال مخفی و در رده کودک نمایش داده می‌شود؛ اسلاید با لینک javascript:alert(1) هنگام ذخیره با ۴۰۰ رد می‌گردد.',
+  'tests.stage18.shelfReorderAndByTopicTree.name':
+    'تغییر ترتیب قفسه‌ها در پنل و گسترش زیرمجموعه درختی در قفسه ByTopic',
+  'tests.stage18.shelfReorderAndByTopicTree.desc':
+    'با جابه‌جایی قفسه‌ها ترتیب نمایش در صفحه اصلی تغییر می‌کند و قفسه موضوع والد محتوای موضوع فرزند را نیز برمی‌گرداند.',
+  'tests.stage18.staticPageSanitizationAndFooter.name':
+    'صفحات ثابت، پاکسازی XSS هنگام ذخیره و فیلتر showInFooter در فوتر',
+  'tests.stage18.staticPageSanitizationAndFooter.desc':
+    'تگ‌های script و رویدادهای onload هنگام ذخیره پاکسازی می‌شوند و صفحه بدون showInFooter از فهرست فوتر کنار گذاشته می‌شود.',
+  'tests.stage18.rbacAndIdbV12.name':
+    'تفکیک دسترسی layout.manage (۴۰۳ با WARN برای همکار، ۴۰۴ برای عضو) و IndexedDB v12',
+  'tests.stage18.rbacAndIdbV12.desc':
+    'عضو عادی ۴۰۴ و همکار بدون layout.manage کد ۴۰۳ با ثبت لاگ WARN می‌گیرد؛ همکار مجاز ذخیره می‌کند و جداول نسخه ۱۲ بررسی می‌شوند.',
 } as const;
 
 export type ResourceKey = keyof typeof faResources;

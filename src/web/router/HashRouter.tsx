@@ -10,6 +10,7 @@ import { AdminUsersPage } from '../admin/AdminUsersPage';
 import { AdminContentFormPage } from '../admin/pages/AdminContentFormPage';
 import { AdminContentListPage } from '../admin/pages/AdminContentListPage';
 import { AdminCommentsPage } from '../admin/pages/AdminCommentsPage';
+import { AdminLayoutPage } from '../admin/pages/AdminLayoutPage';
 import { AdminRequestsPage } from '../admin/pages/AdminRequestsPage';
 import { AdminSmartImportPage } from '../admin/pages/AdminSmartImportPage';
 import { AdminTaxonomyPage } from '../admin/pages/AdminTaxonomyPage';
@@ -20,6 +21,7 @@ import { ContentDetailPage } from '../pages/ContentDetailPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 import { PublicMediaPage } from '../pages/PublicMediaPage';
 import { SignedDownloadPage } from '../pages/SignedDownloadPage';
+import { StaticPageView } from '../pages/StaticPageView';
 import { ChangePasswordPage } from '../pages/account/ChangePasswordPage';
 import { appContainer } from '../services/appContainer';
 import { ThemeManager } from '../theme/ThemeManager';
@@ -247,6 +249,26 @@ export function HashRouter({ routes, defaultRoute }: HashRouterProps) {
     );
   }
 
+  // Public Static Page Route (#/p/:slug)
+  if (normalizedRouteLower.startsWith('/p/')) {
+    const rawSlug = routeState.path.slice('/p/'.length);
+    let decodedSlug = rawSlug;
+    try {
+      decodedSlug = decodeURIComponent(rawSlug);
+    } catch {
+      decodedSlug = rawSlug;
+    }
+    if (!decodedSlug.trim()) {
+      return <NotFoundPage currentRoute={routeState.fullHash} />;
+    }
+    return (
+      <StaticPageView
+        currentRoute={routeState.fullHash}
+        slug={decodedSlug}
+      />
+    );
+  }
+
   if (isAdminRoute) {
     if (!isAuthReady) {
       return (
@@ -294,6 +316,8 @@ export function HashRouter({ routes, defaultRoute }: HashRouterProps) {
         return <AdminCommentsPage currentRoute={routeState.fullHash} />;
       case 'requests':
         return <AdminRequestsPage currentRoute={routeState.fullHash} />;
+      case 'layout':
+        return <AdminLayoutPage currentRoute={routeState.fullHash} />;
       case 'content': {
         const lowerPath = routeState.path.toLowerCase();
         if (lowerPath === '/admin/content/smart-import') {

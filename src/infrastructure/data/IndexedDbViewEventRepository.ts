@@ -23,4 +23,8 @@ export class IndexedDbViewEventRepository implements IViewEventRepository {
     );
     return events.sort((a, b) => a.occurredAt.localeCompare(b.occurredAt) || a.id - b.id);
   }
+
+  public async getAllViewEvents(): Promise<ViewEvent[]> {
+    return this.dataStore.getAll<ViewEvent>(STORE_NAMES.VIEW_EVENTS);
+  }
 }

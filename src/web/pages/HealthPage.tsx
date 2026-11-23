@@ -22,6 +22,7 @@ import type { TestSuiteResult } from '../../core/domain/TestResult';
 import { envConfig } from '../../infrastructure/config/envConfig';
 import { seedDevAllFormatsSamplesAsync } from '../../infrastructure/data/devStage13Samples';
 import type { SeedSummary } from '../../infrastructure/data/seed';
+import { ensureStage18LayoutSeededAsync } from '../../infrastructure/data/stage18LayoutSeed';
 import { stage1Tests } from '../../tests/stage1.tests';
 import { stage2Tests } from '../../tests/stage2.tests';
 import { stage3Tests } from '../../tests/stage3.tests';
@@ -39,6 +40,7 @@ import { stage14Tests } from '../../tests/stage14.tests';
 import { stage15Tests } from '../../tests/stage15.tests';
 import { stage16Tests } from '../../tests/stage16.tests';
 import { stage17Tests } from '../../tests/stage17.tests';
+import { stage18Tests } from '../../tests/stage18.tests';
 import { runUnitTests } from '../../tests/testRunner';
 import { useAuth } from '../auth/AuthContext';
 import { useAge } from '../context/AgeContext';
@@ -76,6 +78,7 @@ const ALL_UNIT_TESTS = [
   ...stage15Tests,
   ...stage16Tests,
   ...stage17Tests,
+  ...stage18Tests,
 ];
 
 const ARCHITECTURE_LAYERS: ReadonlyArray<{
@@ -249,6 +252,7 @@ export function HealthPage({ currentRoute }: HealthPageProps) {
       const result = await appContainer.databaseSeeder.seed(t('logs.databaseResetExecuted'));
       await ensureStage16CommentsDefaultFlagAsync(appContainer.dataStore);
       await ensureStage17ContentRequestsDefaultFlagAsync(appContainer.dataStore);
+      await ensureStage18LayoutSeededAsync(appContainer.dataStore);
       await appContainer.initialSuperAdminService.bootstrapFromEnvIfConfigured(
         envConfig.initialSuperAdminEmail,
         envConfig.initialSuperAdminTempPassword,

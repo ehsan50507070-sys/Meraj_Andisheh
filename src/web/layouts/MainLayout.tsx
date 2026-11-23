@@ -9,6 +9,7 @@ import {
   X,
 } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
+import type { StaticPage } from '../../core/domain/layout';
 import { resolveThemeKey, type ThemeKey } from '../../core/services/themeService';
 import { envConfig } from '../../infrastructure/config/envConfig';
 import { useAuth } from '../auth/AuthContext';
@@ -44,7 +45,7 @@ export function MainLayout({
   currentRoute,
   children,
 }: MainLayoutProps) {
-  const { currentUser, siteTitle, isContentRequestsEnabled, logout } = useAuth();
+  const { currentUser, siteTitle, siteSubtitle, isContentRequestsEnabled, logout } = useAuth();
   const {
     effectiveAgeGroup,
     lastSwitchNotice,
@@ -53,6 +54,7 @@ export function MainLayout({
   } = useAge();
   const [isPersonalized, setIsPersonalized] = useState(false);
   const [favoritesCount, setFavoritesCount] = useState(0);
+  const [footerPages, setFooterPages] = useState<StaticPage[]>([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [noticeMessage, setNoticeMessage] = useState<string | null>(null);
 
@@ -105,6 +107,29 @@ export function MainLayout({
       window.removeEventListener('meraj:bookmarks-changed', handleBookmarksChanged);
     };
   }, [currentUser, effectiveAgeGroup, currentRoute]);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadFooterPages = async () => {
+      await appContainer.ensureInitializedAtStartup();
+      const pages = await appContainer.layoutManagementService.listFooterStaticPages();
+      if (active) {
+        setFooterPages(pages);
+      }
+    };
+
+    void loadFooterPages();
+
+    const handleFooterChanged = () => {
+      void loadFooterPages();
+    };
+    window.addEventListener('meraj:footer-pages-changed', handleFooterChanged);
+    return () => {
+      active = false;
+      window.removeEventListener('meraj:footer-pages-changed', handleFooterChanged);
+    };
+  }, [currentRoute]);
 
   const handleSampleAction = () => {
     setNoticeMessage(t('layout.nav.sampleNoticeDesc'));
@@ -498,11 +523,14 @@ export function MainLayout({
       <footer className="mt-12 bg-[var(--color-surface)] border-t border-[var(--color-border)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Column 1: Studio Intro */}
+            {/* Column 1: Site Title, Subtitle & Intro */}
             <div className="space-y-2.5">
               <h2 className="text-base font-bold text-[var(--color-text)]">
-                {t('layout.footer.studioTitle')}
+                {siteTitle || t('app.name')}
               </h2>
+              <p className="text-xs font-semibold text-[var(--color-primary)]">
+                {siteSubtitle || t('app.subtitle')}
+              </p>
               <p className="text-xs sm:text-sm text-[var(--color-muted)] leading-relaxed">
                 {t('layout.footer.studioDesc')}
               </p>
@@ -532,6 +560,14 @@ export function MainLayout({
                   </li>
                 )}
                 <li>
+                  <a
+                    href={currentUser ? '#/account/profile' : '#/account/login'}
+                    className="hover:text-[var(--color-text)] hover:underline underline-offset-4"
+                  >
+                    {currentUser ? t('layout.footer.linkProfile') : t('layout.footer.linkAccount')}
+                  </a>
+                </li>
+                <li>
                   <a href="#/health" className="hover:text-[var(--color-text)] hover:underline underline-offset-4">
                     {t('layout.footer.linkHealth')}
                   </a>
@@ -549,49 +585,29 @@ export function MainLayout({
               </ul>
             </div>
 
-            {/* Column 3: Contact, Terms & Privacy */}
+            {/* Column 3: Dynamic Help & Static Pages */}
             <div className="space-y-2.5">
               <h2 className="text-sm font-semibold text-[var(--color-text)]">
                 {t('layout.footer.supportTitle')}
               </h2>
-              <ul className="space-y-2 text-xs sm:text-sm text-[var(--color-muted)]">
-                <li>
-                  <button
-                    type="button"
-                    onClick={handleSampleAction}
-                    className="hover:text-[var(--color-text)] hover:underline underline-offset-4"
-                  >
-                    {t('layout.footer.linkAbout')}
-                  </button>
-                </li>
-                <li>
-                  <button
-                    type="button"
-                    onClick={handleSampleAction}
-                    className="hover:text-[var(--color-text)] hover:underline underline-offset-4"
-                  >
-                    {t('layout.footer.linkContact')}
-                  </button>
-                </li>
-                <li>
-                  <button
-                    type="button"
-                    onClick={handleSampleAction}
-                    className="hover:text-[var(--color-text)] hover:underline underline-offset-4"
-                  >
-                    {t('layout.footer.linkTerms')}
-                  </button>
-                </li>
-                <li>
-                  <button
-                    type="button"
-                    onClick={handleSampleAction}
-                    className="hover:text-[var(--color-text)] hover:underline underline-offset-4"
-                  >
-                    {t('layout.footer.linkPrivacy')}
-                  </button>
-                </li>
-              </ul>
+              {footerPages.length === 0 ? (
+                <p className="text-xs text-[var(--color-muted)]">
+                  {t('layout.footer.noStaticPages')}
+                </p>
+              ) : (
+                <ul className="space-y-2 text-xs sm:text-sm text-[var(--color-muted)]">
+                  {footerPages.map((page) => (
+                    <li key={page.id}>
+                      <a
+                        href={`#/p/${encodeURIComponent(page.slug)}`}
+                        className="hover:text-[var(--color-text)] hover:underline underline-offset-4"
+                      >
+                        {page.title}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
 

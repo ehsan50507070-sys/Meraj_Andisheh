@@ -6,8 +6,8 @@ import { ComponentsLabPage } from './web/pages/ComponentsLabPage';
 import { ContentBankPage } from './web/pages/ContentBankPage';
 import { ContentRequestsPage } from './web/pages/ContentRequestsPage';
 import { HealthPage } from './web/pages/HealthPage';
+import { HomePage } from './web/pages/HomePage';
 import { InitialAdminSetupPage } from './web/pages/InitialAdminSetupPage';
-import { PublicHomePreviewPage } from './web/pages/PublicHomePreviewPage';
 import { SearchResultsPage } from './web/pages/SearchResultsPage';
 import { ChangePasswordPage } from './web/pages/account/ChangePasswordPage';
 import { ConfirmEmailPage } from './web/pages/account/ConfirmEmailPage';
@@ -28,7 +28,7 @@ void appContainer.ensureInitializedAtStartup();
 const routes: HashRouteConfig[] = [
   {
     path: '/',
-    render: (currentRoute) => <PublicHomePreviewPage currentRoute={currentRoute} />,
+    render: (currentRoute) => <HomePage currentRoute={currentRoute} />,
   },
   {
     path: '/content',

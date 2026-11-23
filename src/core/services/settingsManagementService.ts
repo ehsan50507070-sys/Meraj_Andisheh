@@ -86,6 +86,12 @@ export class SettingsManagementService {
     return trimmed && trimmed.length > 0 ? trimmed : fallbackTitle;
   }
 
+  public async getPublicSiteSubtitle(fallbackSubtitle: string): Promise<string> {
+    const setting = await this.repository.getSiteSettingByKey('Site.Subtitle');
+    const trimmed = setting?.value?.trim();
+    return trimmed && trimmed.length > 0 ? trimmed : fallbackSubtitle;
+  }
+
   public async getPublicFeatureFlagState(key: FeatureFlagKey): Promise<boolean> {
     const stored = await this.repository.getAllFeatureFlags();
     return stored.find((flag) => flag.key === key)?.isEnabled === true;
