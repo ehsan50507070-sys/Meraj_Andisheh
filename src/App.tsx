@@ -4,6 +4,7 @@ import { AgeGateModal } from './web/components/AgeGateModal';
 import { AgeProvider } from './web/context/AgeContext';
 import { ComponentsLabPage } from './web/pages/ComponentsLabPage';
 import { ContentBankPage } from './web/pages/ContentBankPage';
+import { ContentRequestsPage } from './web/pages/ContentRequestsPage';
 import { HealthPage } from './web/pages/HealthPage';
 import { InitialAdminSetupPage } from './web/pages/InitialAdminSetupPage';
 import { PublicHomePreviewPage } from './web/pages/PublicHomePreviewPage';
@@ -36,6 +37,10 @@ const routes: HashRouteConfig[] = [
   {
     path: '/search',
     render: (currentRoute) => <SearchResultsPage currentRoute={currentRoute} />,
+  },
+  {
+    path: '/requests',
+    render: (currentRoute) => <ContentRequestsPage currentRoute={currentRoute} />,
   },
   {
     path: '/health',

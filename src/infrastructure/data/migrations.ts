@@ -27,6 +27,7 @@ export const STORE_NAMES = {
   COMMENTS: 'comments',
   COMMENT_REPORTS: 'commentReports',
   BLOCKED_WORDS: 'blockedWords',
+  CONTENT_REQUESTS: 'contentRequests',
 } as const;
 
 export const STAGE3_OBJECT_STORES: readonly string[] = [
@@ -81,6 +82,10 @@ export const STAGE16_OBJECT_STORES: readonly string[] = [
   STORE_NAMES.COMMENTS,
   STORE_NAMES.COMMENT_REPORTS,
   STORE_NAMES.BLOCKED_WORDS,
+] as const;
+
+export const STAGE17_OBJECT_STORES: readonly string[] = [
+  STORE_NAMES.CONTENT_REQUESTS,
 ] as const;
 
 interface IndexSpec {
@@ -383,6 +388,20 @@ const STAGE16_STORE_SPECS: readonly StoreSpec[] = [
   },
 ];
 
+const STAGE17_STORE_SPECS: readonly StoreSpec[] = [
+  {
+    name: STORE_NAMES.CONTENT_REQUESTS,
+    keyPath: 'id',
+    autoIncrement: true,
+    indexes: [
+      { name: 'by_userId', keyPath: 'userId' },
+      { name: 'by_status', keyPath: 'status' },
+      { name: 'by_createdAt', keyPath: 'createdAt' },
+      { name: 'by_linkedContentId', keyPath: 'linkedContentId' },
+    ],
+  },
+];
+
 export const DATABASE_MIGRATIONS: readonly MigrationStep[] = [
   {
     version: 1,
@@ -475,6 +494,30 @@ export const DATABASE_MIGRATIONS: readonly MigrationStep[] = [
       if (oldVersion > 0 && transaction && db.objectStoreNames.contains(STORE_NAMES.META)) {
         transaction.objectStore(STORE_NAMES.META).put({
           key: 'stage16_comments_default_enabled_v1',
+          value: '1',
+          updatedAtUtc: new Date().toISOString(),
+        });
+      }
+    },
+  },
+  {
+    version: 11,
+    up: (db, transaction, oldVersion) => {
+      for (const spec of STAGE17_STORE_SPECS) {
+        ensureStore(db, transaction, spec);
+      }
+      if (
+        oldVersion > 0 &&
+        transaction &&
+        db.objectStoreNames.contains(STORE_NAMES.FEATURE_FLAGS)
+      ) {
+        transaction
+          .objectStore(STORE_NAMES.FEATURE_FLAGS)
+          .put({ key: 'ContentRequests', isEnabled: true });
+      }
+      if (oldVersion > 0 && transaction && db.objectStoreNames.contains(STORE_NAMES.META)) {
+        transaction.objectStore(STORE_NAMES.META).put({
+          key: 'stage17_content_requests_default_enabled_v1',
           value: '1',
           updatedAtUtc: new Date().toISOString(),
         });

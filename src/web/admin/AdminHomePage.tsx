@@ -12,12 +12,18 @@ interface AdminHomePageProps {
 }
 
 export function AdminHomePage({ currentRoute }: AdminHomePageProps) {
-  const { currentUser, userPermissions, isCommentsEnabled } = useAuth();
+  const {
+    currentUser,
+    userPermissions,
+    isCommentsEnabled,
+    isContentRequestsEnabled,
+  } = useAuth();
 
   const sectionCards = ADMIN_ROUTES.filter(
     (item) =>
       item.id !== 'home' &&
       !(item.id === 'comments' && !isCommentsEnabled) &&
+      !(item.id === 'requests' && !isContentRequestsEnabled) &&
       canSeeAdminNavItem(currentUser, userPermissions, item.requirement),
   );
 

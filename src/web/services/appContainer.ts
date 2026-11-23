@@ -4,6 +4,7 @@ import { ContentCatalogService } from '../../core/services/contentCatalogService
 import { ContentDetailService } from '../../core/services/contentDetailService';
 import { ContentIntegrityService } from '../../core/services/contentIntegrityService';
 import { ContentManagementService } from '../../core/services/contentManagementService';
+import { ContentRequestService } from '../../core/services/contentRequestService';
 import { DownloadService } from '../../core/services/downloadService';
 import { FileUploadService } from '../../core/services/fileUploadService';
 import { HealthCheckService } from '../../core/services/HealthCheckService';
@@ -28,6 +29,7 @@ import { IndexedDbAdminRepository } from '../../infrastructure/data/IndexedDbAdm
 import { IndexedDbAuthRepository } from '../../infrastructure/data/IndexedDbAuthRepository';
 import { IndexedDbCommentRepository } from '../../infrastructure/data/IndexedDbCommentRepository';
 import { IndexedDbContentRepository } from '../../infrastructure/data/IndexedDbContentRepository';
+import { IndexedDbContentRequestRepository } from '../../infrastructure/data/IndexedDbContentRequestRepository';
 import { IndexedDbDataStore } from '../../infrastructure/data/IndexedDbDataStore';
 import { IndexedDbDownloadEventRepository } from '../../infrastructure/data/IndexedDbDownloadEventRepository';
 import { IndexedDbInteractionRepository } from '../../infrastructure/data/IndexedDbInteractionRepository';
@@ -60,6 +62,7 @@ export interface AppContainer {
   downloadEventRepository: IndexedDbDownloadEventRepository;
   interactionRepository: IndexedDbInteractionRepository;
   commentRepository: IndexedDbCommentRepository;
+  contentRequestRepository: IndexedDbContentRequestRepository;
   accountCleanupRepository: IndexedDbAccountCleanupRepository;
   downloadTokenProtector: HmacDownloadTokenProtector;
   fileStorage: LocalIndexedDbFileStorage;
@@ -87,6 +90,7 @@ export interface AppContainer {
   downloadService: DownloadService;
   interactionService: InteractionService;
   commentService: CommentService;
+  contentRequestService: ContentRequestService;
   profileService: ProfileService;
   searchSuggestionService: SearchSuggestionService;
   smartImportService: SmartImportService;
@@ -111,6 +115,7 @@ const viewEventRepository = new IndexedDbViewEventRepository(dataStore);
 const downloadEventRepository = new IndexedDbDownloadEventRepository(dataStore);
 const interactionRepository = new IndexedDbInteractionRepository(dataStore);
 const commentRepository = new IndexedDbCommentRepository(dataStore);
+const contentRequestRepository = new IndexedDbContentRequestRepository(dataStore);
 const accountCleanupRepository = new IndexedDbAccountCleanupRepository(dataStore);
 const downloadTokenProtector = new HmacDownloadTokenProtector();
 const fileStorage = new LocalIndexedDbFileStorage(dataStore, clock);
@@ -241,6 +246,17 @@ const commentService = new CommentService({
   logger,
   deletedDisplayName: t('user.deletedDisplayName'),
 });
+const contentRequestService = new ContentRequestService({
+  contentRequestRepository,
+  contentRepository,
+  adminRepository,
+  taxonomyRepository,
+  permissionPolicyService,
+  searchNormalizer,
+  clock,
+  logger,
+  deletedDisplayName: t('user.deletedDisplayName'),
+});
 const profileService = new ProfileService({
   authRepository,
   contentRepository,
@@ -285,6 +301,29 @@ export async function ensureStage16CommentsDefaultFlagAsync(
   });
 }
 
+export const STAGE17_CONTENT_REQUESTS_FLAG_META_KEY =
+  'stage17_content_requests_default_enabled_v1';
+
+export async function ensureStage17ContentRequestsDefaultFlagAsync(
+  store: IndexedDbDataStore = dataStore,
+): Promise<void> {
+  const existingMeta = await store.getMeta(
+    STAGE17_CONTENT_REQUESTS_FLAG_META_KEY,
+  );
+  if (existingMeta) {
+    return;
+  }
+  await store.putRecord(STORE_NAMES.FEATURE_FLAGS, {
+    key: 'ContentRequests',
+    isEnabled: true,
+  });
+  await store.setMeta({
+    key: STAGE17_CONTENT_REQUESTS_FLAG_META_KEY,
+    value: '1',
+    updatedAtUtc: clock.nowUtcIso(),
+  });
+}
+
 let startupRecordedInSession = false;
 let startupInitPromise: Promise<void> | null = null;
 
@@ -312,6 +351,7 @@ function ensureInitializedAtStartup(): Promise<void> {
       try {
         await databaseSeeder.seed(t('logs.seedExecuted'));
         await ensureStage16CommentsDefaultFlagAsync(dataStore);
+        await ensureStage17ContentRequestsDefaultFlagAsync(dataStore);
         await initialSuperAdminService.bootstrapFromEnvIfConfigured(
           envConfig.initialSuperAdminEmail,
           envConfig.initialSuperAdminTempPassword,
@@ -341,6 +381,7 @@ export const appContainer: AppContainer = {
   downloadEventRepository,
   interactionRepository,
   commentRepository,
+  contentRequestRepository,
   accountCleanupRepository,
   downloadTokenProtector,
   fileStorage,
@@ -368,6 +409,7 @@ export const appContainer: AppContainer = {
   downloadService,
   interactionService,
   commentService,
+  contentRequestService,
   profileService,
   searchSuggestionService,
   smartImportService,

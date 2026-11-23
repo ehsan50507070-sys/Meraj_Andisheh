@@ -10,6 +10,7 @@ import { AdminUsersPage } from '../admin/AdminUsersPage';
 import { AdminContentFormPage } from '../admin/pages/AdminContentFormPage';
 import { AdminContentListPage } from '../admin/pages/AdminContentListPage';
 import { AdminCommentsPage } from '../admin/pages/AdminCommentsPage';
+import { AdminRequestsPage } from '../admin/pages/AdminRequestsPage';
 import { AdminSmartImportPage } from '../admin/pages/AdminSmartImportPage';
 import { AdminTaxonomyPage } from '../admin/pages/AdminTaxonomyPage';
 import { canSeeAdminNavItem, findAdminRouteSpec } from '../admin/adminNavConfig';
@@ -63,7 +64,13 @@ export function navigateToHash(path: string): void {
 }
 
 export function HashRouter({ routes, defaultRoute }: HashRouterProps) {
-  const { currentUser, userPermissions, isCommentsEnabled, isAuthReady } = useAuth();
+  const {
+    currentUser,
+    userPermissions,
+    isCommentsEnabled,
+    isContentRequestsEnabled,
+    isAuthReady,
+  } = useAuth();
   const normalizedDefault = splitHashParts(defaultRoute).path;
   const mustForcePasswordChange = Boolean(isAuthReady && currentUser?.mustChangePassword);
   const lastDeniedLogKeyRef = useRef<string | null>(null);
@@ -123,7 +130,8 @@ export function HashRouter({ routes, defaultRoute }: HashRouterProps) {
   const matchedAdminSpec = isAdminRoute ? findAdminRouteSpec(routeState.path) : null;
   const hasAdminShellAccess = isAuthReady && canAccessAdminRoute(currentUser);
   const isModuleDisabledAdminRoute =
-    matchedAdminSpec?.id === 'comments' && !isCommentsEnabled;
+    (matchedAdminSpec?.id === 'comments' && !isCommentsEnabled) ||
+    (matchedAdminSpec?.id === 'requests' && !isContentRequestsEnabled);
   const isAdminAllowed =
     hasAdminShellAccess &&
     matchedAdminSpec !== null &&
@@ -284,6 +292,8 @@ export function HashRouter({ routes, defaultRoute }: HashRouterProps) {
         return <AdminTaxonomyPage currentRoute={routeState.fullHash} />;
       case 'comments':
         return <AdminCommentsPage currentRoute={routeState.fullHash} />;
+      case 'requests':
+        return <AdminRequestsPage currentRoute={routeState.fullHash} />;
       case 'content': {
         const lowerPath = routeState.path.toLowerCase();
         if (lowerPath === '/admin/content/smart-import') {

@@ -3,7 +3,7 @@ export const faResources = {
   'app.name': 'معراج اندیشه',
   'app.subtitle': 'پلتفرم بانک محتوای فارسی',
   'app.stageLabel': 'مرحله {stage} از {total}',
-  'app.stageName': 'سیستم نظرات، ایمنی کودک، کلمات ممنوع و پنل نظارت',
+  'app.stageName': 'درخواست محتوا، پیگیری وضعیت در پروفایل و پنل مدیریت درخواست‌ها',
   'app.footerNote': 'پلتفرم معراج اندیشه · زیرساخت و سامانه طراحی پایه',
 
   // Themes
@@ -33,6 +33,7 @@ export const faResources = {
   'layout.nav.categoriesButton': 'دسته‌بندی موضوعات',
   'layout.nav.home': 'صفحه اصلی',
   'layout.nav.contentBank': 'بانک محتوا',
+  'layout.nav.requests': 'درخواست محتوا',
   'layout.nav.health': 'وضعیت سلامت',
   'layout.nav.devComponents': 'آزمایشگاه کامپوننت‌ها',
   'layout.nav.category.science': 'علوم و نجوم',
@@ -52,6 +53,7 @@ export const faResources = {
   'layout.footer.quickAccessTitle': 'دسترسی سریع',
   'layout.footer.linkHome': 'صفحه اصلی',
   'layout.footer.linkContentBank': 'بانک محتوا',
+  'layout.footer.linkRequests': 'درخواست محتوا',
   'layout.footer.linkHealth': 'پایش سلامت سامانه',
   'layout.footer.linkComponents': 'آزمایشگاه کامپوننت‌ها',
   'layout.footer.supportTitle': 'تماس و قوانین',
@@ -2007,11 +2009,12 @@ export const faResources = {
   'profile.downloads.unavailableContent': 'محتوای بایگانی‌شده یا حذف‌شده',
   'profile.downloads.unknownFile': 'فایل پیوست',
 
-  // Tab 4: My Requests Placeholder (Stage 17)
+  // Tab 4: My Requests (Stage 17)
   'profile.requests.title': 'درخواست‌های محتوای من',
-  'profile.requests.badge': 'آماده‌سازی برای مرحله‌ی ۱۷',
-  'profile.requests.desc':
-    'بخش ثبت درخواست تولید محتوای جدید و پیگیری وضعیت بررسی آن‌ها توسط تیم محتوا در مرحله‌ی ۱۷ سامانه فعال خواهد شد.',
+  'profile.requests.subtitle':
+    'فهرست درخواست‌های تولید محتوای شما، وضعیت بررسی، یادداشت استودیو و پیوند به محتوای منتشرشده.',
+  'profile.requests.newRequestButton': 'ثبت درخواست جدید',
+  'profile.requests.openQuotaBadge': 'درخواست‌های باز: {open} از {max}',
 
   // Tab 5: Personalization Placeholder (Stage 20)
   'profile.personalization.title': 'تنظیمات شخصی‌سازی هوشمند پیشنهادها',
@@ -2249,6 +2252,139 @@ export const faResources = {
     'کلید ماژول Comments، نمایش «کاربر حذف‌شده» و ماندگاری در IndexedDB v10',
   'tests.stage16.featureFlagDeletedUserAndIdbV10.desc':
     'خاموشی ماژول Comments ارسال و نمایش نظر و پنل را غیرفعال اما داده‌ها را حفظ می‌کند؛ نظر کاربر حذف‌شده با «کاربر حذف‌شده» برمی‌گردد و جدول‌های نسخه ۱۰ IndexedDB تأیید می‌شوند.',
+
+  // Stage 17: Content Requests (#/requests), Profile Tracking & Admin Panel (#/admin/requests)
+  'requests.status.1': 'ثبت‌شده',
+  'requests.status.2': 'در حال انجام',
+  'requests.status.3': 'انجام‌شده',
+  'requests.status.4': 'رد‌شده',
+
+  'requests.page.title': 'درخواست تولید محتوای جدید',
+  'requests.page.subtitle':
+    'اگر موضوع، منبع یا محتوای مفیدی مد نظر شماست که هنوز در بانک محتوا وجود ندارد، درخواست خود را برای تیم تحریریه و تولید استودیو ثبت کنید.',
+  'requests.page.quotaBadge': 'درخواست‌های باز شما: {open} از {max}',
+  'requests.page.quotaReachedAlertTitle': 'سقف درخواست‌های هم‌زمان پر شده است',
+  'requests.page.quotaReachedAlertBody':
+    'شما در حال حاضر ۳ درخواست باز (ثبت‌شده یا در حال انجام) دارید. پس از تعیین تکلیف یکی از درخواست‌های قبلی (انجام‌شده یا رد‌شده)، امکان ثبت درخواست جدید دوباره فعال می‌شود.',
+
+  'requests.guest.title': 'برای ثبت درخواست محتوا وارد حساب کاربری شوید',
+  'requests.guest.subtitle':
+    'ثبت درخواست تولید محتوا و پیگیری وضعیت بررسی آن‌ها ویژه‌ی اعضای واردشده سامانه است.',
+  'requests.guest.loginButton': 'ورود و بازگشت به صفحه درخواست‌ها',
+  'requests.guest.registerButton': 'ثبت‌نام عضو جدید',
+
+  'requests.form.sectionTitle': 'ثبت درخواست جدید',
+  'requests.form.titleLabel': 'عنوان درخواست',
+  'requests.form.titlePlaceholder': 'مثلاً: معرفی جامع ابزارهای هوش مصنوعی برای دانش‌آموزان',
+  'requests.form.titleCounter': '{current} / ۱۵۰ نویسه',
+  'requests.form.descriptionLabel': 'توضیحات و جزئیات درخواست',
+  'requests.form.descriptionPlaceholder':
+    'بفرمایید چه موضوع، سطح علمی، رده‌ی سنی یا قالبی مد نظر شماست و چرا این محتوا مفید است...',
+  'requests.form.descriptionCounter': '{current} / ۲۰۰۰ نویسه',
+  'requests.form.linkLabel': 'لینک مرجع یا نمونه پیشنهادی (اختیاری)',
+  'requests.form.linkPlaceholder': 'https://example.com/resource',
+  'requests.form.linkHint': 'در صورت وارد کردن نشانی، فقط لینک معتبر با http:// یا https:// پذیرفته می‌شود.',
+  'requests.form.submitButton': 'ارسال درخواست محتوا',
+  'requests.form.submittingButton': 'در حال ثبت درخواست...',
+  'requests.form.submitSuccess':
+    'درخواست شما با موفقیت ثبت شد و برای بررسی تیم محتوا ارسال گردید.',
+
+  'requests.list.sectionTitle': 'درخواست‌های من ({count})',
+  'requests.list.loading': 'در حال بارگذاری درخواست‌های شما...',
+  'requests.list.emptyTitle': 'هنوز هیچ درخواست محتوایی ثبت نکرده‌اید.',
+  'requests.list.emptyBody':
+    'می‌توانید از فرم بالا درخواست موضوع یا محتوای جدید ثبت کنید تا تیم تحریریه آن را بررسی کند.',
+  'requests.list.createdAtLabel': 'تاریخ ثبت: {date}',
+  'requests.list.updatedAtLabel': 'آخرین بروزرسانی: {date}',
+  'requests.list.referenceLinkLabel': 'لینک مرجع ارسالی',
+  'requests.list.adminNoteTitle': 'پاسخ / یادداشت استودیو',
+  'requests.list.openPublishedContent': 'مشاهده‌ی محتوای منتشرشده: {title}',
+
+  'requests.error.featureDisabled': 'ماژول درخواست محتوا در حال حاضر غیرفعال است.',
+  'requests.error.authRequired': 'برای ثبت درخواست باید وارد حساب کاربری شوید.',
+  'requests.error.forbidden': 'شما مجاز به مشاهده‌ی درخواست‌های این کاربر نیستید.',
+  'requests.error.titleInvalid': 'عنوان درخواست باید بین ۱ تا ۱۵۰ نویسه باشد.',
+  'requests.error.descriptionInvalid': 'توضیحات درخواست باید بین ۱ تا ۲۰۰۰ نویسه باشد.',
+  'requests.error.linkInvalid':
+    'لینک واردشده معتبر نیست؛ فقط نشانی کامل با http:// یا https:// مجاز است.',
+  'requests.error.maxOpenReached':
+    'حداکثر ۳ درخواست باز هم‌زمان مجاز است؛ لطفاً منتظر تعیین تکلیف درخواست‌های فعلی بمانید.',
+
+  // Admin Content Requests Panel (#/admin/requests)
+  'requests.admin.title': 'مدیریت درخواست‌های محتوا',
+  'requests.admin.subtitle':
+    'بررسی پیشنهادهای کاربران، تغییر وضعیت رسیدگی، ثبت یادداشت استودیو و اتصال به محتوای منتشرشده.',
+  'requests.admin.summary.submitted': 'ثبت‌شده',
+  'requests.admin.summary.inProgress': 'در حال انجام',
+  'requests.admin.summary.done': 'انجام‌شده',
+  'requests.admin.summary.rejected': 'رد‌شده',
+
+  'requests.admin.filter.searchLabel': 'جستجو در عنوان، توضیح یا درخواست‌کننده',
+  'requests.admin.filter.searchPlaceholder': 'عنوان درخواست، نام کاربر یا بخشی از متن...',
+  'requests.admin.filter.statusLabel': 'وضعیت رسیدگی',
+  'requests.admin.filter.statusAll': 'همه وضعیت‌ها',
+
+  'requests.admin.col.requester': 'درخواست‌کننده',
+  'requests.admin.col.request': 'عنوان و شرح درخواست',
+  'requests.admin.col.status': 'وضعیت',
+  'requests.admin.col.linkedContent': 'محتوای متصل',
+  'requests.admin.col.dates': 'تاریخ ثبت / بروزرسانی',
+  'requests.admin.col.actions': 'عملیات',
+  'requests.admin.noLinkedContent': 'بدون اتصال',
+  'requests.admin.hasAdminNoteBadge': 'دارای یادداشت استودیو',
+  'requests.admin.reviewButton': 'بررسی / بروزرسانی',
+  'requests.admin.openReferenceLink': 'لینک مرجع کاربر',
+  'requests.admin.emptyTitle': 'هیچ درخواست محتوایی مطابق فیلتر یافت نشد.',
+  'requests.admin.emptyBody': 'فیلترها را تغییر دهید یا منتظر ثبت درخواست‌های جدید کاربران باشید.',
+
+  'requests.admin.modal.title': 'بررسی و بروزرسانی درخواست محتوا',
+  'requests.admin.modal.requesterLabel': 'درخواست‌کننده: {name}',
+  'requests.admin.modal.statusLabel': 'وضعیت جدید درخواست',
+  'requests.admin.modal.adminNoteLabel': 'پاسخ / یادداشت استودیو (اختیاری، حداکثر ۱۰۰۰ نویسه)',
+  'requests.admin.modal.adminNotePlaceholder':
+    'توضیح وضعیت بررسی، دلیل رد یا پیغام برای کاربر را بنویسید...',
+  'requests.admin.modal.adminNoteCounter': '{current} / ۱۰۰۰ نویسه',
+  'requests.admin.modal.linkedContentTitle': 'اتصال به محتوای منتشرشده (اختیاری)',
+  'requests.admin.modal.linkedContentSearchLabel': 'جستجو در محتواهای منتشرشده',
+  'requests.admin.modal.linkedContentSearchPlaceholder': 'عنوان یا اسلاگ محتوا را بنویسید...',
+  'requests.admin.modal.selectedContentLabel': 'محتوای متصل فعلی',
+  'requests.admin.modal.clearLinkButton': 'حذف اتصال',
+  'requests.admin.modal.previewContentButton': 'پیش‌نمایش صفحه محتوا',
+  'requests.admin.modal.noPublishedMatches': 'محتوای منتشرشده‌ای با این عبارت یافت نشد.',
+  'requests.admin.modal.selectItemButton': 'انتخاب',
+  'requests.admin.modal.selectedItemBadge': 'انتخاب‌شده',
+  'requests.admin.modal.cancelButton': 'انصراف',
+  'requests.admin.modal.saveButton': 'ذخیره تغییرات',
+  'requests.admin.modal.savingButton': 'در حال ذخیره...',
+  'requests.admin.feedback.updated': 'وضعیت و جزئیات درخواست با موفقیت بروزرسانی شد.',
+
+  'requests.admin.error.notFound': 'درخواست مورد نظر یافت نشد.',
+  'requests.admin.error.invalidStatus': 'وضعیت انتخاب‌شده معتبر نیست.',
+  'requests.admin.error.noteTooLong': 'یادداشت استودیو نباید بیشتر از ۱۰۰۰ نویسه باشد.',
+  'requests.admin.error.linkedContentNotPublished':
+    'فقط اتصال به محتواهای منتشرشده (Published) مجاز است.',
+
+  // Stage 17 Unit Tests
+  'tests.stage17.max3OpenLimitAndFreeSlot.name':
+    'محدودیت حداکثر ۳ درخواست باز هم‌زمان و آزاد شدن ظرفیت با Done/Rejected',
+  'tests.stage17.max3OpenLimitAndFreeSlot.desc':
+    'ثبت ۳ درخواست باز برای عضو واقعی موفق و چهارمین درخواست با MAX_OPEN_REQUESTS_REACHED رد می‌شود؛ با تغییر وضعیت یکی به Done، درخواست چهارم پذیرفته می‌شود.',
+  'tests.stage17.validationAndSafeLink.name':
+    'اعتبارسنجی عنوان، توضیح و لینک امن (پذیرش https و رد javascript/http نامعتبر)',
+  'tests.stage17.validationAndSafeLink.desc':
+    'لینک‌های javascript:alert(1) و نشانی نامعتبر با REQUEST_LINK_INVALID و عنوان بالای ۱۵۰ نویسه با REQUEST_TITLE_INVALID رد شده و لینک https معتبر همراه با یادداشت ساده ذخیره می‌شود.',
+  'tests.stage17.rbacAndPrivacyIsolation.name':
+    'تفکیک دسترسی مدیریتی (requests.manage) و حریم خصوصی درخواست‌های کاربر',
+  'tests.stage17.rbacAndPrivacyIsolation.desc':
+    'عضو B نمی‌تواند درخواست‌های عضو A را بخواند (FORBIDDEN)، همکار بدون requests.manage کد ۴۰۳ می‌گیرد و همکار مجاز درخواست را بروزرسانی می‌کند.',
+  'tests.stage17.linkedPublishedContentOnly.name':
+    'اتصال درخواست به محتوای منتشرشده، رد محتوای پیش‌نویس و نمایش پیوند امن',
+  'tests.stage17.linkedPublishedContentOnly.desc':
+    'اتصال به محتوای Draft با LINKED_CONTENT_NOT_PUBLISHED رد می‌شود؛ اتصال به محتوای Published ذخیره شده و فقط برای رده‌های سنی مجاز نمایش داده می‌شود.',
+  'tests.stage17.featureFlagAndIdbV11.name':
+    'کلید ماژول ContentRequests (غیرفعالسازی بدون حذف داده) و ماندگاری IndexedDB v11',
+  'tests.stage17.featureFlagAndIdbV11.desc':
+    'خاموشی ماژول ثبت، نمایش و پنل را با ۴۰۴ غیرفعال اما داده‌ها را دست‌نخورده حفظ می‌کند و ObjectStore نسخه ۱۱ (contentRequests) راستی‌آزمایی می‌شود.',
 } as const;
 
 export type ResourceKey = keyof typeof faResources;

@@ -44,7 +44,7 @@ export function MainLayout({
   currentRoute,
   children,
 }: MainLayoutProps) {
-  const { currentUser, siteTitle, logout } = useAuth();
+  const { currentUser, siteTitle, isContentRequestsEnabled, logout } = useAuth();
   const {
     effectiveAgeGroup,
     lastSwitchNotice,
@@ -72,6 +72,7 @@ export function MainLayout({
   const normalizedPath = currentRoute.split('?')[0].replace(/^#/, '') || '/';
   const isContentBankActive =
     normalizedPath === '/content' || normalizedPath.startsWith('/content/');
+  const isRequestsActive = normalizedPath === '/requests';
 
   useEffect(() => {
     let active = true;
@@ -312,6 +313,19 @@ export function MainLayout({
                   {t('layout.nav.contentBank')}
                 </a>
 
+                {isContentRequestsEnabled && (
+                  <a
+                    href="#/requests"
+                    className={`whitespace-nowrap shrink-0 py-1 hover:underline underline-offset-4 transition-colors ${
+                      isRequestsActive
+                        ? 'font-bold text-[var(--color-text)] underline'
+                        : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
+                    }`}
+                  >
+                    {t('layout.nav.requests')}
+                  </a>
+                )}
+
                 <a
                   href="#/health"
                   className={`whitespace-nowrap shrink-0 py-1 hover:underline underline-offset-4 transition-colors ${
@@ -379,6 +393,19 @@ export function MainLayout({
                   >
                     {t('layout.nav.contentBank')}
                   </a>
+                  {isContentRequestsEnabled && (
+                    <a
+                      href="#/requests"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`py-1 whitespace-nowrap ${
+                        isRequestsActive
+                          ? 'font-bold text-[var(--color-text)] underline underline-offset-4'
+                          : 'text-[var(--color-muted)]'
+                      }`}
+                    >
+                      {t('layout.nav.requests')}
+                    </a>
+                  )}
                   <a
                     href="#/health"
                     onClick={() => setMobileMenuOpen(false)}
@@ -497,6 +524,13 @@ export function MainLayout({
                     {t('layout.footer.linkContentBank')}
                   </a>
                 </li>
+                {isContentRequestsEnabled && (
+                  <li>
+                    <a href="#/requests" className="hover:text-[var(--color-text)] hover:underline underline-offset-4">
+                      {t('layout.footer.linkRequests')}
+                    </a>
+                  </li>
+                )}
                 <li>
                   <a href="#/health" className="hover:text-[var(--color-text)] hover:underline underline-offset-4">
                     {t('layout.footer.linkHealth')}

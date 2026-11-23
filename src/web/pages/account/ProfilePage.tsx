@@ -15,10 +15,15 @@ import {
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { DownloadKind } from '../../../core/domain/analytics';
 import { DISPLAY_NAME_MAX_LENGTH } from '../../../core/services/authService';
+import {
+  MAX_OPEN_CONTENT_REQUESTS,
+  type UserContentRequestView,
+} from '../../../core/services/contentRequestService';
 import type { BookmarkedContentEntry } from '../../../core/services/interactionService';
 import type { DownloadHistoryEntry } from '../../../core/services/profileService';
 import { resolveThemeKey } from '../../../core/services/themeService';
 import { useAuth } from '../../auth/AuthContext';
+import { UserRequestsList } from '../../components/UserRequestsList';
 import { Alert, Button, ContentCard, FormField, Modal, Tag } from '../../components/ui';
 import { useAge } from '../../context/AgeContext';
 import { MainLayout } from '../../layouts/MainLayout';
@@ -70,10 +75,13 @@ function extractTabFromRoute(currentRoute: string): ProfileTabId {
 }
 
 export function ProfilePage({ currentRoute }: ProfilePageProps) {
-  const { currentUser, isAuthReady, refreshAuthState } = useAuth();
+  const { currentUser, isAuthReady, isContentRequestsEnabled, refreshAuthState } =
+    useAuth();
   const { activeAgeGroups, effectiveAgeGroup, refreshAgeGroups } = useAge();
 
-  const activeTab = useMemo(() => extractTabFromRoute(currentRoute), [currentRoute]);
+  const rawActiveTab = useMemo(() => extractTabFromRoute(currentRoute), [currentRoute]);
+  const activeTab: ProfileTabId =
+    rawActiveTab === 'requests' && !isContentRequestsEnabled ? 'info' : rawActiveTab;
 
   // Tab 1: Edit profile state
   const [displayName, setDisplayName] = useState<string>('');
@@ -91,6 +99,14 @@ export function ProfilePage({ currentRoute }: ProfilePageProps) {
   // Tab 3: Download history state
   const [downloadHistory, setDownloadHistory] = useState<DownloadHistoryEntry[]>([]);
   const [isLoadingDownloads, setIsLoadingDownloads] = useState<boolean>(false);
+
+  // Tab 4: User content requests state (Stage 17)
+  const [userRequests, setUserRequests] = useState<UserContentRequestView[]>([]);
+  const [openRequestsCount, setOpenRequestsCount] = useState<number>(0);
+  const [maxOpenRequests, setMaxOpenRequests] = useState<number>(
+    MAX_OPEN_CONTENT_REQUESTS,
+  );
+  const [isLoadingRequests, setIsLoadingRequests] = useState<boolean>(false);
 
   // Tab 6: Danger zone & account deletion modal state
   const [isLastSuperAdmin, setIsLastSuperAdmin] = useState<boolean>(false);
@@ -252,6 +268,48 @@ export function ProfilePage({ currentRoute }: ProfilePageProps) {
       active = false;
     };
   }, [isAuthReady, currentUser, activeTab]);
+
+  // Load user content requests when feature is enabled
+  useEffect(() => {
+    if (
+      !isAuthReady ||
+      !isContentRequestsEnabled ||
+      !currentUser ||
+      !currentUser.isActive ||
+      currentUser.isDeleted
+    ) {
+      setUserRequests([]);
+      setOpenRequestsCount(0);
+      return;
+    }
+
+    let active = true;
+    const loadRequests = async () => {
+      setIsLoadingRequests(true);
+      try {
+        await appContainer.ensureInitializedAtStartup();
+        const res =
+          await appContainer.contentRequestService.listUserContentRequestsAsync(
+            currentUser,
+            currentUser.id,
+          );
+        if (active && res.ok && res.items) {
+          setUserRequests(res.items);
+          setOpenRequestsCount(res.openCount ?? 0);
+          setMaxOpenRequests(res.maxOpen ?? MAX_OPEN_CONTENT_REQUESTS);
+        }
+      } finally {
+        if (active) {
+          setIsLoadingRequests(false);
+        }
+      }
+    };
+
+    void loadRequests();
+    return () => {
+      active = false;
+    };
+  }, [isAuthReady, isContentRequestsEnabled, currentUser, activeTab]);
 
   // OTP countdown timer inside delete confirmation modal
   useEffect(() => {
@@ -424,7 +482,9 @@ export function ProfilePage({ currentRoute }: ProfilePageProps) {
       icon: Bookmark,
     },
     { id: 'downloads', label: t('profile.tab.downloads'), icon: Download },
-    { id: 'requests', label: t('profile.tab.requests'), icon: MessageSquarePlus },
+    ...(isContentRequestsEnabled
+      ? [{ id: 'requests' as ProfileTabId, label: t('profile.tab.requests'), icon: MessageSquarePlus }]
+      : []),
     { id: 'personalization', label: t('profile.tab.personalization'), icon: SlidersHorizontal },
     { id: 'danger', label: t('profile.tab.danger'), icon: Trash2, danger: true },
   ];
@@ -863,22 +923,46 @@ export function ProfilePage({ currentRoute }: ProfilePageProps) {
           </section>
         )}
 
-        {/* Tab 4: My Requests Placeholder (Stage 17) */}
-        {activeTab === 'requests' && (
-          <section className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-card)] shadow-[var(--shadow-card)] p-5 sm:p-7 space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-2.5">
-                <MessageSquarePlus className="w-5 h-5 text-[var(--color-primary)] shrink-0" aria-hidden="true" />
-                <h2 className="text-base sm:text-lg font-bold text-[var(--color-text)]">
-                  {t('profile.requests.title')}
-                </h2>
+        {/* Tab 4: My Requests (Stage 17) */}
+        {activeTab === 'requests' && isContentRequestsEnabled && (
+          <section className="space-y-5">
+            <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-card)] shadow-[var(--shadow-card)] p-5 sm:p-6 flex flex-wrap items-center justify-between gap-4">
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <MessageSquarePlus
+                    className="w-5 h-5 text-[var(--color-primary)] shrink-0"
+                    aria-hidden="true"
+                  />
+                  <h2 className="text-base sm:text-lg font-bold text-[var(--color-text)]">
+                    {t('profile.requests.title')}
+                  </h2>
+                  <Tag
+                    label={t('profile.requests.openQuotaBadge', {
+                      open: toPersianDigits(openRequestsCount),
+                      max: toPersianDigits(maxOpenRequests),
+                    })}
+                    variant={
+                      openRequestsCount >= maxOpenRequests ? 'warning' : 'primary'
+                    }
+                  />
+                </div>
+                <p className="text-xs sm:text-sm text-[var(--color-muted)] leading-relaxed max-w-2xl">
+                  {t('profile.requests.subtitle')}
+                </p>
               </div>
-              <Tag label={t('profile.requests.badge')} variant="neutral" />
+
+              <Button
+                type="button"
+                variant="primary"
+                size="sm"
+                startIcon={<MessageSquarePlus className="w-4 h-4" />}
+                onClick={() => navigateToHash('/requests')}
+              >
+                {t('profile.requests.newRequestButton')}
+              </Button>
             </div>
 
-            <p className="text-sm text-[var(--color-muted)] leading-relaxed max-w-2xl">
-              {t('profile.requests.desc')}
-            </p>
+            <UserRequestsList items={userRequests} isLoading={isLoadingRequests} />
           </section>
         )}
 
