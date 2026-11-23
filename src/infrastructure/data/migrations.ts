@@ -31,6 +31,7 @@ export const STORE_NAMES = {
   HERO_SLIDES: 'heroSlides',
   HOME_SHELVES: 'homeShelves',
   STATIC_PAGES: 'staticPages',
+  USER_TOPIC_AFFINITIES: 'userTopicAffinities',
 } as const;
 
 export const STAGE3_OBJECT_STORES: readonly string[] = [
@@ -95,6 +96,10 @@ export const STAGE18_OBJECT_STORES: readonly string[] = [
   STORE_NAMES.HERO_SLIDES,
   STORE_NAMES.HOME_SHELVES,
   STORE_NAMES.STATIC_PAGES,
+] as const;
+
+export const STAGE20_OBJECT_STORES: readonly string[] = [
+  STORE_NAMES.USER_TOPIC_AFFINITIES,
 ] as const;
 
 interface IndexSpec {
@@ -444,6 +449,19 @@ const STAGE18_STORE_SPECS: readonly StoreSpec[] = [
   },
 ];
 
+const STAGE20_STORE_SPECS: readonly StoreSpec[] = [
+  {
+    name: STORE_NAMES.USER_TOPIC_AFFINITIES,
+    keyPath: ['userId', 'rootTopicId'],
+    indexes: [
+      { name: 'by_userId', keyPath: 'userId' },
+      { name: 'by_rootTopicId', keyPath: 'rootTopicId' },
+      { name: 'by_viewCount', keyPath: 'viewCount' },
+      { name: 'by_lastViewedAt', keyPath: 'lastViewedAt' },
+    ],
+  },
+];
+
 export const DATABASE_MIGRATIONS: readonly MigrationStep[] = [
   {
     version: 1,
@@ -570,6 +588,14 @@ export const DATABASE_MIGRATIONS: readonly MigrationStep[] = [
     version: 12,
     up: (db, transaction) => {
       for (const spec of STAGE18_STORE_SPECS) {
+        ensureStore(db, transaction, spec);
+      }
+    },
+  },
+  {
+    version: 13,
+    up: (db, transaction) => {
+      for (const spec of STAGE20_STORE_SPECS) {
         ensureStore(db, transaction, spec);
       }
     },

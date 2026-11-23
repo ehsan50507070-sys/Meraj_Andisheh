@@ -122,6 +122,7 @@ export function AdminSettingsPage({ currentRoute }: AdminSettingsPageProps) {
       }
 
       await refreshSiteTitle();
+      window.dispatchEvent(new CustomEvent('meraj:personalization-changed'));
       setFeedback({
         variant: 'success',
         message: t('admin.settings.saveSuccess'),
@@ -261,13 +262,16 @@ export function AdminSettingsPage({ currentRoute }: AdminSettingsPageProps) {
                           label: t('admin.settings.key.Personalization.DefaultEnabled.optionOff'),
                         },
                       ]}
+                      hint={t('admin.settings.key.Personalization.DefaultEnabled.hint')}
                       error={error}
                     />
                   );
                 }
 
                 const hintKey =
-                  key === 'Site.Title' || key === 'Site.Subtitle'
+                  key === 'Site.Title' ||
+                  key === 'Site.Subtitle' ||
+                  key === 'Personalization.MinViews'
                     ? (`admin.settings.key.${key}.hint` as ResourceKey)
                     : undefined;
 

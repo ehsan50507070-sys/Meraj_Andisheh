@@ -15,6 +15,7 @@ import { InteractionService } from '../../core/services/interactionService';
 import { LayoutManagementService } from '../../core/services/layoutManagementService';
 import { OtpService } from '../../core/services/otpService';
 import { PermissionPolicyService } from '../../core/services/permissionPolicyService';
+import { PersonalizationService } from '../../core/services/personalizationService';
 import { ProfileService } from '../../core/services/profileService';
 import { RateLimiter } from '../../core/services/rateLimiter';
 import { SearchNormalizer } from '../../core/services/searchNormalizer';
@@ -38,6 +39,7 @@ import { IndexedDbDownloadEventRepository } from '../../infrastructure/data/Inde
 import { IndexedDbInteractionRepository } from '../../infrastructure/data/IndexedDbInteractionRepository';
 import { IndexedDbLayoutRepository } from '../../infrastructure/data/IndexedDbLayoutRepository';
 import { IndexedDbTaxonomyRepository } from '../../infrastructure/data/IndexedDbTaxonomyRepository';
+import { IndexedDbUserTopicAffinityRepository } from '../../infrastructure/data/IndexedDbUserTopicAffinityRepository';
 import { IndexedDbViewEventRepository } from '../../infrastructure/data/IndexedDbViewEventRepository';
 import { STORE_NAMES } from '../../infrastructure/data/migrations';
 import { LocalSessionTokenStore } from '../../infrastructure/data/LocalSessionTokenStore';
@@ -48,6 +50,7 @@ import { DevEmailSender } from '../../infrastructure/messaging/DevEmailSender';
 import { DevSmsSender } from '../../infrastructure/messaging/DevSmsSender';
 import { BrowserPasswordHasher } from '../../infrastructure/security/BrowserPasswordHasher';
 import { HmacDownloadTokenProtector } from '../../infrastructure/security/HmacDownloadTokenProtector';
+import { BrowserAffinityCookieStorage } from '../../infrastructure/storage/BrowserAffinityCookieStorage';
 import { BrowserAgeCookieStorage } from '../../infrastructure/storage/BrowserAgeCookieStorage';
 import { BrowserVisitorIdStorage } from '../../infrastructure/storage/BrowserVisitorIdStorage';
 import { LocalIndexedDbFileStorage } from '../../infrastructure/storage/LocalIndexedDbFileStorage';
@@ -69,10 +72,12 @@ export interface AppContainer {
   commentRepository: IndexedDbCommentRepository;
   contentRequestRepository: IndexedDbContentRequestRepository;
   layoutRepository: IndexedDbLayoutRepository;
+  userTopicAffinityRepository: IndexedDbUserTopicAffinityRepository;
   accountCleanupRepository: IndexedDbAccountCleanupRepository;
   downloadTokenProtector: HmacDownloadTokenProtector;
   fileStorage: LocalIndexedDbFileStorage;
   agePreferenceStorage: BrowserAgeCookieStorage;
+  guestAffinityStorage: BrowserAffinityCookieStorage;
   visitorIdStorage: BrowserVisitorIdStorage;
   passwordHasher: BrowserPasswordHasher;
   emailSender: DevEmailSender;
@@ -97,6 +102,7 @@ export interface AppContainer {
   interactionService: InteractionService;
   commentService: CommentService;
   contentRequestService: ContentRequestService;
+  personalizationService: PersonalizationService;
   homePageService: HomePageService;
   layoutManagementService: LayoutManagementService;
   analyticsDashboardService: AnalyticsDashboardService;
@@ -126,10 +132,12 @@ const interactionRepository = new IndexedDbInteractionRepository(dataStore);
 const commentRepository = new IndexedDbCommentRepository(dataStore);
 const contentRequestRepository = new IndexedDbContentRequestRepository(dataStore);
 const layoutRepository = new IndexedDbLayoutRepository(dataStore);
+const userTopicAffinityRepository = new IndexedDbUserTopicAffinityRepository(dataStore);
 const accountCleanupRepository = new IndexedDbAccountCleanupRepository(dataStore);
 const downloadTokenProtector = new HmacDownloadTokenProtector();
 const fileStorage = new LocalIndexedDbFileStorage(dataStore, clock);
 const agePreferenceStorage = new BrowserAgeCookieStorage();
+const guestAffinityStorage = new BrowserAffinityCookieStorage();
 const visitorIdStorage = new BrowserVisitorIdStorage();
 const passwordHasher = new BrowserPasswordHasher();
 const sessionTokenStore = new LocalSessionTokenStore(envConfig.sessionStorageKey);
@@ -137,6 +145,17 @@ const emailSender = new DevEmailSender(logger, t('logs.devEmailPrefix'));
 const smsSender = new DevSmsSender(logger, t('logs.devSmsPrefix'));
 const rateLimiter = new RateLimiter(clock, 20, 60 * 1000);
 const searchNormalizer = new SearchNormalizer();
+
+const personalizationService = new PersonalizationService({
+  affinityRepository: userTopicAffinityRepository,
+  guestAffinityStorage,
+  adminRepository,
+  contentRepository,
+  taxonomyRepository,
+  viewEventRepository,
+  clock,
+  logger,
+});
 
 const authService = new AuthService(
   authRepository,
@@ -152,6 +171,7 @@ const authService = new AuthService(
     resetBody: t('auth.email.resetBody'),
   },
   rateLimiter,
+  personalizationService,
 );
 
 const otpService = new OtpService(
@@ -163,6 +183,7 @@ const otpService = new OtpService(
   sessionTokenStore,
   rateLimiter,
   t('auth.otp.smsTemplate'),
+  personalizationService,
 );
 
 const initialSuperAdminService = new InitialSuperAdminService(
@@ -230,6 +251,7 @@ const viewTrackerService = new ViewTrackerService(
   clock,
   logger,
   taxonomyRepository,
+  personalizationService,
 );
 const downloadService = new DownloadService(
   contentRepository,
@@ -275,6 +297,7 @@ const homePageService = new HomePageService({
   adminRepository,
   viewEventRepository,
   clock,
+  personalizationService,
 });
 const layoutManagementService = new LayoutManagementService({
   layoutRepository,
@@ -419,10 +442,12 @@ export const appContainer: AppContainer = {
   commentRepository,
   contentRequestRepository,
   layoutRepository,
+  userTopicAffinityRepository,
   accountCleanupRepository,
   downloadTokenProtector,
   fileStorage,
   agePreferenceStorage,
+  guestAffinityStorage,
   visitorIdStorage,
   passwordHasher,
   emailSender,
@@ -447,6 +472,7 @@ export const appContainer: AppContainer = {
   interactionService,
   commentService,
   contentRequestService,
+  personalizationService,
   homePageService,
   layoutManagementService,
   analyticsDashboardService,

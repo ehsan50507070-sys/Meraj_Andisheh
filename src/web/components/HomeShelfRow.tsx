@@ -19,9 +19,22 @@ export function HomeShelfRow({ shelfModel, thumbnailUrls }: HomeShelfRowProps) {
   return (
     <section className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--color-border)] pb-3">
-        <h2 className="text-lg sm:text-xl font-bold text-[var(--color-text)] tracking-tight">
-          {shelfModel.shelf.title}
-        </h2>
+        <div className="space-y-1 min-w-0">
+          <h2 className="text-lg sm:text-xl font-bold text-[var(--color-text)] tracking-tight">
+            {shelfModel.shelf.title}
+          </h2>
+          {shelfModel.shelf.type === 'Personalized' &&
+            shelfModel.personalizedTopics &&
+            shelfModel.personalizedTopics.length > 0 && (
+              <p className="text-xs text-[var(--color-muted)]">
+                {t('home.page.personalizedTopicsHint', {
+                  topics: shelfModel.personalizedTopics
+                    .map((topicScore) => topicScore.rootTopicName)
+                    .join(t('home.page.topicSeparator')),
+                })}
+              </p>
+            )}
+        </div>
 
         <a
           href={shelfModel.viewAllHref}

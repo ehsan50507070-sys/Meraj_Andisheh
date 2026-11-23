@@ -3,6 +3,7 @@ import type { IClock } from '../abstractions/IClock';
 import type { ILogger } from '../abstractions/ILogger';
 import type { IPasswordHasher } from '../abstractions/passwordHasher';
 import type { ISmsSender } from '../abstractions/smsSender';
+import type { IPersonalizationService } from '../abstractions/personalizationService';
 import type { AppUser } from '../domain/auth';
 import {
   DISPLAY_NAME_MAX_LENGTH,
@@ -87,6 +88,7 @@ export class OtpService {
   private readonly sessionTokenStore: ISessionTokenStore;
   private readonly rateLimiter: RateLimiter;
   private readonly smsMessageTemplate: string;
+  private readonly personalizationService?: IPersonalizationService;
 
   constructor(
     repository: IAuthRepository,
@@ -97,6 +99,7 @@ export class OtpService {
     sessionTokenStore: ISessionTokenStore,
     rateLimiter: RateLimiter = new RateLimiter(clock, 15, 60 * 1000),
     smsMessageTemplate = 'OTP: {code}',
+    personalizationService?: IPersonalizationService,
   ) {
     this.repository = repository;
     this.passwordHasher = passwordHasher;
@@ -106,6 +109,7 @@ export class OtpService {
     this.sessionTokenStore = sessionTokenStore;
     this.rateLimiter = rateLimiter;
     this.smsMessageTemplate = smsMessageTemplate;
+    this.personalizationService = personalizationService;
   }
 
   public async requestOtp(
@@ -323,6 +327,10 @@ export class OtpService {
 
       await this.createUserSession(updatedUser, nowMs, nowIso);
 
+      if (this.personalizationService) {
+        await this.personalizationService.mergeGuestAffinityOnLoginAsync(updatedUser);
+      }
+
       this.logger.info('USER_LOGGED_IN_OTP', {
         userId: updatedUser.id,
         role: updatedUser.role,
@@ -469,6 +477,10 @@ export class OtpService {
     });
 
     await this.createUserSession(createdUser, nowMs, nowIso);
+
+    if (this.personalizationService) {
+      await this.personalizationService.mergeGuestAffinityOnLoginAsync(createdUser);
+    }
 
     this.logger.info('USER_REGISTERED_OTP', {
       userId: createdUser.id,

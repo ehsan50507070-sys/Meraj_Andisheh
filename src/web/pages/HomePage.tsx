@@ -16,7 +16,7 @@ export interface HomePageProps {
 }
 
 export function HomePage({ currentRoute }: HomePageProps) {
-  const { isContentRequestsEnabled } = useAuth();
+  const { currentUser, isAuthReady, isContentRequestsEnabled } = useAuth();
   const { activeAgeGroups, effectiveAgeGroup, isAgeReady, openAgeSelector } = useAge();
 
   const [homeData, setHomeData] = useState<HomePageData>({
@@ -26,9 +26,20 @@ export function HomePage({ currentRoute }: HomePageProps) {
   });
   const [thumbnailUrls, setThumbnailUrls] = useState<Record<number, string>>({});
   const [isLoading, setIsLoading] = useState(true);
+  const [personalizationRevision, setPersonalizationRevision] = useState(0);
 
   useEffect(() => {
-    if (!isAgeReady) {
+    const handlePersonalizationChanged = () => {
+      setPersonalizationRevision((prev) => prev + 1);
+    };
+    window.addEventListener('meraj:personalization-changed', handlePersonalizationChanged);
+    return () => {
+      window.removeEventListener('meraj:personalization-changed', handlePersonalizationChanged);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isAgeReady || !isAuthReady) {
       return;
     }
 
@@ -39,8 +50,13 @@ export function HomePage({ currentRoute }: HomePageProps) {
       setIsLoading(true);
       try {
         await appContainer.ensureInitializedAtStartup();
+        const visitorId = appContainer.visitorIdStorage.getOrCreateVisitorId();
         const data = await appContainer.homePageService.getHomePageDataAsync(
           effectiveAgeGroup,
+          {
+            user: currentUser,
+            visitorId,
+          },
         );
         if (!active) {
           return;
@@ -92,7 +108,7 @@ export function HomePage({ currentRoute }: HomePageProps) {
         URL.revokeObjectURL(url);
       }
     };
-  }, [effectiveAgeGroup, isAgeReady]);
+  }, [effectiveAgeGroup, isAgeReady, isAuthReady, currentUser, personalizationRevision]);
 
   const showAccountDeletedBanner = useMemo(() => {
     const qIdx = currentRoute.indexOf('?');

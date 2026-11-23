@@ -45,14 +45,30 @@ export function MainLayout({
   currentRoute,
   children,
 }: MainLayoutProps) {
-  const { currentUser, siteTitle, siteSubtitle, isContentRequestsEnabled, logout } = useAuth();
+  const {
+    currentUser,
+    siteTitle,
+    siteSubtitle,
+    isContentRequestsEnabled,
+    logout,
+    refreshAuthState,
+  } = useAuth();
   const {
     effectiveAgeGroup,
     lastSwitchNotice,
     clearLastSwitchNotice,
     openAgeSelector,
   } = useAge();
-  const [isPersonalized, setIsPersonalized] = useState(false);
+  const [personalizationState, setPersonalizationState] = useState<{
+    globalEnabled: boolean;
+    userEnabled: boolean;
+    effectiveEnabled: boolean;
+  }>({
+    globalEnabled: true,
+    userEnabled: true,
+    effectiveEnabled: true,
+  });
+  const [isTogglingPersonalization, setIsTogglingPersonalization] = useState(false);
   const [favoritesCount, setFavoritesCount] = useState(0);
   const [footerPages, setFooterPages] = useState<StaticPage[]>([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -131,8 +147,78 @@ export function MainLayout({
     };
   }, [currentRoute]);
 
-  const handleSampleAction = () => {
-    setNoticeMessage(t('layout.nav.sampleNoticeDesc'));
+  useEffect(() => {
+    let active = true;
+
+    const refreshPersonalization = async () => {
+      await appContainer.ensureInitializedAtStartup();
+      const status =
+        await appContainer.personalizationService.getPersonalizationStatusAsync(
+          currentUser,
+        );
+      if (active) {
+        setPersonalizationState({
+          globalEnabled: status.globalEnabled,
+          userEnabled: status.userEnabled,
+          effectiveEnabled: status.effectiveEnabled,
+        });
+      }
+    };
+
+    void refreshPersonalization();
+
+    const handlePersonalizationChanged = () => {
+      void refreshPersonalization();
+    };
+    window.addEventListener(
+      'meraj:personalization-changed',
+      handlePersonalizationChanged,
+    );
+    return () => {
+      active = false;
+      window.removeEventListener(
+        'meraj:personalization-changed',
+        handlePersonalizationChanged,
+      );
+    };
+  }, [currentUser, currentRoute]);
+
+  const handleTogglePersonalization = async () => {
+    if (isTogglingPersonalization) {
+      return;
+    }
+    if (!personalizationState.globalEnabled) {
+      setNoticeMessage(t('layout.header.personalizeDisabledByAdmin'));
+      return;
+    }
+
+    setIsTogglingPersonalization(true);
+    try {
+      const nextDesired = !personalizationState.userEnabled;
+      const res =
+        await appContainer.personalizationService.setUserPersonalizationEnabledAsync(
+          currentUser,
+          nextDesired,
+        );
+      if (res.ok) {
+        setPersonalizationState((prev) => ({
+          ...prev,
+          userEnabled: nextDesired,
+          effectiveEnabled: res.effectiveEnabled,
+        }));
+        if (currentUser) {
+          await refreshAuthState();
+        }
+        setNoticeMessage(
+          res.effectiveEnabled
+            ? t('layout.header.personalizeToggledOn')
+            : t('layout.header.personalizeToggledOff'),
+        );
+        window.dispatchEvent(new CustomEvent('meraj:personalization-changed'));
+      }
+    } finally {
+      setIsTogglingPersonalization(false);
+    }
   };
 
   const handleOpenFavorites = () => {
@@ -201,22 +287,30 @@ export function MainLayout({
             <button
               type="button"
               role="switch"
-              aria-checked={isPersonalized}
-              onClick={() => {
-                setIsPersonalized((prev) => !prev);
-                handleSampleAction();
-              }}
+              aria-checked={personalizationState.effectiveEnabled}
+              aria-label={t('layout.header.personalizeToggleAria')}
+              disabled={!personalizationState.globalEnabled || isTogglingPersonalization}
+              title={
+                !personalizationState.globalEnabled
+                  ? t('layout.header.personalizeDisabledByAdmin')
+                  : t('layout.header.personalizeToggleAria')
+              }
+              onClick={() => void handleTogglePersonalization()}
               className={`hidden lg:inline-flex items-center gap-1.5 min-h-[38px] px-3 py-1.5 text-xs font-medium rounded-[var(--radius-control)] border transition-colors whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--color-primary)] ${
-                isPersonalized
-                  ? 'bg-[var(--color-accent)] text-[var(--color-on-accent)] border-transparent'
-                  : 'bg-[var(--color-surface)] text-[var(--color-text)] border-[var(--color-border)] hover:bg-[var(--color-surface-alt)]'
+                !personalizationState.globalEnabled
+                  ? 'bg-[var(--color-surface-alt)] text-[var(--color-muted)] border-[var(--color-border)] opacity-60 cursor-not-allowed'
+                  : personalizationState.effectiveEnabled
+                    ? 'bg-[var(--color-accent)] text-[var(--color-on-accent)] border-transparent'
+                    : 'bg-[var(--color-surface)] text-[var(--color-text)] border-[var(--color-border)] hover:bg-[var(--color-surface-alt)]'
               }`}
             >
               <SlidersHorizontal className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
               <span>
-                {isPersonalized
-                  ? t('layout.header.personalizeActive')
-                  : t('layout.header.personalize')}
+                {!personalizationState.globalEnabled
+                  ? t('layout.header.personalizeInactive')
+                  : personalizationState.effectiveEnabled
+                    ? t('layout.header.personalizeActive')
+                    : t('layout.header.personalizeInactive')}
               </span>
             </button>
 
@@ -458,6 +552,33 @@ export function MainLayout({
                 </div>
 
                 <TopicMobileAccordion onNavigate={() => setMobileMenuOpen(false)} />
+
+                <div className="pt-2 border-t border-[var(--color-border)] flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={personalizationState.effectiveEnabled}
+                    aria-label={t('layout.header.personalizeToggleAria')}
+                    disabled={!personalizationState.globalEnabled || isTogglingPersonalization}
+                    onClick={() => void handleTogglePersonalization()}
+                    className={`inline-flex items-center gap-1.5 min-h-[36px] px-3 py-1.5 text-xs font-medium rounded-[var(--radius-control)] border transition-colors whitespace-nowrap ${
+                      !personalizationState.globalEnabled
+                        ? 'bg-[var(--color-surface-alt)] text-[var(--color-muted)] border-[var(--color-border)] opacity-60 cursor-not-allowed'
+                        : personalizationState.effectiveEnabled
+                          ? 'bg-[var(--color-accent)] text-[var(--color-on-accent)] border-transparent'
+                          : 'bg-[var(--color-surface)] text-[var(--color-text)] border-[var(--color-border)]'
+                    }`}
+                  >
+                    <SlidersHorizontal className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                    <span>
+                      {!personalizationState.globalEnabled
+                        ? t('layout.header.personalizeDisabledByAdmin')
+                        : personalizationState.effectiveEnabled
+                          ? t('layout.header.personalizeActive')
+                          : t('layout.header.personalizeInactive')}
+                    </span>
+                  </button>
+                </div>
 
                 {currentUser && (
                   <div className="pt-2 border-t border-[var(--color-border)] flex flex-wrap items-center gap-2">

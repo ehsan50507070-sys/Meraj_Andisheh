@@ -4,6 +4,8 @@ import type { IContentRepository } from '../abstractions/contentRepository';
 import type { ILayoutRepository } from '../abstractions/layoutRepository';
 import type { ITaxonomyRepository } from '../abstractions/taxonomyRepository';
 import type { IViewEventRepository } from '../abstractions/viewTracker';
+import type { IPersonalizationService } from '../abstractions/personalizationService';
+import type { AppUser } from '../domain/auth';
 import {
   ContentStatus,
   type ContentAgeGroup,
@@ -17,6 +19,7 @@ import {
   type HeroSlide,
   type HomeShelf,
 } from '../domain/layout';
+import type { PersonalizationTopicScore } from '../domain/personalization';
 import type { AgeGroup, Topic } from '../domain/taxonomy';
 import {
   applyAgeGroupRulesWithMeta,
@@ -38,10 +41,13 @@ export interface HomePageServiceDependencies {
   adminRepository: IAdminRepository;
   viewEventRepository: IViewEventRepository;
   clock: IClock;
+  personalizationService?: IPersonalizationService;
 }
 
 export interface HomePageOptions {
   enablePersonalizedInStage20?: boolean;
+  user?: AppUser | null;
+  visitorId?: string | null;
 }
 
 export interface HomeShelfViewModel {
@@ -49,6 +55,7 @@ export interface HomeShelfViewModel {
   viewAllHref: string;
   items: CatalogContentCardItem[];
   trendingCountsByContentId?: Record<number, number>;
+  personalizedTopics?: PersonalizationTopicScore[];
 }
 
 export interface HomePageData {
@@ -161,6 +168,7 @@ export class HomePageService {
   private readonly adminRepository: IAdminRepository;
   private readonly viewEventRepository: IViewEventRepository;
   private readonly clock: IClock;
+  private readonly personalizationService?: IPersonalizationService;
 
   constructor(deps: HomePageServiceDependencies) {
     this.layoutRepository = deps.layoutRepository;
@@ -169,6 +177,7 @@ export class HomePageService {
     this.adminRepository = deps.adminRepository;
     this.viewEventRepository = deps.viewEventRepository;
     this.clock = deps.clock;
+    this.personalizationService = deps.personalizationService;
   }
 
   public async getItemsPerShelfAsync(): Promise<number> {
@@ -279,9 +288,38 @@ export class HomePageService {
 
     for (const shelf of visibleShelves) {
       if (shelf.type === 'Personalized') {
-        // Stage 18 strict scope: Personalized shelf stays empty and hidden until Stage 20.
-        if (!options?.enablePersonalizedInStage20) {
+        if (!this.personalizationService) {
           continue;
+        }
+        const personalizedResult =
+          await this.personalizationService.getPersonalizedRecommendationsAsync({
+            user: options?.user ?? null,
+            activeAgeGroup,
+            visitorId: options?.visitorId ?? null,
+            limit: itemsPerShelf,
+          });
+        if (personalizedResult.isVisible && personalizedResult.items.length > 0) {
+          const mappedItems: CatalogContentCardItem[] = personalizedResult.items.map(
+            (entry) => ({
+              item: entry.item,
+              topicIds: entry.topicIds,
+              tagIds: entry.tagIds,
+              personIds: entry.personIds,
+              ageGroupIds: entry.ageGroupIds,
+              primaryTopicName: entry.primaryTopicName,
+              priorityGroup: computePriorityGroup(entry.ageGroupIds, activeAgeGroup),
+            }),
+          );
+          const topTopicId = personalizedResult.topTopics[0]?.rootTopicId;
+          shelfViewModels.push({
+            shelf,
+            viewAllHref:
+              typeof topTopicId === 'number'
+                ? `#/content?topics=${topTopicId}`
+                : '#/content',
+            items: mappedItems,
+            personalizedTopics: personalizedResult.topTopics,
+          });
         }
         continue;
       }

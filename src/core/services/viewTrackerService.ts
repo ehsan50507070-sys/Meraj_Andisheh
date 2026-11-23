@@ -8,6 +8,7 @@ import type {
   TrackViewInput,
   TrackViewResult,
 } from '../abstractions/viewTracker';
+import type { IPersonalizationService } from '../abstractions/personalizationService';
 import type { Topic } from '../domain/taxonomy';
 
 export const VIEW_DEDUP_WINDOW_MS = 30 * 60 * 1000;
@@ -99,6 +100,7 @@ export class ViewTrackerService implements IViewTracker {
   private readonly clock: IClock;
   private readonly logger?: ILogger;
   private readonly taxonomyRepository?: ITaxonomyRepository;
+  private readonly personalizationService?: IPersonalizationService;
 
   constructor(
     viewEventRepository: IViewEventRepository,
@@ -106,12 +108,14 @@ export class ViewTrackerService implements IViewTracker {
     clock: IClock,
     logger?: ILogger,
     taxonomyRepository?: ITaxonomyRepository,
+    personalizationService?: IPersonalizationService,
   ) {
     this.viewEventRepository = viewEventRepository;
     this.contentRepository = contentRepository;
     this.clock = clock;
     this.logger = logger;
     this.taxonomyRepository = taxonomyRepository;
+    this.personalizationService = personalizationService;
   }
 
   public async trackViewAsync(input: TrackViewInput): Promise<TrackViewResult> {
@@ -183,6 +187,16 @@ export class ViewTrackerService implements IViewTracker {
         await this.contentRepository.updateContentItem({
           ...contentItem,
           viewCount: contentItem.viewCount + 1,
+        });
+      }
+      if (this.personalizationService) {
+        await this.personalizationService.recordCountedViewAsync({
+          contentId: input.contentId,
+          primaryTopicId: resolvedPrimaryTopicId,
+          userId: input.userId,
+          visitorId: cleanVisitorId,
+          occurredAtIso: nowIso,
+          currentEventId: createdEvent.id,
         });
       }
       this.logger?.info('CONTENT_VIEW_COUNTED', {

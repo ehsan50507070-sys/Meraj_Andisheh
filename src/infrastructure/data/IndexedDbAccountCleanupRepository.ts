@@ -14,6 +14,7 @@ interface OptionalCommentRecord {
 interface OptionalAffinityRecord {
   id?: number;
   userId: number;
+  rootTopicId?: number;
   topicId?: number;
 }
 
@@ -113,20 +114,31 @@ export class IndexedDbAccountCleanupRepository implements IAccountCleanupReposit
 
   public async deleteOptionalTopicAffinitiesByUserId(userId: number): Promise<number> {
     const storeNames = await this.dataStore.getObjectStoreNames();
-    if (!storeNames.includes('userTopicAffinities')) {
+    if (!storeNames.includes(STORE_NAMES.USER_TOPIC_AFFINITIES)) {
       return 0;
     }
-    const allAffinities = await this.dataStore.getAll<OptionalAffinityRecord>(
-      'userTopicAffinities',
+    const userAffinities = await this.dataStore.getAllByIndex<OptionalAffinityRecord>(
+      STORE_NAMES.USER_TOPIC_AFFINITIES,
+      'by_userId',
+      userId,
     );
     let count = 0;
-    for (const aff of allAffinities) {
+    for (const aff of userAffinities) {
       if (aff.userId === userId) {
-        if (typeof aff.id === 'number') {
-          await this.dataStore.deleteByKey('userTopicAffinities', aff.id);
+        if (typeof aff.rootTopicId === 'number') {
+          await this.dataStore.deleteByKey(STORE_NAMES.USER_TOPIC_AFFINITIES, [
+            aff.userId,
+            aff.rootTopicId,
+          ]);
           count += 1;
         } else if (typeof aff.topicId === 'number') {
-          await this.dataStore.deleteByKey('userTopicAffinities', [aff.userId, aff.topicId]);
+          await this.dataStore.deleteByKey(STORE_NAMES.USER_TOPIC_AFFINITIES, [
+            aff.userId,
+            aff.topicId,
+          ]);
+          count += 1;
+        } else if (typeof aff.id === 'number') {
+          await this.dataStore.deleteByKey(STORE_NAMES.USER_TOPIC_AFFINITIES, aff.id);
           count += 1;
         }
       }

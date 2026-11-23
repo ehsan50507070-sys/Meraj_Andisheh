@@ -5,7 +5,6 @@ import {
   Download,
   ExternalLink,
   KeyRound,
-  Lock,
   MessageSquarePlus,
   ShieldAlert,
   SlidersHorizontal,
@@ -20,6 +19,7 @@ import {
   type UserContentRequestView,
 } from '../../../core/services/contentRequestService';
 import type { BookmarkedContentEntry } from '../../../core/services/interactionService';
+import type { PersonalizationStatus } from '../../../core/domain/personalization';
 import type { DownloadHistoryEntry } from '../../../core/services/profileService';
 import { resolveThemeKey } from '../../../core/services/themeService';
 import { useAuth } from '../../auth/AuthContext';
@@ -107,6 +107,22 @@ export function ProfilePage({ currentRoute }: ProfilePageProps) {
     MAX_OPEN_CONTENT_REQUESTS,
   );
   const [isLoadingRequests, setIsLoadingRequests] = useState<boolean>(false);
+
+  // Tab 5: Smart Personalization state (Stage 20)
+  const [personalizationStatus, setPersonalizationStatus] =
+    useState<PersonalizationStatus | null>(null);
+  const [isLoadingPersonalization, setIsLoadingPersonalization] =
+    useState<boolean>(false);
+  const [isUpdatingPersonalization, setIsUpdatingPersonalization] =
+    useState<boolean>(false);
+  const [personalizationFeedback, setPersonalizationFeedback] = useState<{
+    variant: 'success' | 'error';
+    message: string;
+  } | null>(null);
+  const [isClearPersonalizationModalOpen, setIsClearPersonalizationModalOpen] =
+    useState<boolean>(false);
+  const [isClearingPersonalization, setIsClearingPersonalization] =
+    useState<boolean>(false);
 
   // Tab 6: Danger zone & account deletion modal state
   const [isLastSuperAdmin, setIsLastSuperAdmin] = useState<boolean>(false);
@@ -311,6 +327,50 @@ export function ProfilePage({ currentRoute }: ProfilePageProps) {
     };
   }, [isAuthReady, isContentRequestsEnabled, currentUser, activeTab]);
 
+  // Load user personalization status & top root topics (Stage 20)
+  useEffect(() => {
+    if (!isAuthReady || !currentUser || !currentUser.isActive || currentUser.isDeleted) {
+      setPersonalizationStatus(null);
+      return;
+    }
+
+    let active = true;
+    const loadPersonalization = async () => {
+      setIsLoadingPersonalization(true);
+      try {
+        await appContainer.ensureInitializedAtStartup();
+        const status =
+          await appContainer.personalizationService.getPersonalizationStatusAsync(
+            currentUser,
+          );
+        if (active) {
+          setPersonalizationStatus(status);
+        }
+      } finally {
+        if (active) {
+          setIsLoadingPersonalization(false);
+        }
+      }
+    };
+
+    void loadPersonalization();
+
+    const handlePersonalizationChanged = () => {
+      void loadPersonalization();
+    };
+    window.addEventListener(
+      'meraj:personalization-changed',
+      handlePersonalizationChanged,
+    );
+    return () => {
+      active = false;
+      window.removeEventListener(
+        'meraj:personalization-changed',
+        handlePersonalizationChanged,
+      );
+    };
+  }, [isAuthReady, currentUser, activeTab]);
+
   // OTP countdown timer inside delete confirmation modal
   useEffect(() => {
     if (otpCooldownSeconds <= 0) {
@@ -441,13 +501,85 @@ export function ProfilePage({ currentRoute }: ProfilePageProps) {
       }
 
       setIsDeleteModalOpen(false);
+      appContainer.guestAffinityStorage.clearGuestAffinities();
       await refreshAuthState();
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('meraj:bookmarks-changed'));
+        window.dispatchEvent(new CustomEvent('meraj:personalization-changed'));
       }
       navigateToHash('/?accountDeleted=1');
     } finally {
       setIsDeletingAccount(false);
+    }
+  };
+
+  const handleToggleUserPersonalization = async () => {
+    if (!currentUser || isUpdatingPersonalization) {
+      return;
+    }
+    setPersonalizationFeedback(null);
+    setIsUpdatingPersonalization(true);
+    try {
+      const nextEnabled = !(
+        personalizationStatus?.userEnabled ?? currentUser.personalizationEnabled
+      );
+      const res =
+        await appContainer.personalizationService.setUserPersonalizationEnabledAsync(
+          currentUser,
+          nextEnabled,
+        );
+      if (res.ok) {
+        await refreshAuthState();
+        const updatedStatus =
+          await appContainer.personalizationService.getPersonalizationStatusAsync(
+            res.user ?? currentUser,
+          );
+        setPersonalizationStatus(updatedStatus);
+        setPersonalizationFeedback({
+          variant: 'success',
+          message: nextEnabled
+            ? t('profile.personalization.toggleSuccessOn')
+            : t('profile.personalization.toggleSuccessOff'),
+        });
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('meraj:personalization-changed'));
+        }
+      }
+    } finally {
+      setIsUpdatingPersonalization(false);
+    }
+  };
+
+  const handleConfirmClearPersonalization = async () => {
+    if (!currentUser || isClearingPersonalization) {
+      return;
+    }
+    setPersonalizationFeedback(null);
+    setIsClearingPersonalization(true);
+    try {
+      const res =
+        await appContainer.personalizationService.clearPersonalizationHistoryAsync(
+          currentUser,
+        );
+      if (res.ok) {
+        setIsClearPersonalizationModalOpen(false);
+        const updatedStatus =
+          await appContainer.personalizationService.getPersonalizationStatusAsync(
+            currentUser,
+          );
+        setPersonalizationStatus(updatedStatus);
+        setPersonalizationFeedback({
+          variant: 'success',
+          message: t('profile.personalization.clearSuccess', {
+            count: toPersianDigits(res.deletedTopicsCount),
+          }),
+        });
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('meraj:personalization-changed'));
+        }
+      }
+    } finally {
+      setIsClearingPersonalization(false);
     }
   };
 
@@ -966,44 +1098,216 @@ export function ProfilePage({ currentRoute }: ProfilePageProps) {
           </section>
         )}
 
-        {/* Tab 5: Personalization Placeholder (Stage 20) */}
+        {/* Tab 5: Smart Personalization Settings (Stage 20) */}
         {activeTab === 'personalization' && (
-          <section className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-card)] shadow-[var(--shadow-card)] p-5 sm:p-7 space-y-5">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-2.5">
-                <SlidersHorizontal className="w-5 h-5 text-[var(--color-primary)] shrink-0" aria-hidden="true" />
-                <h2 className="text-base sm:text-lg font-bold text-[var(--color-text)]">
-                  {t('profile.personalization.title')}
-                </h2>
+          <section className="space-y-5">
+            <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-card)] shadow-[var(--shadow-card)] p-5 sm:p-7 space-y-5">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <SlidersHorizontal className="w-5 h-5 text-[var(--color-primary)] shrink-0" aria-hidden="true" />
+                  <h2 className="text-base sm:text-lg font-bold text-[var(--color-text)]">
+                    {t('profile.personalization.title')}
+                  </h2>
+                </div>
+                <Tag
+                  label={
+                    personalizationStatus && !personalizationStatus.globalEnabled
+                      ? t('profile.personalization.statusGlobalOff')
+                      : (personalizationStatus?.effectiveEnabled ??
+                            currentUser.personalizationEnabled)
+                        ? t('profile.personalization.statusActive')
+                        : t('profile.personalization.statusInactive')
+                  }
+                  variant={
+                    personalizationStatus && !personalizationStatus.globalEnabled
+                      ? 'warning'
+                      : (personalizationStatus?.effectiveEnabled ??
+                            currentUser.personalizationEnabled)
+                        ? 'success'
+                        : 'neutral'
+                  }
+                />
               </div>
-              <Tag label={t('profile.personalization.badge')} variant="neutral" />
+
+              <p className="text-sm text-[var(--color-muted)] leading-relaxed max-w-2xl">
+                {t('profile.personalization.desc')}
+              </p>
+
+              {personalizationFeedback && (
+                <Alert
+                  variant={personalizationFeedback.variant}
+                  message={personalizationFeedback.message}
+                  onDismiss={() => setPersonalizationFeedback(null)}
+                />
+              )}
+
+              {personalizationStatus && !personalizationStatus.globalEnabled && (
+                <Alert
+                  variant="warning"
+                  message={t('profile.personalization.globalDisabledNotice')}
+                />
+              )}
+
+              <div className="p-4 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface-alt)] flex flex-wrap items-center justify-between gap-4">
+                <div className="space-y-1 min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-[var(--color-text)]">
+                    {t('profile.personalization.toggleLabel')}
+                  </p>
+                  <p className="text-xs text-[var(--color-muted)] leading-relaxed">
+                    {(personalizationStatus?.userEnabled ??
+                      currentUser.personalizationEnabled)
+                      ? t('profile.personalization.toggleOnHint')
+                      : t('profile.personalization.toggleOffHint')}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={
+                    personalizationStatus?.userEnabled ??
+                    currentUser.personalizationEnabled
+                  }
+                  aria-label={t('profile.personalization.toggleSwitchAria')}
+                  disabled={
+                    isUpdatingPersonalization ||
+                    (personalizationStatus !== null &&
+                      !personalizationStatus.globalEnabled)
+                  }
+                  onClick={() => void handleToggleUserPersonalization()}
+                  className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)] ${
+                    personalizationStatus !== null &&
+                    !personalizationStatus.globalEnabled
+                      ? 'bg-[var(--color-surface)] border-[var(--color-border)] opacity-60 cursor-not-allowed'
+                      : (personalizationStatus?.userEnabled ??
+                            currentUser.personalizationEnabled)
+                        ? 'bg-[var(--color-primary-button)] border-transparent'
+                        : 'bg-[var(--color-surface)] border-[var(--color-border-strong)]'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                      (personalizationStatus?.userEnabled ??
+                        currentUser.personalizationEnabled)
+                        ? '-translate-x-6'
+                        : '-translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+
+              <p className="text-xs text-[var(--color-muted)] tabular-nums-strict">
+                {t('profile.personalization.thresholdHint', {
+                  min: toPersianDigits(
+                    personalizationStatus?.minViewsThreshold ?? 3,
+                  ),
+                })}
+              </p>
             </div>
 
-            <p className="text-sm text-[var(--color-muted)] leading-relaxed max-w-2xl">
-              {t('profile.personalization.desc')}
-            </p>
+            {/* Top Root Topics Affinity List */}
+            <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-card)] shadow-[var(--shadow-card)] p-5 sm:p-7 space-y-4">
+              <h3 className="text-sm sm:text-base font-bold text-[var(--color-text)]">
+                {t('profile.personalization.topTopicsTitle')}
+              </h3>
 
-            <div className="p-4 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface-alt)] flex flex-wrap items-center justify-between gap-4 opacity-75">
-              <div className="space-y-1">
-                <p className="text-sm font-semibold text-[var(--color-text)]">
-                  {t('profile.personalization.toggleLabel')}
+              {isLoadingPersonalization ? (
+                <p className="text-xs sm:text-sm text-[var(--color-muted)]">
+                  {t('profile.loading')}
                 </p>
-                <p className="text-xs text-[var(--color-muted)]">
-                  {t('profile.personalization.toggleDisabledHint')}
+              ) : !personalizationStatus ||
+                personalizationStatus.topTopics.length === 0 ? (
+                <div className="p-5 rounded-[var(--radius-control)] border border-dashed border-[var(--color-border-strong)] text-center space-y-1.5">
+                  <p className="text-sm font-semibold text-[var(--color-text)]">
+                    {t('profile.personalization.topTopicsEmptyTitle')}
+                  </p>
+                  <p className="text-xs text-[var(--color-muted)] max-w-md mx-auto leading-relaxed">
+                    {t('profile.personalization.topTopicsEmptyBody')}
+                  </p>
+                </div>
+              ) : (
+                <ul className="space-y-3">
+                  {personalizationStatus.topTopics.map((topicScore) => {
+                    const threshold = Math.max(
+                      1,
+                      personalizationStatus.minViewsThreshold,
+                    );
+                    const pct = Math.min(
+                      100,
+                      Math.round((topicScore.viewCount / threshold) * 100),
+                    );
+                    const qualified = topicScore.viewCount >= threshold;
+                    return (
+                      <li
+                        key={topicScore.rootTopicId}
+                        className="p-3.5 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface-alt)] space-y-2"
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-sm font-semibold text-[var(--color-text)]">
+                              {topicScore.rootTopicName}
+                            </span>
+                            {qualified && (
+                              <Tag
+                                label={t('profile.personalization.topicQualifiedBadge')}
+                                variant="success"
+                              />
+                            )}
+                          </div>
+                          <span className="text-xs font-medium text-[var(--color-muted)] tabular-nums-strict">
+                            {qualified
+                              ? t('profile.personalization.topicScoreLabel', {
+                                  count: toPersianDigits(topicScore.viewCount),
+                                })
+                              : t('profile.personalization.topicProgressLabel', {
+                                  count: toPersianDigits(topicScore.viewCount),
+                                  min: toPersianDigits(threshold),
+                                })}
+                          </span>
+                        </div>
+                        <div className="h-2 rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all ${
+                              qualified
+                                ? 'bg-[var(--color-primary)]'
+                                : 'bg-[var(--color-accent)]'
+                            }`}
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+
+            {/* Clear Personalization History Section */}
+            <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-card)] shadow-[var(--shadow-card)] p-5 sm:p-7 flex flex-wrap items-center justify-between gap-4">
+              <div className="space-y-1 min-w-0 flex-1">
+                <h3 className="text-sm sm:text-base font-bold text-[var(--color-text)]">
+                  {t('profile.personalization.clearTitle')}
+                </h3>
+                <p className="text-xs sm:text-sm text-[var(--color-muted)] leading-relaxed">
+                  {t('profile.personalization.clearDesc')}
                 </p>
               </div>
-
-              <button
+              <Button
                 type="button"
-                role="switch"
-                aria-checked={currentUser.personalizationEnabled}
-                aria-disabled="true"
-                disabled
-                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] text-xs font-semibold text-[var(--color-muted)] cursor-not-allowed"
+                variant="danger"
+                size="sm"
+                disabled={
+                  isClearingPersonalization ||
+                  !personalizationStatus ||
+                  personalizationStatus.topTopics.length === 0
+                }
+                onClick={() => setIsClearPersonalizationModalOpen(true)}
+                startIcon={<Trash2 className="w-4 h-4" />}
               >
-                <Lock className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-                <span>{t('profile.personalization.badge')}</span>
-              </button>
+                {isClearingPersonalization
+                  ? t('profile.personalization.clearingButton')
+                  : t('profile.personalization.clearButton')}
+              </Button>
             </div>
           </section>
         )}
@@ -1165,6 +1469,45 @@ export function ProfilePage({ currentRoute }: ProfilePageProps) {
             </Button>
           </div>
         </form>
+      </Modal>
+
+      {/* Clear Personalization History Confirmation Modal */}
+      <Modal
+        open={isClearPersonalizationModalOpen}
+        onClose={() => {
+          if (!isClearingPersonalization) {
+            setIsClearPersonalizationModalOpen(false);
+          }
+        }}
+        title={t('profile.personalization.clearModalTitle')}
+        closeOnBackdrop={!isClearingPersonalization}
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-[var(--color-text)] leading-relaxed">
+            {t('profile.personalization.clearModalBody')}
+          </p>
+
+          <div className="pt-2 flex flex-wrap items-center justify-end gap-2 border-t border-[var(--color-border)]">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isClearingPersonalization}
+              onClick={() => setIsClearPersonalizationModalOpen(false)}
+            >
+              {t('profile.personalization.clearModalCancel')}
+            </Button>
+            <Button
+              type="button"
+              variant="danger"
+              disabled={isClearingPersonalization}
+              onClick={() => void handleConfirmClearPersonalization()}
+            >
+              {isClearingPersonalization
+                ? t('profile.personalization.clearingButton')
+                : t('profile.personalization.clearModalConfirm')}
+            </Button>
+          </div>
+        </div>
       </Modal>
     </MainLayout>
   );

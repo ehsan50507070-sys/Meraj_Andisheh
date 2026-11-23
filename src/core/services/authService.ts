@@ -3,6 +3,7 @@ import type { IClock } from '../abstractions/IClock';
 import type { IEmailSender } from '../abstractions/emailSender';
 import type { ILogger } from '../abstractions/ILogger';
 import type { IPasswordHasher } from '../abstractions/passwordHasher';
+import type { IPersonalizationService } from '../abstractions/personalizationService';
 import type { AppUser, AuthToken, UserRole, UserSession } from '../domain/auth';
 import {
   isValidEmailIdentifier,
@@ -100,6 +101,7 @@ export class AuthService {
   private readonly sessionTokenStore: ISessionTokenStore;
   private readonly templates: AuthEmailTemplates;
   private readonly rateLimiter: RateLimiter;
+  private readonly personalizationService?: IPersonalizationService;
 
   constructor(
     repository: IAuthRepository,
@@ -115,6 +117,7 @@ export class AuthService {
       resetBody: 'Please reset your password using the link below.',
     },
     rateLimiter: RateLimiter = new RateLimiter(clock, 20, 60 * 1000),
+    personalizationService?: IPersonalizationService,
   ) {
     this.repository = repository;
     this.passwordHasher = passwordHasher;
@@ -124,6 +127,7 @@ export class AuthService {
     this.sessionTokenStore = sessionTokenStore;
     this.templates = templates;
     this.rateLimiter = rateLimiter;
+    this.personalizationService = personalizationService;
   }
 
   public async registerWithEmail(
@@ -467,6 +471,10 @@ export class AuthService {
     });
 
     this.sessionTokenStore.setRawToken(rawSessionToken);
+
+    if (this.personalizationService) {
+      await this.personalizationService.mergeGuestAffinityOnLoginAsync(updatedUser);
+    }
 
     this.logger.info('USER_LOGGED_IN', {
       userId: updatedUser.id,

@@ -3,7 +3,7 @@ export const faResources = {
   'app.name': 'معراج اندیشه',
   'app.subtitle': 'پلتفرم بانک محتوای فارسی',
   'app.stageLabel': 'مرحله {stage} از {total}',
-  'app.stageName': 'داشبورد آمار پایه بازدید، دانلود و سلامت رویدادها',
+  'app.stageName': 'شخصی‌سازی هوشمند و توصیه‌گر موضوعی',
   'app.footerNote': 'پلتفرم معراج اندیشه · بانک محتوای فارسی متناسب با هر رده سنی',
 
   // Themes
@@ -25,7 +25,14 @@ export const faResources = {
   'layout.header.searchAction': 'جستجو',
   'layout.header.ageGroupLabel': 'رده سنی',
   'layout.header.personalize': 'شخصی‌سازی',
-  'layout.header.personalizeActive': 'حالت متمرکز روشن',
+  'layout.header.personalizeActive': 'شخصی‌سازی روشن',
+  'layout.header.personalizeInactive': 'شخصی‌سازی خاموش',
+  'layout.header.personalizeDisabledByAdmin': 'شخصی‌سازی توسط مدیریت غیرفعال شده است',
+  'layout.header.personalizeToggleAria': 'تغییر وضعیت شخصی‌سازی هوشمند پیشنهادها',
+  'layout.header.personalizeToggledOn':
+    'شخصی‌سازی هوشمند روشن شد؛ پیشنهادهای صفحه اصلی بر اساس علاقه‌مندی‌های شما تنظیم می‌شوند.',
+  'layout.header.personalizeToggledOff':
+    'شخصی‌سازی هوشمند خاموش شد؛ قفسه پیشنهادهای شخصی‌سازی‌شده موقتاً پنهان می‌ماند.',
   'layout.header.favoritesAriaLabel': 'فهرست علاقه‌مندی‌ها',
   'layout.header.favoritesLabel': 'علاقه‌مندی‌ها',
   'layout.header.accountAction': 'ورود / حساب کاربری',
@@ -834,10 +841,14 @@ export const faResources = {
   'admin.settings.key.Site.Subtitle.hint': 'توضیح کوتاه معرفی سامانه',
   'admin.settings.key.Personalization.DefaultEnabled.label':
     'شخصی‌سازی پیش‌فرض (Personalization.DefaultEnabled)',
+  'admin.settings.key.Personalization.DefaultEnabled.hint':
+    'کلید سراسری موتور توصیه‌گر هوشمند؛ با خاموش کردن (۰)، قفسه «پیشنهادهای شما» برای همه کاربران پنهان و ثبت امتیاز جدید متوقف می‌شود.',
   'admin.settings.key.Personalization.DefaultEnabled.optionOn': 'فعال (۱)',
   'admin.settings.key.Personalization.DefaultEnabled.optionOff': 'غیرفعال (۰)',
   'admin.settings.key.Personalization.MinViews.label':
     'حداقل بازدید برای شخصی‌سازی (Personalization.MinViews)',
+  'admin.settings.key.Personalization.MinViews.hint':
+    'تعداد حداقل بازدید از محتواهای یک موضوع ریشه (پیش‌فرض ۳) پیش از ظاهر شدن قفسه «پیشنهادهای شما» در صفحه اصلی.',
   'admin.settings.key.Comments.MaxLength.label':
     'حداکثر طول نظر بر حسب نویسه (Comments.MaxLength)',
   'admin.settings.key.Upload.MaxVideoMb.label':
@@ -2019,14 +2030,44 @@ export const faResources = {
   'profile.requests.newRequestButton': 'ثبت درخواست جدید',
   'profile.requests.openQuotaBadge': 'درخواست‌های باز: {open} از {max}',
 
-  // Tab 5: Personalization Placeholder (Stage 20)
+  // Tab 5: Personalization Settings (Stage 20)
   'profile.personalization.title': 'تنظیمات شخصی‌سازی هوشمند پیشنهادها',
-  'profile.personalization.badge': 'آماده‌سازی برای مرحله‌ی ۲۰',
+  'profile.personalization.statusActive': 'شخصی‌سازی فعال است',
+  'profile.personalization.statusInactive': 'شخصی‌سازی غیرفعال است',
+  'profile.personalization.statusGlobalOff': 'غیرفعال‌شده در سطح سامانه',
   'profile.personalization.desc':
-    'موتور شخصی‌سازی هوشمند و امکان پاکسازی سابقه‌ی علایق موضوعی در مرحله‌ی ۲۰ فعال می‌شود.',
+    'سامانه به‌صورت خودکار علاقه‌مندی شما به موضوعات اصلی را بر اساس بازدیدهای روزانه (حداکثر یک امتیاز به ازای هر محتوا در روز) محاسبه می‌کند و محتواهای جدید دیده‌نشده را در قفسه «پیشنهادهای شما» نمایش می‌دهد.',
+  'profile.personalization.globalDisabledNotice':
+    'در حال حاضر مدیر سامانه قابلیت شخصی‌سازی هوشمند را به‌صورت سراسری غیرفعال کرده است؛ تغییر این تنظیم یا نمایش قفسه پیشنهادها تا زمان فعال‌سازی مجدد اثر ندارد.',
   'profile.personalization.toggleLabel': 'فعالسازی پیشنهادهای هوشمند متناسب با علایق من',
-  'profile.personalization.toggleDisabledHint':
-    'این کلید به‌صورت موقت غیرفعال است و در مرحله‌ی ۲۰ قابل تنظیم خواهد شد.',
+  'profile.personalization.toggleOnHint':
+    'بازدیدهای شما با رعایت حریم خصوصی و فیلتر رده سنی در رتبه‌بندی پیشنهادهای صفحه اصلی لحاظ می‌شود.',
+  'profile.personalization.toggleOffHint':
+    'تا زمانی که این کلید خاموش باشد، قفسه «پیشنهادهای شما» برای شما نمایش داده نمی‌شود و امتیاز جدیدی ثبت نمی‌گردد.',
+  'profile.personalization.toggleSwitchAria': 'تغییر وضعیت شخصی‌سازی حساب کاربری',
+  'profile.personalization.toggleSuccessOn': 'شخصی‌سازی هوشمند برای حساب شما روشن شد.',
+  'profile.personalization.toggleSuccessOff': 'شخصی‌سازی هوشمند برای حساب شما خاموش شد.',
+  'profile.personalization.thresholdHint':
+    'برای نمایش قفسه «پیشنهادهای شما» در صفحه اصلی، امتیاز دست‌کم یکی از موضوعات اصلی باید به {min} برسد.',
+  'profile.personalization.topTopicsTitle': 'علایق موضوعی ثبت‌شده‌ی شما',
+  'profile.personalization.topTopicsEmptyTitle': 'هنوز امتیازی در سابقه‌ی موضوعی شما ثبت نشده است',
+  'profile.personalization.topTopicsEmptyBody':
+    'با مطالعه‌ی محتواها در بانک محتوا، موضوعات مورد علاقه‌ی شما به‌تدریج در این بخش شکل می‌گیرند.',
+  'profile.personalization.topicScoreLabel': '{count} امتیاز بازدید',
+  'profile.personalization.topicProgressLabel': '{count} از {min} (آستانه‌ی فعال‌سازی)',
+  'profile.personalization.topicQualifiedBadge': 'آماده‌ی پیشنهاد',
+  'profile.personalization.clearTitle': 'پاک‌سازی سابقه‌ی علایق موضوعی',
+  'profile.personalization.clearDesc':
+    'با اجرای این عملیات، تمام امتیازهای موضوعی ثبت‌شده در حساب کاربری و مرورگر شما حذف می‌شوند و پیشنهادها از صفر بازسازی خواهند شد.',
+  'profile.personalization.clearButton': 'پاک‌سازی سابقه‌ی شخصی‌سازی',
+  'profile.personalization.clearingButton': 'در حال پاک‌سازی...',
+  'profile.personalization.clearModalTitle': 'تأیید پاک‌سازی سابقه‌ی شخصی‌سازی',
+  'profile.personalization.clearModalBody':
+    'آیا مطمئن هستید که می‌خواهید تمام امتیازهای علاقه‌مندی موضوعی خود را پاک کنید؟ این عملیات برگشت‌پذیر نیست.',
+  'profile.personalization.clearModalConfirm': 'بله، سابقه پاک شود',
+  'profile.personalization.clearModalCancel': 'انصراف',
+  'profile.personalization.clearSuccess':
+    'تمام سابقه‌ی علایق موضوعی ({count} موضوع) با موفقیت پاک‌سازی شد.',
 
   // Tab 6: Danger Zone / Account Deletion (Rule 6.7)
   'profile.danger.title': 'حذف دائمی حساب کاربری',
@@ -2397,6 +2438,8 @@ export const faResources = {
   'home.page.viewAllShelf': 'مشاهده همه',
   'home.page.generalTopic': 'عمومی',
   'home.page.trendingViewsBadge': '{count} بازدید این هفته',
+  'home.page.personalizedTopicsHint': 'بر اساس علاقه‌ی شما به: {topics}',
+  'home.page.topicSeparator': '، ',
   'home.page.emptyFallbackTitle': 'هنوز محتوای منتشرشده‌ای متناسب با این رده‌ی سنی در صفحه اصلی نمایش داده نمی‌شود.',
   'home.page.emptyFallbackBody':
     'می‌توانید بانک محتوا را مرور کنید یا موضوع مورد نظر خود را برای تیم تحریریه پیشنهاد دهید.',
@@ -2466,10 +2509,10 @@ export const faResources = {
   'admin.layout.shelves.emptyTitle': 'هیچ قفسه‌ای تعریف نشده است.',
   'admin.layout.shelves.emptyBody': 'قفسه‌های نمایشی صفحه اصلی را از اینجا ایجاد و مرتب کنید.',
   'admin.layout.shelves.stage20Note':
-    'توجه: قفسه‌ی «پیشنهادهای شما (Personalized)» در این مرحله در صفحه اصلی عمومی مخفی نگه داشته می‌شود و موتور پیشنهادگر آن در مرحله‌ی ۲۰ فعال خواهد شد.',
+    'توجه: قفسه‌ی «پیشنهادهای شما (Personalized)» به‌طور خودکار پس از فعال بودن شخصی‌سازی و رسیدن امتیاز دست‌کم یک موضوع ریشه به آستانه «Personalization.MinViews» در صفحه اصلی نمایش داده می‌شود.',
   'admin.layout.shelves.visibleBadge': 'نمایشی',
   'admin.layout.shelves.hiddenBadge': 'مخفی',
-  'admin.layout.shelves.stage20Badge': 'فعال در مرحله ۲۰',
+  'admin.layout.shelves.stage20Badge': 'موتور شخصی‌سازی فعال',
   'admin.layout.shelves.typeLabel': 'نوع قفسه',
   'admin.layout.shelves.type.Personalized': 'پیشنهادهای شخصی‌سازی‌شده (Personalized)',
   'admin.layout.shelves.type.Trending': 'برترین‌های هفته (۷ روز اخیر)',
@@ -2711,6 +2754,28 @@ export const faResources = {
   'jalali.picker.clearButton': 'پاک کردن',
   'jalali.picker.invalidHint': 'قالب تاریخ شمسی معتبر نیست (نمونه: ۱۴۰۵/۰۹/۰۲)',
   'jalali.picker.dayAria': '{day} {month} {year}',
+
+  // Stage 20 Unit Tests (Smart Personalization)
+  'tests.stage20.example310ThresholdAndUnseenOrder.name':
+    'مثال ۳.۱۰: آستانه حداقل ۳ بازدید، جمع‌شدن زیرموضوع‌ها به ریشه و ترتیب جدیدترین‌های دیده‌نشده',
+  'tests.stage20.example310ThresholdAndUnseenOrder.desc':
+    'با ۲ بازدید از موضوع A قفسه پنهان است؛ پس از ۴ بازدید به زیرموضوع‌های A و ۱ بازدید به B، قفسه «پیشنهادهای شما» تا سقف ۱۲ محتوای دیده‌نشده از A سپس B به ترتیب جدیدترین ظاهر می‌شود.',
+  'tests.stage20.utcDayContentCap.name':
+    'قانون روزی یک امتیاز به ازای هر محتوا در یک روز UTC',
+  'tests.stage20.utcDayContentCap.desc':
+    'بازدید همان محتوا در ۱۰:۰۰ و ۱۱:۰۰ یک روز UTC فقط +۱ امتیاز به موضوع ریشه می‌دهد؛ اما بازدید روز بعد (+۱) و بازدید از محتوای دوم در همان روز (+۱) امتیاز را افزایش می‌دهند.',
+  'tests.stage20.togglesAndClearHistory.name':
+    'کلیدهای خاموش/روشن کاربر و کلید سراسری ادمین و پاک‌سازی سابقه',
+  'tests.stage20.togglesAndClearHistory.desc':
+    'خاموش کردن کلید کاربر یا Personalization.DefaultEnabled قفسه را پنهان می‌کند، با روشن کردن دوباره بازمی‌گردد و پاک‌سازی سابقه همه‌ی امتیازهای موضوعی را حذف می‌کند.',
+  'tests.stage20.guestCookieCap20AndLoginMerge.name':
+    'سقف ۲۰ موضوع در کوکی مهمان ma_aff و ادغام با جمع امتیازها هنگام ورود',
+  'tests.stage20.guestCookieCap20AndLoginMerge.desc':
+    'با ثبت ۲۲ موضوع مختلف در وضعیت مهمان فقط ۲۰ موضوع پربازدیدتر در ma_aff نگه داشته می‌شوند و هنگام ورود واقعی با AuthService/OtpService امتیازها با جدول DB جمع و کوکی مهمان پاک می‌شود.',
+  'tests.stage20.childSafetyAndRule67Purge.name':
+    'ایمنی سخت کودک در پیشنهادها، پاک‌سازی کامل قاعده ۶.۷ و بررسی IndexedDB v13',
+  'tests.stage20.childSafetyAndRule67Purge.desc':
+    'در رده کودک حتی با امتیاز موضوع بالا، محتوای بزرگسالان در پیشنهادها نمی‌آید؛ حذف حساب ۶.۷ رکوردهای userTopicAffinities را پاک می‌کند و ObjectStore نسخه ۱۳ در IndexedDB تایید می‌شود.',
 } as const;
 
 export type ResourceKey = keyof typeof faResources;
