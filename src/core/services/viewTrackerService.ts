@@ -1,6 +1,7 @@
 import type { IClock } from '../abstractions/IClock';
 import type { IContentRepository } from '../abstractions/contentRepository';
 import type { ILogger } from '../abstractions/ILogger';
+import type { ITaxonomyRepository } from '../abstractions/taxonomyRepository';
 import type {
   IViewEventRepository,
   IViewTracker,
@@ -60,9 +61,18 @@ export function resolveRootTopicId(
   let startTopic: Topic | undefined;
   for (const id of topicIds) {
     const candidate = topicById.get(id);
-    if (candidate) {
+    if (candidate && candidate.isActive) {
       startTopic = candidate;
       break;
+    }
+  }
+  if (!startTopic) {
+    for (const id of topicIds) {
+      const candidate = topicById.get(id);
+      if (candidate) {
+        startTopic = candidate;
+        break;
+      }
     }
   }
   if (!startTopic) {
@@ -88,17 +98,20 @@ export class ViewTrackerService implements IViewTracker {
   private readonly contentRepository: IContentRepository;
   private readonly clock: IClock;
   private readonly logger?: ILogger;
+  private readonly taxonomyRepository?: ITaxonomyRepository;
 
   constructor(
     viewEventRepository: IViewEventRepository,
     contentRepository: IContentRepository,
     clock: IClock,
     logger?: ILogger,
+    taxonomyRepository?: ITaxonomyRepository,
   ) {
     this.viewEventRepository = viewEventRepository;
     this.contentRepository = contentRepository;
     this.clock = clock;
     this.logger = logger;
+    this.taxonomyRepository = taxonomyRepository;
   }
 
   public async trackViewAsync(input: TrackViewInput): Promise<TrackViewResult> {
@@ -140,12 +153,26 @@ export class ViewTrackerService implements IViewTracker {
     const shouldCount =
       latestCountedMs === null || nowMs - latestCountedMs >= VIEW_DEDUP_WINDOW_MS;
 
+    let resolvedPrimaryTopicId: number | null = input.primaryTopicId ?? null;
+    if (this.taxonomyRepository) {
+      const allTopics = await this.taxonomyRepository.getAllTopics();
+      if (resolvedPrimaryTopicId !== null) {
+        resolvedPrimaryTopicId =
+          resolveRootTopicId([resolvedPrimaryTopicId], allTopics) ?? resolvedPrimaryTopicId;
+      } else {
+        const contentTopicIds = await this.contentRepository.getTopicIdsByContentId(
+          input.contentId,
+        );
+        resolvedPrimaryTopicId = resolveRootTopicId(contentTopicIds, allTopics);
+      }
+    }
+
     const createdEvent = await this.viewEventRepository.createViewEvent({
       contentId: input.contentId,
       userId: input.userId,
       visitorId: cleanVisitorId,
       ageGroupId: input.ageGroupId,
-      primaryTopicId: input.primaryTopicId,
+      primaryTopicId: resolvedPrimaryTopicId,
       occurredAt: nowIso,
       isCounted: shouldCount,
     });
@@ -162,7 +189,7 @@ export class ViewTrackerService implements IViewTracker {
         contentId: input.contentId,
         userId: input.userId,
         ageGroupId: input.ageGroupId,
-        primaryTopicId: input.primaryTopicId,
+        primaryTopicId: resolvedPrimaryTopicId,
       });
     } else {
       this.logger?.debug('CONTENT_VIEW_DEDUPLICATED', {

@@ -10,6 +10,7 @@ import { AdminUsersPage } from '../admin/AdminUsersPage';
 import { AdminContentFormPage } from '../admin/pages/AdminContentFormPage';
 import { AdminContentListPage } from '../admin/pages/AdminContentListPage';
 import { AdminCommentsPage } from '../admin/pages/AdminCommentsPage';
+import { AdminDashboardPage } from '../admin/pages/AdminDashboardPage';
 import { AdminLayoutPage } from '../admin/pages/AdminLayoutPage';
 import { AdminRequestsPage } from '../admin/pages/AdminRequestsPage';
 import { AdminSmartImportPage } from '../admin/pages/AdminSmartImportPage';
@@ -304,6 +305,8 @@ export function HashRouter({ routes, defaultRoute }: HashRouterProps) {
     switch (matchedAdminSpec.id) {
       case 'home':
         return <AdminHomePage currentRoute={routeState.fullHash} />;
+      case 'dashboard':
+        return <AdminDashboardPage currentRoute={routeState.fullHash} />;
       case 'staff':
         return <AdminStaffPage currentRoute={routeState.fullHash} />;
       case 'users':

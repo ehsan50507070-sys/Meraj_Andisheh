@@ -161,7 +161,7 @@ export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps
             userId: currentUser?.id ?? null,
             visitorId,
             userAgent,
-            ageGroupId: effectiveAgeGroup?.id ?? null,
+            ageGroupId: effectiveAgeGroup?.id ?? currentUser?.ageGroupId ?? null,
             primaryTopicId: res.data.primaryRootTopicId,
           });
           if (active && trackOutcome.isCounted) {

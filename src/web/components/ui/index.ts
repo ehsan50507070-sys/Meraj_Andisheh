@@ -3,6 +3,7 @@ export * from './Breadcrumb';
 export * from './Button';
 export * from './ContentCard';
 export * from './FormField';
+export * from './JalaliDatePicker';
 export * from './Modal';
 export * from './Pagination';
 export * from './SanitizedHtmlPreview';

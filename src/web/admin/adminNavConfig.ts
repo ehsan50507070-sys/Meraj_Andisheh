@@ -33,7 +33,6 @@ export const ADMIN_ROUTES: readonly AdminRouteSpec[] = [
     labelKey: 'admin.nav.dashboard',
     requirement: 'dashboard.view',
     permissionDescKey: 'permissions.dashboard.view.desc',
-    isPlaceholder: true,
   },
   {
     id: 'content',

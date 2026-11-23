@@ -3,7 +3,7 @@ export const faResources = {
   'app.name': 'معراج اندیشه',
   'app.subtitle': 'پلتفرم بانک محتوای فارسی',
   'app.stageLabel': 'مرحله {stage} از {total}',
-  'app.stageName': 'صفحه اصلی، اسلایدر، قفسه‌ها، صفحات ثابت و مدیریت ظاهر',
+  'app.stageName': 'داشبورد آمار پایه بازدید، دانلود و سلامت رویدادها',
   'app.footerNote': 'پلتفرم معراج اندیشه · بانک محتوای فارسی متناسب با هر رده سنی',
 
   // Themes
@@ -2569,6 +2569,148 @@ export const faResources = {
     'تفکیک دسترسی layout.manage (۴۰۳ با WARN برای همکار، ۴۰۴ برای عضو) و IndexedDB v12',
   'tests.stage18.rbacAndIdbV12.desc':
     'عضو عادی ۴۰۴ و همکار بدون layout.manage کد ۴۰۳ با ثبت لاگ WARN می‌گیرد؛ همکار مجاز ذخیره می‌کند و جداول نسخه ۱۲ بررسی می‌شوند.',
+
+  // Stage 19: Basic Analytics Dashboard (#/admin/dashboard)
+  'admin.dashboard.title': 'داشبورد آمار پایه بازدید و دانلود',
+  'admin.dashboard.subtitle':
+    'پایش بازدیدهای یکتا، میانگین بازدید، پربازدیدترین و پردانلودترین محتواها، روند روزانه و هفتگی و سلامت ثبت رویدادها.',
+  'admin.dashboard.refreshButton': 'بروزرسانی آمار',
+  'admin.dashboard.loading': 'در حال محاسبه‌ی گزارش‌های آماری...',
+  'admin.dashboard.activeWindowHint': 'بازه نمایش: {from} تا {to}',
+  'admin.dashboard.activeWindowAllHint': 'بازه نمایش: کل زمان‌های ثبت‌شده',
+
+  'admin.dashboard.filter.ariaLabel': 'فیلتر بازه‌ی زمانی آمار',
+  'admin.dashboard.filter.preset.7d': '۷ روز اخیر',
+  'admin.dashboard.filter.preset.30d': '۳۰ روز اخیر',
+  'admin.dashboard.filter.preset.90d': '۹۰ روز اخیر',
+  'admin.dashboard.filter.preset.all': 'همه‌ی زمان‌ها',
+  'admin.dashboard.filter.preset.custom': 'بازه‌ی دلخواه',
+  'admin.dashboard.filter.fromLabel': 'از تاریخ',
+  'admin.dashboard.filter.toLabel': 'تا تاریخ',
+  'admin.dashboard.filter.applyButton': 'اعمال فیلتر',
+  'admin.dashboard.error.INVALID_DATE_RANGE':
+    'بازه‌ی تاریخ انتخاب‌شده معتبر نیست؛ تاریخ شروع نباید از تاریخ پایان بزرگ‌تر باشد و هر دو تاریخ باید انتخاب شوند.',
+  'admin.dashboard.error.generic': 'خطا در بارگذاری اطلاعات داشبورد آمار.',
+
+  // KPI Cards
+  'admin.dashboard.kpi.uniqueVisitorsLabel': 'بازدیدکننده‌ی یکتا',
+  'admin.dashboard.kpi.uniqueVisitorsDesc': 'تفکیک یکتا بر اساس شناسه کاربری یا کوکی بازدیدکننده',
+  'admin.dashboard.kpi.countedViewsLabel': 'مجموع بازدیدهای شمرده‌شده',
+  'admin.dashboard.kpi.countedViewsDesc': 'با اعمال قاعده‌ی ۳۰ دقیقه‌ای (کل درخواست‌های ثبت‌شده: {raw})',
+  'admin.dashboard.kpi.avgViewsLabel': 'میانگین بازدید هر نفر',
+  'admin.dashboard.kpi.avgViewsDesc': 'نسبت بازدیدهای شمرده‌شده به تعداد بازدیدکننده‌ی یکتا',
+  'admin.dashboard.kpi.downloadsLabel': 'مجموع دانلودها',
+  'admin.dashboard.kpi.downloadsDesc': 'تعداد کاربران یکتای دانلودکننده: {unique}',
+
+  // Top Contents Tables
+  'admin.dashboard.topViewed.title': 'پربازدیدترین محتواها',
+  'admin.dashboard.topViewed.subtitle': 'بر اساس بازدیدهای معتبر (شمرده‌شده با قاعده‌ی ۳۰ دقیقه) در بازه',
+  'admin.dashboard.topViewed.countHeader': 'بازدید شمرده‌شده',
+  'admin.dashboard.topViewed.uniqueHeader': 'نفر یکتا',
+  'admin.dashboard.topViewed.empty': 'در این بازه هنوز بازدیدی برای محتواها ثبت نشده است.',
+
+  'admin.dashboard.topDownloaded.title': 'پردانلودترین محتواها',
+  'admin.dashboard.topDownloaded.subtitle': 'بر اساس تعداد رویدادهای دانلود ثبت‌شده در بازه انتخابی',
+  'admin.dashboard.topDownloaded.countHeader': 'تعداد دانلود',
+  'admin.dashboard.topDownloaded.uniqueHeader': 'دانلودکننده یکتا',
+  'admin.dashboard.topDownloaded.empty': 'در این بازه هنوز دانلودی برای محتواها ثبت نشده است.',
+
+  'admin.dashboard.table.colRank': 'رتبه',
+  'admin.dashboard.table.colTitle': 'عنوان محتوا',
+  'admin.dashboard.table.colFormat': 'قالب',
+  'admin.dashboard.table.openContentAria': 'مشاهده صفحه عمومی {title}',
+
+  // Daily & Weekly Tabs
+  'admin.dashboard.periods.title': 'روند بازدید و دانلود (روزانه و هفتگی)',
+  'admin.dashboard.periods.subtitle': 'تجمیع فعالیت‌های شمرده‌شده و دانلودها به تفکیک روز و هفته (تاریخ شمسی)',
+  'admin.dashboard.periods.tabsAria': 'انتخاب تفکیک زمانی آمار',
+  'admin.dashboard.periods.tab.daily': 'آمار روزانه',
+  'admin.dashboard.periods.tab.weekly': 'آمار هفتگی',
+  'admin.dashboard.periods.colDate': 'تاریخ (شمسی)',
+  'admin.dashboard.periods.colWeekRange': 'بازه‌ی هفته (شمسی)',
+  'admin.dashboard.periods.colViews': 'بازدید شمرده‌شده',
+  'admin.dashboard.periods.colUniqueVisitors': 'بازدیدکننده یکتا',
+  'admin.dashboard.periods.colDownloads': 'دانلودها',
+  'admin.dashboard.periods.colActivity': 'نسبت فعالیت',
+  'admin.dashboard.periods.weekRangeValue': '{from} تا {to}',
+
+  'admin.dashboard.emptyRangeTitle': 'در این بازه‌ی زمانی هنوز رویدادی ثبت نشده است',
+  'admin.dashboard.emptyRangeBody':
+    'پس از مشاهده‌ی صفحات محتوا یا دریافت فایل‌ها توسط کاربران، آمار دقیق بازه در این بخش نمایش داده می‌شود.',
+
+  // Event Integrity Card
+  'admin.dashboard.integrity.title': 'تضمین کیفیت و کامل‌بودن داده‌ی رویدادها',
+  'admin.dashboard.integrity.subtitle':
+    'پایش ثبت خودکار رده‌ی سنی و موضوع ریشه در رویدادهای بازدید و دانلود برای آماده‌سازی گزارش‌های تفکیکی مرحله‌ی ۲۷.',
+  'admin.dashboard.integrity.viewAgeLabel': 'ثبت رده‌ی سنی (ageGroupId) در بازدیدها',
+  'admin.dashboard.integrity.viewTopicLabel': 'ثبت موضوع ریشه (primaryTopicId) در بازدیدها',
+  'admin.dashboard.integrity.downloadAgeLabel': 'ثبت رده‌ی سنی (ageGroupId) در دانلودها',
+  'admin.dashboard.integrity.ratioValue': '{filled} از {total} ({percent}٪)',
+  'admin.dashboard.integrity.noEventsPercent': '۰٪',
+
+  // Stage 19 Unit Tests
+  'tests.stage19.metric3Visitors10ViewsAvg33.name':
+    'معیار مرحله‌ی ۱۹: ۳ بازدیدکننده‌ی یکتا و ۱۰ بازدید شمرده‌شده با میانگین ۳.۳',
+  'tests.stage19.metric3Visitors10ViewsAvg33.desc':
+    'با ۱۰ بازدید شمرده‌شده (و ۲ بازدید زیر ۳۰ دقیقه که شمرده نمی‌شوند) از ۱ عضو + ۲ مهمان، دقیقاً uniqueVisitors=3، totalCountedViews=10 و averageViewsPerVisitor=3.3 محاسبه می‌شود.',
+  'tests.stage19.topListsRangeFilterAndPeriods.name':
+    'مرتب‌سازی پربازدیدترین/پردانلودترین، فیلتر ۳۰ روز در برابر همه‌ی زمان‌ها و جمع روزانه/هفتگی',
+  'tests.stage19.topListsRangeFilterAndPeriods.desc':
+    'در بازه 30d ترتیب [M2, M3, M1] دقیق است و رویداد ۴۰ روز پیش حذف می‌شود؛ در all رویداد ۴۰ روز پیش اضافه شده و مجموع dailyStats و weeklyStats با کل برابر است.',
+  'tests.stage19.eventColumnsIntegrityRootTopicAndAge.name':
+    'ثبت کامل ستون‌های ageGroupId و primaryTopicId (موضوع ریشه) در IndexedDB',
+  'tests.stage19.eventColumnsIntegrityRootTopicAndAge.desc':
+    'پس از بازدید از محتوای متصل به زیرموضوع، رکورد ViewEvent در IndexedDB دارای ageGroupId فعال و primaryTopicId موضوع ریشه است و DownloadEvent.ageGroupId نیز پر می‌شود.',
+  'tests.stage19.policyAndInvalidRange.name':
+    'کنترل دسترسی dashboard.view (۴۰۳ با WARN برای همکار، ۴۰۴ برای عضو) و خطای بازه نامعتبر',
+  'tests.stage19.policyAndInvalidRange.desc':
+    'همکار بدون dashboard.view کد ۴۰۳ با ثبت لاگ WARN، عضو و مهمان ۴۰۴، و همکار مجاز/مدیرکل ۲۰۰ می‌گیرند؛ بازه‌ی from > to خطای INVALID_DATE_RANGE برمی‌گرداند.',
+  'tests.stage19.jalaliCalendarAndConversion.name':
+    'تبدیل دقیق تقویم شمسی ↔ میلادی، سال کبیسه ۱۴۰۳/۱۴۰۴ و پارس ارقام فارسی/لاتین',
+  'tests.stage19.jalaliCalendarAndConversion.desc':
+    'تبدیل رفت‌وبرگشت ۱ فروردین و اسفند کبیسه (۱۴۰۳/۱۲/۳۰ ↔ 2025-03-20)، رد ۱۴۰۰/۱۴۰۴/۱۲/۳۰ غیرکبیسه، پارس ارقام فارسی/لاتین و تبدیل به بازه UTC تایید می‌شوند.',
+
+  // Jalali Calendar & Reusable Date Picker (Stage 19+)
+  'jalali.month.1': 'فروردین',
+  'jalali.month.2': 'اردیبهشت',
+  'jalali.month.3': 'خرداد',
+  'jalali.month.4': 'تیر',
+  'jalali.month.5': 'مرداد',
+  'jalali.month.6': 'شهریور',
+  'jalali.month.7': 'مهر',
+  'jalali.month.8': 'آبان',
+  'jalali.month.9': 'آذر',
+  'jalali.month.10': 'دی',
+  'jalali.month.11': 'بهمن',
+  'jalali.month.12': 'اسفند',
+
+  'jalali.weekday.short.0': 'ش',
+  'jalali.weekday.short.1': 'ی',
+  'jalali.weekday.short.2': 'د',
+  'jalali.weekday.short.3': 'س',
+  'jalali.weekday.short.4': 'چ',
+  'jalali.weekday.short.5': 'پ',
+  'jalali.weekday.short.6': 'ج',
+
+  'jalali.weekday.full.0': 'شنبه',
+  'jalali.weekday.full.1': 'یکشنبه',
+  'jalali.weekday.full.2': 'دوشنبه',
+  'jalali.weekday.full.3': 'سه‌شنبه',
+  'jalali.weekday.full.4': 'چهارشنبه',
+  'jalali.weekday.full.5': 'پنج‌شنبه',
+  'jalali.weekday.full.6': 'جمعه',
+
+  'jalali.picker.placeholder': 'مثلاً ۱۴۰۵/۰۹/۰۲',
+  'jalali.picker.openCalendarAria': 'باز کردن یا بستن تقویم شمسی',
+  'jalali.picker.calendarDialogAria': 'تقویم انتخاب تاریخ شمسی',
+  'jalali.picker.prevMonthAria': 'ماه قبل',
+  'jalali.picker.nextMonthAria': 'ماه بعد',
+  'jalali.picker.monthSelectAria': 'انتخاب ماه شمسی',
+  'jalali.picker.yearSelectAria': 'انتخاب سال شمسی',
+  'jalali.picker.todayButton': 'امروز',
+  'jalali.picker.clearButton': 'پاک کردن',
+  'jalali.picker.invalidHint': 'قالب تاریخ شمسی معتبر نیست (نمونه: ۱۴۰۵/۰۹/۰۲)',
+  'jalali.picker.dayAria': '{day} {month} {year}',
 } as const;
 
 export type ResourceKey = keyof typeof faResources;

@@ -1,3 +1,4 @@
+import { AnalyticsDashboardService } from '../../core/services/analyticsDashboardService';
 import { AuthService } from '../../core/services/authService';
 import { CommentService } from '../../core/services/commentService';
 import { ContentCatalogService } from '../../core/services/contentCatalogService';
@@ -98,6 +99,7 @@ export interface AppContainer {
   contentRequestService: ContentRequestService;
   homePageService: HomePageService;
   layoutManagementService: LayoutManagementService;
+  analyticsDashboardService: AnalyticsDashboardService;
   profileService: ProfileService;
   searchSuggestionService: SearchSuggestionService;
   smartImportService: SmartImportService;
@@ -227,6 +229,7 @@ const viewTrackerService = new ViewTrackerService(
   contentRepository,
   clock,
   logger,
+  taxonomyRepository,
 );
 const downloadService = new DownloadService(
   contentRepository,
@@ -279,6 +282,14 @@ const layoutManagementService = new LayoutManagementService({
   permissionPolicyService,
   fileUploadService,
   fileStorage,
+  logger,
+});
+const analyticsDashboardService = new AnalyticsDashboardService({
+  viewEventRepository,
+  downloadEventRepository,
+  contentRepository,
+  permissionPolicyService,
+  clock,
   logger,
 });
 const profileService = new ProfileService({
@@ -438,6 +449,7 @@ export const appContainer: AppContainer = {
   contentRequestService,
   homePageService,
   layoutManagementService,
+  analyticsDashboardService,
   profileService,
   searchSuggestionService,
   smartImportService,
