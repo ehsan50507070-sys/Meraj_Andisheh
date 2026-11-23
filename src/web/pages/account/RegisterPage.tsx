@@ -1,5 +1,6 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import type { AgeGroup } from '../../../core/domain/taxonomy';
+import { resolvePostLoginRedirect } from '../../../core/services/navigationGuardService';
 import { envConfig } from '../../../infrastructure/config/envConfig';
 import { useAuth } from '../../auth/AuthContext';
 import { Alert, Button, FormField } from '../../components/ui';
@@ -18,8 +19,18 @@ interface RegisterPageProps {
 type RegisterTab = 'mobile' | 'email';
 type MobileStep = 'phone' | 'otp' | 'complete';
 
+function extractReturnUrl(currentRoute: string): string | null {
+  const queryIndex = currentRoute.indexOf('?');
+  if (queryIndex === -1) {
+    return null;
+  }
+  const params = new URLSearchParams(currentRoute.slice(queryIndex + 1));
+  return params.get('returnUrl');
+}
+
 export function RegisterPage({ currentRoute }: RegisterPageProps) {
   const { currentUser, refreshAuthState } = useAuth();
+  const returnUrl = useMemo(() => extractReturnUrl(currentRoute), [currentRoute]);
   const [activeTab, setActiveTab] = useState<RegisterTab>('mobile');
 
   // Shared age groups
@@ -142,7 +153,11 @@ export function RegisterPage({ currentRoute }: RegisterPageProps) {
     setIsSubmitting(true);
 
     try {
-      const result = await appContainer.otpService.verifyOtp(normalizedPhone, otpCode);
+      const result = await appContainer.otpService.verifyOtp(
+        normalizedPhone,
+        otpCode,
+        returnUrl,
+      );
       if (!result.ok || !result.data) {
         setErrorMessage(
           formatOtpError(
@@ -180,6 +195,7 @@ export function RegisterPage({ currentRoute }: RegisterPageProps) {
         registrationToken,
         displayName: mobileDisplayName,
         ageGroupId: Number(ageGroupId),
+        returnUrl,
       });
 
       if (!result.ok || !result.data) {
@@ -241,11 +257,19 @@ export function RegisterPage({ currentRoute }: RegisterPageProps) {
           </div>
 
           {currentUser ? (
-            <Alert
-              variant="info"
-              title={t('auth.login.alreadyLoggedInTitle')}
-              message={t('auth.login.alreadyLoggedInBody', { name: currentUser.displayName })}
-            />
+            <div className="space-y-4">
+              <Alert
+                variant="info"
+                title={t('auth.login.alreadyLoggedInTitle')}
+                message={t('auth.login.alreadyLoggedInBody', { name: currentUser.displayName })}
+              />
+              <Button
+                variant="primary"
+                onClick={() => navigateToHash(resolvePostLoginRedirect(currentUser, returnUrl))}
+              >
+                {t('auth.login.goToTarget')}
+              </Button>
+            </div>
           ) : (
             <>
               {/* Clean 2-tab selector */}
@@ -418,7 +442,16 @@ export function RegisterPage({ currentRoute }: RegisterPageProps) {
                     <Button variant="primary" onClick={() => navigateToHash('/health')}>
                       {t('auth.register.goToHealthLogs')}
                     </Button>
-                    <Button variant="outline" onClick={() => navigateToHash('/account/login')}>
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        navigateToHash(
+                          returnUrl
+                            ? `/account/login?returnUrl=${encodeURIComponent(returnUrl)}`
+                            : '/account/login',
+                        )
+                      }
+                    >
                       {t('auth.register.goToLogin')}
                     </Button>
                   </div>
@@ -491,7 +524,11 @@ export function RegisterPage({ currentRoute }: RegisterPageProps) {
           <div className="pt-4 border-t border-[var(--color-border)] flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm">
             <span className="text-[var(--color-muted)]">{t('auth.register.hasAccount')}</span>
             <a
-              href="#/account/login"
+              href={
+                returnUrl
+                  ? `#/account/login?returnUrl=${encodeURIComponent(returnUrl)}`
+                  : '#/account/login'
+              }
               className="font-semibold text-[var(--color-primary)] hover:underline underline-offset-4"
             >
               {t('auth.register.goToLogin')}

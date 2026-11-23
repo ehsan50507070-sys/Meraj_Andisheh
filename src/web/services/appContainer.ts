@@ -3,6 +3,7 @@ import { ContentCatalogService } from '../../core/services/contentCatalogService
 import { ContentDetailService } from '../../core/services/contentDetailService';
 import { ContentIntegrityService } from '../../core/services/contentIntegrityService';
 import { ContentManagementService } from '../../core/services/contentManagementService';
+import { DownloadService } from '../../core/services/downloadService';
 import { FileUploadService } from '../../core/services/fileUploadService';
 import { HealthCheckService } from '../../core/services/HealthCheckService';
 import { InitialSuperAdminService } from '../../core/services/initialSuperAdminService';
@@ -23,6 +24,7 @@ import { IndexedDbAdminRepository } from '../../infrastructure/data/IndexedDbAdm
 import { IndexedDbAuthRepository } from '../../infrastructure/data/IndexedDbAuthRepository';
 import { IndexedDbContentRepository } from '../../infrastructure/data/IndexedDbContentRepository';
 import { IndexedDbDataStore } from '../../infrastructure/data/IndexedDbDataStore';
+import { IndexedDbDownloadEventRepository } from '../../infrastructure/data/IndexedDbDownloadEventRepository';
 import { IndexedDbTaxonomyRepository } from '../../infrastructure/data/IndexedDbTaxonomyRepository';
 import { IndexedDbViewEventRepository } from '../../infrastructure/data/IndexedDbViewEventRepository';
 import { LocalSessionTokenStore } from '../../infrastructure/data/LocalSessionTokenStore';
@@ -31,6 +33,7 @@ import { AppLogger } from '../../infrastructure/logging/AppLogger';
 import { DevEmailSender } from '../../infrastructure/messaging/DevEmailSender';
 import { DevSmsSender } from '../../infrastructure/messaging/DevSmsSender';
 import { BrowserPasswordHasher } from '../../infrastructure/security/BrowserPasswordHasher';
+import { HmacDownloadTokenProtector } from '../../infrastructure/security/HmacDownloadTokenProtector';
 import { BrowserAgeCookieStorage } from '../../infrastructure/storage/BrowserAgeCookieStorage';
 import { BrowserVisitorIdStorage } from '../../infrastructure/storage/BrowserVisitorIdStorage';
 import { LocalIndexedDbFileStorage } from '../../infrastructure/storage/LocalIndexedDbFileStorage';
@@ -47,6 +50,8 @@ export interface AppContainer {
   taxonomyRepository: IndexedDbTaxonomyRepository;
   contentRepository: IndexedDbContentRepository;
   viewEventRepository: IndexedDbViewEventRepository;
+  downloadEventRepository: IndexedDbDownloadEventRepository;
+  downloadTokenProtector: HmacDownloadTokenProtector;
   fileStorage: LocalIndexedDbFileStorage;
   agePreferenceStorage: BrowserAgeCookieStorage;
   visitorIdStorage: BrowserVisitorIdStorage;
@@ -69,6 +74,7 @@ export interface AppContainer {
   contentCatalogService: ContentCatalogService;
   contentDetailService: ContentDetailService;
   viewTrackerService: ViewTrackerService;
+  downloadService: DownloadService;
   searchSuggestionService: SearchSuggestionService;
   smartImportService: SmartImportService;
   recordStartupLogOnce: () => void;
@@ -89,6 +95,8 @@ const adminRepository = new IndexedDbAdminRepository(dataStore);
 const taxonomyRepository = new IndexedDbTaxonomyRepository(dataStore);
 const contentRepository = new IndexedDbContentRepository(dataStore);
 const viewEventRepository = new IndexedDbViewEventRepository(dataStore);
+const downloadEventRepository = new IndexedDbDownloadEventRepository(dataStore);
+const downloadTokenProtector = new HmacDownloadTokenProtector();
 const fileStorage = new LocalIndexedDbFileStorage(dataStore, clock);
 const agePreferenceStorage = new BrowserAgeCookieStorage();
 const visitorIdStorage = new BrowserVisitorIdStorage();
@@ -191,6 +199,14 @@ const viewTrackerService = new ViewTrackerService(
   clock,
   logger,
 );
+const downloadService = new DownloadService(
+  contentRepository,
+  downloadEventRepository,
+  fileStorage,
+  downloadTokenProtector,
+  clock,
+  logger,
+);
 const searchSuggestionService = new SearchSuggestionService(
   contentRepository,
   taxonomyRepository,
@@ -255,6 +271,8 @@ export const appContainer: AppContainer = {
   taxonomyRepository,
   contentRepository,
   viewEventRepository,
+  downloadEventRepository,
+  downloadTokenProtector,
   fileStorage,
   agePreferenceStorage,
   visitorIdStorage,
@@ -277,6 +295,7 @@ export const appContainer: AppContainer = {
   contentCatalogService,
   contentDetailService,
   viewTrackerService,
+  downloadService,
   searchSuggestionService,
   smartImportService,
   recordStartupLogOnce,

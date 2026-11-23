@@ -1,11 +1,16 @@
-import { ExternalLink, FileSpreadsheet, Lock, Presentation } from 'lucide-react';
-import type { ContentFile } from '../../../core/domain/content';
+import { Download, ExternalLink, FileSpreadsheet, Lock, Presentation } from 'lucide-react';
+import { FileStorageType, type ContentFile } from '../../../core/domain/content';
 import { formatFileSizeParts } from '../../resources/formatters';
+import type { ResourceKey } from '../../resources/fa';
 import { t } from '../../resources/i18n';
 
 export interface DocumentAttachmentCardProps {
   file: ContentFile;
   variant: 'presentation' | 'document';
+  isMemberLoggedIn: boolean;
+  onDownload?: (file: ContentFile) => void;
+  isDownloading?: boolean;
+  buttonLabelKey?: ResourceKey;
 }
 
 function getExtensionUpper(fileName: string, mimeType: string): string {
@@ -16,7 +21,14 @@ function getExtensionUpper(fileName: string, mimeType: string): string {
   return mimeType.split('/').pop()?.toUpperCase() ?? 'FILE';
 }
 
-export function DocumentAttachmentCard({ file, variant }: DocumentAttachmentCardProps) {
+export function DocumentAttachmentCard({
+  file,
+  variant,
+  isMemberLoggedIn,
+  onDownload,
+  isDownloading = false,
+  buttonLabelKey,
+}: DocumentAttachmentCardProps) {
   const sizeParts = formatFileSizeParts(file.sizeBytes);
   const ext = getExtensionUpper(file.originalFileName, file.mimeType);
   const Icon = variant === 'presentation' ? Presentation : FileSpreadsheet;
@@ -25,10 +37,10 @@ export function DocumentAttachmentCard({ file, variant }: DocumentAttachmentCard
     variant === 'presentation'
       ? 'contentDetail.presentation.cardTitle'
       : 'contentDetail.document.cardTitle';
-  const disabledNoticeKey =
-    variant === 'presentation'
-      ? 'contentDetail.presentation.downloadDisabledNotice'
-      : 'contentDetail.document.downloadDisabledNotice';
+  const resolvedButtonKey = buttonLabelKey ?? 'contentDetail.download.mainButton';
+
+  const isExternal = file.storageType === FileStorageType.External;
+  const showDownloadButton = !isExternal && file.isDownloadable && Boolean(onDownload);
 
   return (
     <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 sm:p-5 shadow-[var(--shadow-card)] space-y-4">
@@ -68,7 +80,7 @@ export function DocumentAttachmentCard({ file, variant }: DocumentAttachmentCard
           </div>
         </div>
 
-        {file.externalUrl ? (
+        {isExternal && file.externalUrl ? (
           <a
             href={file.externalUrl}
             target="_blank"
@@ -78,16 +90,30 @@ export function DocumentAttachmentCard({ file, variant }: DocumentAttachmentCard
             <span>{t('contentDetail.player.externalCta')}</span>
             <ExternalLink className="w-4 h-4" aria-hidden="true" />
           </a>
-        ) : (
-          <button
-            type="button"
-            disabled
-            className="inline-flex items-center justify-center gap-2 min-h-[44px] px-4 py-2 text-xs font-medium rounded-[var(--radius-control)] bg-[var(--color-surface-alt)] border border-[var(--color-border)] text-[var(--color-muted)] cursor-not-allowed shrink-0"
-          >
-            <Lock className="w-4 h-4 shrink-0" aria-hidden="true" />
-            <span>{t(disabledNoticeKey)}</span>
-          </button>
-        )}
+        ) : showDownloadButton ? (
+          <div className="flex flex-col sm:items-end gap-1 shrink-0">
+            <button
+              type="button"
+              disabled={isDownloading}
+              onClick={() => onDownload?.(file)}
+              className="inline-flex items-center justify-center gap-2 min-h-[44px] px-4 py-2 text-xs sm:text-sm font-semibold rounded-[var(--radius-control)] bg-[var(--color-primary-button)] text-[var(--color-on-primary)] hover:opacity-95 disabled:opacity-60 transition-opacity whitespace-nowrap"
+            >
+              {isMemberLoggedIn ? (
+                <Download className="w-4 h-4 shrink-0" aria-hidden="true" />
+              ) : (
+                <Lock className="w-4 h-4 shrink-0" aria-hidden="true" />
+              )}
+              <span>
+                {isDownloading ? t('contentDetail.download.preparing') : t(resolvedButtonKey)}
+              </span>
+            </button>
+            {!isMemberLoggedIn && (
+              <span className="text-[11px] font-medium text-[var(--color-muted)]">
+                {t('contentDetail.download.membersOnlyHint')}
+              </span>
+            )}
+          </div>
+        ) : null}
       </div>
     </div>
   );

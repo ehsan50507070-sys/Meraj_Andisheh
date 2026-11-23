@@ -17,6 +17,7 @@ import { MainLayout } from '../layouts/MainLayout';
 import { ContentDetailPage } from '../pages/ContentDetailPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 import { PublicMediaPage } from '../pages/PublicMediaPage';
+import { SignedDownloadPage } from '../pages/SignedDownloadPage';
 import { ChangePasswordPage } from '../pages/account/ChangePasswordPage';
 import { appContainer } from '../services/appContainer';
 import { ThemeManager } from '../theme/ThemeManager';
@@ -185,6 +186,26 @@ export function HashRouter({ routes, defaultRoute }: HashRouterProps) {
       decodedKey = rawKey;
     }
     return <PublicMediaPage currentRoute={routeState.fullHash} storageKey={decodedKey} />;
+  }
+
+  // Signed Download Route (#/download/:token)
+  if (normalizedRouteLower.startsWith('/download/')) {
+    const rawToken = routeState.path.slice('/download/'.length);
+    let decodedToken = rawToken;
+    try {
+      decodedToken = decodeURIComponent(rawToken);
+    } catch {
+      decodedToken = rawToken;
+    }
+    if (!decodedToken.trim()) {
+      return <NotFoundPage currentRoute={routeState.fullHash} />;
+    }
+    return (
+      <SignedDownloadPage
+        currentRoute={routeState.fullHash}
+        token={decodedToken.trim()}
+      />
+    );
   }
 
   // Public Content Detail Route (#/content/:slug)

@@ -497,7 +497,11 @@ export function LoginPage({ currentRoute }: LoginPageProps) {
               {t('auth.login.forgotLink')}
             </a>
             <a
-              href="#/account/register"
+              href={
+                returnUrl
+                  ? `#/account/register?returnUrl=${encodeURIComponent(returnUrl)}`
+                  : '#/account/register'
+              }
               className="font-semibold text-[var(--color-primary)] hover:underline underline-offset-4"
             >
               {t('auth.login.registerLink')}

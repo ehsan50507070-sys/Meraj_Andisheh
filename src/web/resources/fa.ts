@@ -3,7 +3,7 @@ export const faResources = {
   'app.name': 'معراج اندیشه',
   'app.subtitle': 'پلتفرم بانک محتوای فارسی',
   'app.stageLabel': 'مرحله {stage} از {total}',
-  'app.stageName': 'صفحه کامل جزئیات محتوا، پخش‌کننده ۷ قالب، منابع و ثبت بازدید ۳۰ دقیقه‌ای',
+  'app.stageName': 'دانلود امضاشده‌ی ۵ دقیقه‌ای ویژه اعضا، پشتیبانی Range و ثبت رویداد دانلود',
   'app.footerNote': 'پلتفرم معراج اندیشه · زیرساخت و سامانه طراحی پایه',
 
   // Themes
@@ -1831,6 +1831,81 @@ export const faResources = {
     'تبدیل امن Embed آپارات و خواندن بازه بایت (openReadRangeAsync)',
   'tests.stage13.aparatAndRangeSeek.desc':
     'لینک آپارات به نشانی embed مجاز تبدیل و دامنه غیرمجاز رد می‌شود؛ openReadRangeAsync دقیقاً بایت‌های میانی فایل را برمی‌گرداند.',
+
+  // Stage 14: Signed 5-Minute Member Downloads, Range Support & DownloadEvent
+  'contentDetail.meta.downloadCount': '{count} دانلود',
+  'contentDetail.download.mainButton': 'دانلود فایل اصلی',
+  'contentDetail.download.previewButton': 'دانلود فایل پیش‌نمایش',
+  'contentDetail.download.attachmentButton': 'دانلود فایل',
+  'contentDetail.download.membersOnlyHint': 'ویژه‌ی اعضا',
+  'contentDetail.download.preparing': 'در حال آماده‌سازی لینک امضاشده...',
+  'contentDetail.download.copyTempLink': 'ساخت و کپی لینک موقت ۵ دقیقه‌ای',
+  'contentDetail.download.copiedTempLink':
+    'لینک دانلود موقت (معتبر به مدت ۵ دقیقه) ساخته و در کلیپ‌بورد کپی شد.',
+  'contentDetail.download.validityHint':
+    'لینک دانلود برای حساب کاربری شما امضا می‌شود و به مدت ۵ دقیقه اعتبار دارد.',
+  'contentDetail.download.error.CONTENT_NOT_AVAILABLE':
+    'این محتوا در حال حاضر برای دانلود در دسترس نیست.',
+  'contentDetail.download.error.FILE_NOT_FOUND': 'فایل مورد نظر در مخزن یافت نشد.',
+  'contentDetail.download.error.EXTERNAL_FILE_NO_DOWNLOAD':
+    'امکان دانلود از طریق سایت برای فایل‌های لینک خارجی وجود ندارد.',
+  'contentDetail.download.error.FILE_NOT_DOWNLOADABLE': 'امکان دانلود این فایل فعال نیست.',
+
+  'signedDownload.pageTitle': 'دانلود امن فایل',
+  'signedDownload.subtitle':
+    'بررسی امضای دیجیتال لینک موقت، هویت حساب کاربری و آغاز دریافت فایل',
+  'signedDownload.loading': 'در حال بررسی اعتبار لینک و آماده‌سازی فایل...',
+  'signedDownload.authRequiredTitle': 'برای دانلود فایل باید وارد حساب کاربری شوید',
+  'signedDownload.authRequiredBody':
+    'دریافت فایل‌ها از طریق لینک امضاشده فقط برای اعضای ثبت‌نام‌شده و حساب مالک لینک مجاز است.',
+  'signedDownload.loginButton': 'ورود یا ثبت‌نام و ادامه دانلود',
+  'signedDownload.successTitle': 'فایل آماده و دانلود آغاز شد',
+  'signedDownload.successBody':
+    'توکن امضاشده تأیید شد و دریافت فایل «{fileName}» برای حساب شما ثبت گردید.',
+  'signedDownload.meta.contentLabel': 'محتوای مرتبط',
+  'signedDownload.meta.fileNameLabel': 'نام فایل',
+  'signedDownload.meta.fileSizeLabel': 'حجم فایل',
+  'signedDownload.meta.validityLabel': 'مدت اعتبار لینک',
+  'signedDownload.meta.validityValue': '۵ دقیقه (مختص حساب شما)',
+  'signedDownload.meta.tempUrlLabel': 'نشانی موقت دانلود',
+  'signedDownload.actions.downloadAgain': 'دانلود مجدد با همین لینک (تا پیش از انقضا)',
+  'signedDownload.actions.copyLink': 'کپی لینک موقت ۵ دقیقه‌ای',
+  'signedDownload.actions.copied': 'لینک موقت کپی شد.',
+  'signedDownload.actions.backToContent': 'بازگشت به صفحه محتوا',
+  'signedDownload.actions.backToBank': 'بازگشت به بانک محتوا',
+  'signedDownload.error.TOKEN_EXPIRED':
+    'لینک دانلود منقضی شده است (اعتبار لینک ۵ دقیقه است).',
+  'signedDownload.error.TOKEN_USER_MISMATCH':
+    'این لینک دانلود متعلق به حساب کاربری شما نیست.',
+  'signedDownload.error.TOKEN_INVALID':
+    'لینک دانلود نامعتبر یا دستکاری شده است.',
+  'signedDownload.error.FILE_NOT_DOWNLOADABLE': 'امکان دانلود این فایل فعال نیست.',
+  'signedDownload.error.EXTERNAL_FILE_NO_DOWNLOAD': 'امکان دانلود این فایل فعال نیست.',
+  'signedDownload.error.CONTENT_NOT_AVAILABLE':
+    'این محتوا در دسترس نیست یا مجوز رده‌ی سنی آن تغییر کرده است.',
+  'signedDownload.error.FILE_NOT_FOUND': 'فایل مورد نظر در مخزن یافت نشد.',
+
+  // Stage 14 Unit Tests
+  'tests.stage14.example36SignedLifecycle.name':
+    'اجرای دقیق مثال ۳.۶ (دقیقه‌ی ۴ موفق، دقیقه‌ی ۶ منقضی و رد کاربر دیگر)',
+  'tests.stage14.example36SignedLifecycle.desc':
+    'توکن صادرشده در ۱۰:۰۰ برای کاربر X در ۱۰:۰۴ فایل را تحویل و شمارنده دانلود را ۱ می‌کند، در ۱۰:۰۴:۳۰ برای کاربر Y با TOKEN_USER_MISMATCH رد می‌شود و در ۱۰:۰۶ با TOKEN_EXPIRED منقضی می‌گردد.',
+  'tests.stage14.tokenTampering.name':
+    'تشخیص دستکاری یک کاراکتر از توکن و رد فوری با TOKEN_INVALID',
+  'tests.stage14.tokenTampering.desc':
+    'تغییر کوچک‌ترین کاراکتر در payload یا امضای توکن توسط HMAC-SHA256 شناسایی شده و همراه با ثبت لاگ WARN رد می‌شود.',
+  'tests.stage14.isDownloadableAndExternal.name':
+    'رعایت کامل پرچم IsDownloadable=false و ممنوعیت دانلود فایل خارجی',
+  'tests.stage14.isDownloadableAndExternal.desc':
+    'فایل با IsDownloadable=false هم در زمان صدور لینک و هم پس از تغییر توسط مدیر هنگام اجرا با FILE_NOT_DOWNLOADABLE رد می‌شود؛ فایل External نیز EXTERNAL_FILE_NO_DOWNLOAD می‌گیرد.',
+  'tests.stage14.authRequiredAndReturnUrl.name':
+    'الزام ورود کاربر در دانلود امضاشده و بازگشت دقیق با returnUrl فارسی',
+  'tests.stage14.authRequiredAndReturnUrl.desc':
+    'کاربر ورودنکرده پیام AUTH_REQUIRED با لینک بازگشت دریافت می‌کند و resolvePostLoginRedirect کاربر عضو را دقیقاً به نشانی فارسی #/content/مسیر-اقتصاد برمی‌گرداند.',
+  'tests.stage14.rangeSupport.name':
+    'پشتیبانی Range در دانلود امضاشده و ثبت DownloadEvent در IndexedDB v8',
+  'tests.stage14.rangeSupport.desc':
+    'فراخوانی executeSignedDownloadAsync با بازه ۲ تا ۵ دقیقاً ۴ بایت درخواستی را با rangeMeta برگردانده و رویداد DownloadEvent را در جدول downloadEvents نسخه ۸ ذخیره می‌کند.',
 } as const;
 
 export type ResourceKey = keyof typeof faResources;

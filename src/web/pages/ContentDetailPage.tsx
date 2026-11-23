@@ -5,8 +5,10 @@ import {
   Check,
   Clock,
   Copy,
+  Download,
   Eye,
   ExternalLink,
+  Lock,
   Share2,
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -69,13 +71,24 @@ export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps
   const [relatedThumbUrls, setRelatedThumbUrls] = useState<Record<number, string>>({});
 
   const [displayViewCount, setDisplayViewCount] = useState<number>(0);
+  const [displayDownloadCount, setDisplayDownloadCount] = useState<number>(0);
+  const [downloadingFileId, setDownloadingFileId] = useState<number | null>(null);
+  const [downloadFeedback, setDownloadFeedback] = useState<{
+    type: 'success' | 'error';
+    text: string;
+  } | null>(null);
   const [shareFeedback, setShareFeedback] = useState<{
     type: 'success' | 'error';
     text: string;
   } | null>(null);
 
-  // StrictMode guard: ensures view tracking executes at most once per eligible slug/content load
+  // StrictMode & age-switch guards: ensures view tracking and primary media loading do not repeat unnecessarily on age switch
   const trackedKeyRef = useRef<string | null>(null);
+  const loadedSlugRef = useRef<string | null>(null);
+  const detailRef = useRef<ContentDetailData | null>(null);
+  detailRef.current = detail;
+  const activeAgeGroupRef = useRef(effectiveAgeGroup);
+  activeAgeGroupRef.current = effectiveAgeGroup;
 
   useEffect(() => {
     if (!isAgeReady || !isAuthReady) {
@@ -83,11 +96,16 @@ export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps
     }
 
     let active = true;
+    const isSameSlugReload = loadedSlugRef.current === slug;
+
     const loadDetail = async () => {
-      setIsLoading(true);
-      setIsNotFound(false);
-      setDetail(null);
-      setShareFeedback(null);
+      if (!isSameSlugReload) {
+        setIsLoading(true);
+        setIsNotFound(false);
+        setDetail(null);
+        setShareFeedback(null);
+        setDownloadFeedback(null);
+      }
 
       try {
         await appContainer.ensureInitializedAtStartup();
@@ -100,17 +118,28 @@ export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps
           return;
         }
 
+        loadedSlugRef.current = slug;
+
         if (res.status === 'not_found') {
           setIsNotFound(true);
           setDetail(null);
           return;
         }
 
+        const isSameContentItem = detailRef.current?.item.id === res.data.item.id;
+        setIsNotFound(false);
         setDetail(res.data);
-        setDisplayViewCount(res.data.item.viewCount);
 
-        const ageKey = effectiveAgeGroup ? String(effectiveAgeGroup.id) : 'none';
-        const trackingGuardKey = `${res.data.item.id}:${slug}:${currentUser?.id ?? 'guest'}:${ageKey}`;
+        if (!isSameContentItem) {
+          setDisplayViewCount(res.data.item.viewCount);
+          setDisplayDownloadCount(res.data.item.downloadCount);
+          setDownloadFeedback(null);
+        } else {
+          setDisplayViewCount((prev) => Math.max(prev, res.data.item.viewCount));
+          setDisplayDownloadCount((prev) => Math.max(prev, res.data.item.downloadCount));
+        }
+
+        const trackingGuardKey = `${res.data.item.id}:${slug}:${currentUser?.id ?? 'guest'}`;
         if (trackedKeyRef.current !== trackingGuardKey) {
           trackedKeyRef.current = trackingGuardKey;
           const visitorId = appContainer.visitorIdStorage.getOrCreateVisitorId();
@@ -176,19 +205,19 @@ export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps
     );
   }, [detail, primaryFile?.id, previewPdfFile?.id]);
 
-  // Load main media, optional preview PDF, and related thumbnails with clean Blob URL disposal
+  // Load main media and optional preview PDF only when item/files change (not on age/theme switch while item stays allowed)
+  const detailItemId = detail?.item.id ?? null;
   useEffect(() => {
-    if (!detail) {
+    if (!detailItemId) {
       setMainMedia(null);
       setPreviewPdfMedia(null);
-      setRelatedThumbUrls({});
       return;
     }
 
     let active = true;
     const createdUrls: string[] = [];
 
-    const loadAllBlobs = async () => {
+    const loadPrimaryAndPreviewBlobs = async () => {
       setIsLoadingMedia(true);
       setMainMedia(null);
       setPreviewPdfMedia(null);
@@ -200,9 +229,9 @@ export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps
           primaryFile.storageKey
         ) {
           const opened = await appContainer.contentDetailService.openPlaybackMediaAsync(
-            detail.item.id,
+            detailItemId,
             primaryFile.storageKey,
-            effectiveAgeGroup,
+            activeAgeGroupRef.current,
           );
           if (active && opened) {
             const copy = new Uint8Array(opened.bytes.byteLength);
@@ -224,9 +253,9 @@ export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps
           previewPdfFile.storageKey
         ) {
           const openedPreview = await appContainer.contentDetailService.openPlaybackMediaAsync(
-            detail.item.id,
+            detailItemId,
             previewPdfFile.storageKey,
-            effectiveAgeGroup,
+            activeAgeGroupRef.current,
           );
           if (active && openedPreview) {
             const copy = new Uint8Array(openedPreview.bytes.byteLength);
@@ -241,30 +270,6 @@ export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps
             });
           }
         }
-
-        const nextThumbs: Record<number, string> = {};
-        await Promise.all(
-          detail.relatedContents.map(async (rel) => {
-            if (!rel.item.thumbnailKey) {
-              return;
-            }
-            const media = await appContainer.fileUploadService.openPublicMediaAsync(
-              rel.item.thumbnailKey,
-            );
-            if (!active || !media.ok || !media.bytes || !media.metadata) {
-              return;
-            }
-            const copy = new Uint8Array(media.bytes.byteLength);
-            copy.set(media.bytes);
-            const blob = new Blob([copy.buffer], { type: media.metadata.mimeType });
-            const url = URL.createObjectURL(blob);
-            createdUrls.push(url);
-            nextThumbs[rel.item.id] = url;
-          }),
-        );
-        if (active) {
-          setRelatedThumbUrls(nextThumbs);
-        }
       } finally {
         if (active) {
           setIsLoadingMedia(false);
@@ -272,7 +277,7 @@ export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps
       }
     };
 
-    void loadAllBlobs();
+    void loadPrimaryAndPreviewBlobs();
 
     return () => {
       active = false;
@@ -280,7 +285,71 @@ export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps
         URL.revokeObjectURL(url);
       }
     };
-  }, [detail, primaryFile, previewPdfFile, effectiveAgeGroup]);
+  }, [
+    detailItemId,
+    primaryFile?.id,
+    primaryFile?.storageType,
+    primaryFile?.storageKey,
+    previewPdfFile?.id,
+    previewPdfFile?.storageType,
+    previewPdfFile?.storageKey,
+  ]);
+
+  const relatedThumbSignature = useMemo(() => {
+    if (!detail || detail.relatedContents.length === 0) {
+      return '';
+    }
+    return detail.relatedContents
+      .map((rel) => `${rel.item.id}:${rel.item.thumbnailKey ?? ''}`)
+      .join('|');
+  }, [detail]);
+
+  // Load related item thumbnails independently so primary media playback is preserved across age switches
+  useEffect(() => {
+    const relatedItems = detailRef.current?.relatedContents ?? [];
+    if (!relatedThumbSignature || relatedItems.length === 0) {
+      setRelatedThumbUrls({});
+      return;
+    }
+
+    let active = true;
+    const createdUrls: string[] = [];
+
+    const loadRelatedThumbs = async () => {
+      const nextThumbs: Record<number, string> = {};
+      await Promise.all(
+        relatedItems.map(async (rel) => {
+          if (!rel.item.thumbnailKey) {
+            return;
+          }
+          const media = await appContainer.fileUploadService.openPublicMediaAsync(
+            rel.item.thumbnailKey,
+          );
+          if (!active || !media.ok || !media.bytes || !media.metadata) {
+            return;
+          }
+          const copy = new Uint8Array(media.bytes.byteLength);
+          copy.set(media.bytes);
+          const blob = new Blob([copy.buffer], { type: media.metadata.mimeType });
+          const url = URL.createObjectURL(blob);
+          createdUrls.push(url);
+          nextThumbs[rel.item.id] = url;
+        }),
+      );
+      if (active) {
+        setRelatedThumbUrls(nextThumbs);
+      }
+    };
+
+    void loadRelatedThumbs();
+
+    return () => {
+      active = false;
+      for (const url of createdUrls) {
+        URL.revokeObjectURL(url);
+      }
+    };
+  }, [relatedThumbSignature]);
 
   const handleCopyLink = async () => {
     const shareUrl = typeof window !== 'undefined' ? window.location.href : currentRoute;
@@ -334,6 +403,103 @@ export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps
     await handleCopyLink();
   };
 
+  const buildContentReturnPath = (): string => {
+    if (!detail) {
+      return '#/';
+    }
+    return `#/content/${encodeURIComponent(detail.item.slug)}`;
+  };
+
+  const handleDownloadFile = async (file: ContentFile) => {
+    if (!detail) {
+      return;
+    }
+
+    const contentReturnPath = buildContentReturnPath();
+    if (!currentUser || !currentUser.isActive) {
+      navigateToHash(`/account/login?returnUrl=${encodeURIComponent(contentReturnPath)}`);
+      return;
+    }
+
+    setDownloadingFileId(file.id);
+    setDownloadFeedback(null);
+    try {
+      const res = await appContainer.downloadService.createSignedDownloadLinkAsync({
+        currentUser,
+        contentId: detail.item.id,
+        fileId: file.id,
+        activeAgeGroup: effectiveAgeGroup,
+        returnUrl: contentReturnPath,
+      });
+
+      if (!res.ok) {
+        if (res.errorCode === 'AUTH_REQUIRED' && res.redirectUrl) {
+          navigateToHash(res.redirectUrl);
+          return;
+        }
+        const errorKey = `contentDetail.download.error.${res.errorCode}` as ResourceKey;
+        setDownloadFeedback({
+          type: 'error',
+          text: t(errorKey),
+        });
+        return;
+      }
+
+      navigateToHash(res.downloadUrl);
+    } finally {
+      setDownloadingFileId(null);
+    }
+  };
+
+  const handleCopySignedTempLink = async (file: ContentFile) => {
+    if (!detail || !currentUser || !currentUser.isActive) {
+      return;
+    }
+    setDownloadingFileId(file.id);
+    setDownloadFeedback(null);
+    try {
+      const res = await appContainer.downloadService.createSignedDownloadLinkAsync({
+        currentUser,
+        contentId: detail.item.id,
+        fileId: file.id,
+        activeAgeGroup: effectiveAgeGroup,
+        returnUrl: buildContentReturnPath(),
+      });
+      if (!res.ok) {
+        const errorKey = `contentDetail.download.error.${res.errorCode}` as ResourceKey;
+        setDownloadFeedback({ type: 'error', text: t(errorKey) });
+        return;
+      }
+      const fullUrl =
+        typeof window !== 'undefined'
+          ? `${window.location.origin}${window.location.pathname}${res.downloadUrl}`
+          : res.downloadUrl;
+      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(fullUrl);
+        setDownloadFeedback({ type: 'success', text: t('contentDetail.download.copiedTempLink') });
+        return;
+      }
+      if (typeof document !== 'undefined') {
+        const textarea = document.createElement('textarea');
+        textarea.value = fullUrl;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        const copied = document.execCommand('copy');
+        document.body.removeChild(textarea);
+        if (copied) {
+          setDownloadFeedback({ type: 'success', text: t('contentDetail.download.copiedTempLink') });
+          return;
+        }
+      }
+      setDownloadFeedback({ type: 'error', text: t('contentDetail.share.copyError') });
+    } finally {
+      setDownloadingFileId(null);
+    }
+  };
+
   if (!isAgeReady || !isAuthReady || isLoading) {
     return (
       <MainLayout currentRoute={currentRoute}>
@@ -368,58 +534,132 @@ export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps
       ? appContainer.contentDetailService.resolveEmbedUrl(primaryFile.externalUrl)
       : null;
 
+  const renderPrimaryDownloadBar = (file: ContentFile | null) => {
+    if (!file || file.storageType === FileStorageType.External || !file.isDownloadable) {
+      return null;
+    }
+
+    const isMemberLoggedIn = Boolean(currentUser && currentUser.isActive);
+    const isBusy = downloadingFileId === file.id;
+
+    return (
+      <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3.5 sm:px-5 shadow-[var(--shadow-card)] space-y-2.5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <Button
+              variant="primary"
+              size="sm"
+              disabled={isBusy}
+              onClick={() => void handleDownloadFile(file)}
+              startIcon={isMemberLoggedIn ? <Download className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+            >
+              {isBusy ? t('contentDetail.download.preparing') : t('contentDetail.download.mainButton')}
+            </Button>
+
+            {isMemberLoggedIn ? (
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={isBusy}
+                onClick={() => void handleCopySignedTempLink(file)}
+                startIcon={<Copy className="w-4 h-4" />}
+              >
+                {t('contentDetail.download.copyTempLink')}
+              </Button>
+            ) : (
+              <span className="text-xs font-medium text-[var(--color-muted)]">
+                {t('contentDetail.download.membersOnlyHint')}
+              </span>
+            )}
+          </div>
+
+          <span className="text-xs text-[var(--color-muted)]">
+            {t('contentDetail.download.validityHint')}
+          </span>
+        </div>
+
+        {downloadFeedback && (
+          <p
+            role="status"
+            className={`text-xs font-medium ${
+              downloadFeedback.type === 'success'
+                ? 'text-[var(--color-success-text)]'
+                : 'text-[var(--color-error-text)]'
+            }`}
+          >
+            {downloadFeedback.text}
+          </p>
+        )}
+      </div>
+    );
+  };
+
   const renderPrimaryPlayer = () => {
+    const isMemberLoggedIn = Boolean(currentUser && currentUser.isActive);
+
     if (item.format === 'Video' || item.format === 'Film') {
       return (
-        <VideoPlayerBox
-          blobUrl={mainMedia?.blobUrl ?? null}
-          externalUrl={primaryFile?.externalUrl ?? null}
-          embedUrl={embedUrl}
-          title={item.title}
-          fileName={primaryFile?.originalFileName}
-          sizeBytes={primaryFile?.sizeBytes}
-          isLoading={isLoadingMedia}
-        />
+        <div className="space-y-3">
+          <VideoPlayerBox
+            blobUrl={mainMedia?.blobUrl ?? null}
+            externalUrl={primaryFile?.externalUrl ?? null}
+            embedUrl={embedUrl}
+            title={item.title}
+            fileName={primaryFile?.originalFileName}
+            sizeBytes={primaryFile?.sizeBytes}
+            isLoading={isLoadingMedia}
+          />
+          {renderPrimaryDownloadBar(primaryFile)}
+        </div>
       );
     }
 
     if (item.format === 'Audio') {
       return (
-        <AudioPlayerBox
-          blobUrl={mainMedia?.blobUrl ?? null}
-          externalUrl={primaryFile?.externalUrl ?? null}
-          title={item.title}
-          fileName={primaryFile?.originalFileName}
-          sizeBytes={primaryFile?.sizeBytes}
-          isLoading={isLoadingMedia}
-        />
+        <div className="space-y-3">
+          <AudioPlayerBox
+            blobUrl={mainMedia?.blobUrl ?? null}
+            externalUrl={primaryFile?.externalUrl ?? null}
+            title={item.title}
+            fileName={primaryFile?.originalFileName}
+            sizeBytes={primaryFile?.sizeBytes}
+            isLoading={isLoadingMedia}
+          />
+          {renderPrimaryDownloadBar(primaryFile)}
+        </div>
       );
     }
 
     if (item.format === 'Image') {
       return (
-        <ImageZoomViewer
-          blobUrl={mainMedia?.blobUrl ?? null}
-          externalUrl={primaryFile?.externalUrl ?? null}
-          title={item.title}
-          fileName={primaryFile?.originalFileName}
-          sizeBytes={primaryFile?.sizeBytes}
-          isLoading={isLoadingMedia}
-        />
+        <div className="space-y-3">
+          <ImageZoomViewer
+            blobUrl={mainMedia?.blobUrl ?? null}
+            externalUrl={primaryFile?.externalUrl ?? null}
+            title={item.title}
+            fileName={primaryFile?.originalFileName}
+            sizeBytes={primaryFile?.sizeBytes}
+            isLoading={isLoadingMedia}
+          />
+          {renderPrimaryDownloadBar(primaryFile)}
+        </div>
       );
     }
 
     if (item.format === 'Pdf' || (primaryFile && isPdfFile(primaryFile))) {
       return (
-        <PdfLocalViewer
-          bytes={mainMedia?.bytes ?? null}
-          blobUrl={mainMedia?.blobUrl ?? null}
-          externalUrl={primaryFile?.externalUrl ?? null}
-          title={item.title}
-          fileName={primaryFile?.originalFileName}
-          sizeBytes={primaryFile?.sizeBytes}
-          isLoading={isLoadingMedia}
-        />
+        <div className="space-y-3">
+          <PdfLocalViewer
+            bytes={mainMedia?.bytes ?? null}
+            blobUrl={mainMedia?.blobUrl ?? null}
+            externalUrl={primaryFile?.externalUrl ?? null}
+            title={item.title}
+            fileName={primaryFile?.originalFileName}
+            sizeBytes={primaryFile?.sizeBytes}
+            isLoading={isLoadingMedia}
+          />
+          {renderPrimaryDownloadBar(primaryFile)}
+        </div>
       );
     }
 
@@ -428,9 +668,29 @@ export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps
         <div className="space-y-4">
           {previewPdfFile && (
             <div className="space-y-2.5">
-              <h2 className="text-sm sm:text-base font-bold text-[var(--color-text)]">
-                {t('contentDetail.presentation.previewHeading')}
-              </h2>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h2 className="text-sm sm:text-base font-bold text-[var(--color-text)]">
+                  {t('contentDetail.presentation.previewHeading')}
+                </h2>
+                {previewPdfFile.storageType === FileStorageType.Local &&
+                  previewPdfFile.isDownloadable && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={downloadingFileId === previewPdfFile.id}
+                      onClick={() => void handleDownloadFile(previewPdfFile)}
+                      startIcon={
+                        isMemberLoggedIn ? (
+                          <Download className="w-4 h-4" />
+                        ) : (
+                          <Lock className="w-4 h-4" />
+                        )
+                      }
+                    >
+                      {t('contentDetail.download.previewButton')}
+                    </Button>
+                  )}
+              </div>
               <PdfLocalViewer
                 bytes={previewPdfMedia?.bytes ?? null}
                 blobUrl={previewPdfMedia?.blobUrl ?? null}
@@ -443,7 +703,13 @@ export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps
             </div>
           )}
           {primaryFile ? (
-            <DocumentAttachmentCard file={primaryFile} variant="presentation" />
+            <DocumentAttachmentCard
+              file={primaryFile}
+              variant="presentation"
+              isMemberLoggedIn={isMemberLoggedIn}
+              onDownload={(f) => void handleDownloadFile(f)}
+              isDownloading={downloadingFileId === primaryFile.id}
+            />
           ) : (
             <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface-alt)] p-6 text-center text-sm text-[var(--color-muted)]">
               {t('contentDetail.player.noMedia')}
@@ -459,7 +725,15 @@ export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps
 
     // Book or other document formats (.doc, .docx, .xlsx, .zip)
     if (primaryFile) {
-      return <DocumentAttachmentCard file={primaryFile} variant="document" />;
+      return (
+        <DocumentAttachmentCard
+          file={primaryFile}
+          variant="document"
+          isMemberLoggedIn={isMemberLoggedIn}
+          onDownload={(f) => void handleDownloadFile(f)}
+          isDownloading={downloadingFileId === primaryFile.id}
+        />
+      );
     }
 
     return null;
@@ -495,6 +769,15 @@ export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps
               <span>
                 {t('contentDetail.meta.viewCount', {
                   count: toPersianDigits(displayViewCount),
+                })}
+              </span>
+            </span>
+            <span aria-hidden="true">·</span>
+            <span className="inline-flex items-center gap-1">
+              <Download className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+              <span>
+                {t('contentDetail.meta.downloadCount', {
+                  count: toPersianDigits(displayDownloadCount),
                 })}
               </span>
             </span>
@@ -596,7 +879,15 @@ export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps
             </h2>
             <div className="space-y-3">
               {attachmentFiles.map((att) => (
-                <DocumentAttachmentCard key={att.id} file={att} variant="document" />
+                <DocumentAttachmentCard
+                  key={att.id}
+                  file={att}
+                  variant="document"
+                  isMemberLoggedIn={Boolean(currentUser && currentUser.isActive)}
+                  onDownload={(f) => void handleDownloadFile(f)}
+                  isDownloading={downloadingFileId === att.id}
+                  buttonLabelKey="contentDetail.download.attachmentButton"
+                />
               ))}
             </div>
           </section>

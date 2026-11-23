@@ -21,6 +21,7 @@ export const STORE_NAMES = {
   STAFF_PERMISSIONS: 'staffPermissions',
   STORED_FILES: 'storedFiles',
   VIEW_EVENTS: 'viewEvents',
+  DOWNLOAD_EVENTS: 'downloadEvents',
 } as const;
 
 export const STAGE3_OBJECT_STORES: readonly string[] = [
@@ -60,6 +61,10 @@ export const STAGE7_OBJECT_STORES: readonly string[] = [
 
 export const STAGE13_OBJECT_STORES: readonly string[] = [
   STORE_NAMES.VIEW_EVENTS,
+] as const;
+
+export const STAGE14_OBJECT_STORES: readonly string[] = [
+  STORE_NAMES.DOWNLOAD_EVENTS,
 ] as const;
 
 interface IndexSpec {
@@ -296,6 +301,21 @@ const STAGE13_STORE_SPECS: readonly StoreSpec[] = [
   },
 ];
 
+const STAGE14_STORE_SPECS: readonly StoreSpec[] = [
+  {
+    name: STORE_NAMES.DOWNLOAD_EVENTS,
+    keyPath: 'id',
+    autoIncrement: true,
+    indexes: [
+      { name: 'by_contentId', keyPath: 'contentId' },
+      { name: 'by_fileId', keyPath: 'fileId' },
+      { name: 'by_userId', keyPath: 'userId' },
+      { name: 'by_kind', keyPath: 'kind' },
+      { name: 'by_occurredAt', keyPath: 'occurredAt' },
+    ],
+  },
+];
+
 export const DATABASE_MIGRATIONS: readonly MigrationStep[] = [
   {
     version: 1,
@@ -350,6 +370,14 @@ export const DATABASE_MIGRATIONS: readonly MigrationStep[] = [
     version: 7,
     up: (db, transaction) => {
       for (const spec of STAGE13_STORE_SPECS) {
+        ensureStore(db, transaction, spec);
+      }
+    },
+  },
+  {
+    version: 8,
+    up: (db, transaction) => {
+      for (const spec of STAGE14_STORE_SPECS) {
         ensureStore(db, transaction, spec);
       }
     },

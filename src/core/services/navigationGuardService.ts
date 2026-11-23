@@ -1,6 +1,6 @@
 import type { AppUser } from '../domain/auth';
 
-function normalizeReturnHash(rawReturnUrl?: string | null): string | null {
+export function sanitizeReturnHash(rawReturnUrl?: string | null): string | null {
   if (!rawReturnUrl || typeof rawReturnUrl !== 'string') {
     return null;
   }
@@ -10,15 +10,17 @@ function normalizeReturnHash(rawReturnUrl?: string | null): string | null {
     return null;
   }
 
-  // Block external URLs, protocol-relative URLs, or unsafe schemes
+  // Block external URLs, protocol-relative URLs, backslashes, or unsafe schemes
   const lower = trimmed.toLowerCase();
   if (
+    trimmed.includes('\\') ||
     lower.startsWith('javascript:') ||
     lower.startsWith('data:') ||
     lower.startsWith('vbscript:') ||
     lower.startsWith('http://') ||
     lower.startsWith('https://') ||
-    lower.startsWith('//')
+    lower.startsWith('//') ||
+    lower.startsWith('#//')
   ) {
     return null;
   }
@@ -65,6 +67,6 @@ export function resolvePostLoginRedirect(
     return '#/admin';
   }
 
-  const safeMemberReturn = normalizeReturnHash(returnUrl);
+  const safeMemberReturn = sanitizeReturnHash(returnUrl);
   return safeMemberReturn ?? '#/';
 }
