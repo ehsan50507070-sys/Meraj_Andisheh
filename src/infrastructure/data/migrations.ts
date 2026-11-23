@@ -22,6 +22,8 @@ export const STORE_NAMES = {
   STORED_FILES: 'storedFiles',
   VIEW_EVENTS: 'viewEvents',
   DOWNLOAD_EVENTS: 'downloadEvents',
+  LIKES: 'likes',
+  BOOKMARKS: 'bookmarks',
 } as const;
 
 export const STAGE3_OBJECT_STORES: readonly string[] = [
@@ -65,6 +67,11 @@ export const STAGE13_OBJECT_STORES: readonly string[] = [
 
 export const STAGE14_OBJECT_STORES: readonly string[] = [
   STORE_NAMES.DOWNLOAD_EVENTS,
+] as const;
+
+export const STAGE15_OBJECT_STORES: readonly string[] = [
+  STORE_NAMES.LIKES,
+  STORE_NAMES.BOOKMARKS,
 ] as const;
 
 interface IndexSpec {
@@ -316,6 +323,27 @@ const STAGE14_STORE_SPECS: readonly StoreSpec[] = [
   },
 ];
 
+const STAGE15_STORE_SPECS: readonly StoreSpec[] = [
+  {
+    name: STORE_NAMES.LIKES,
+    keyPath: ['userId', 'contentId'],
+    indexes: [
+      { name: 'by_userId', keyPath: 'userId' },
+      { name: 'by_contentId', keyPath: 'contentId' },
+      { name: 'by_createdAt', keyPath: 'createdAt' },
+    ],
+  },
+  {
+    name: STORE_NAMES.BOOKMARKS,
+    keyPath: ['userId', 'contentId'],
+    indexes: [
+      { name: 'by_userId', keyPath: 'userId' },
+      { name: 'by_contentId', keyPath: 'contentId' },
+      { name: 'by_createdAt', keyPath: 'createdAt' },
+    ],
+  },
+];
+
 export const DATABASE_MIGRATIONS: readonly MigrationStep[] = [
   {
     version: 1,
@@ -378,6 +406,14 @@ export const DATABASE_MIGRATIONS: readonly MigrationStep[] = [
     version: 8,
     up: (db, transaction) => {
       for (const spec of STAGE14_STORE_SPECS) {
+        ensureStore(db, transaction, spec);
+      }
+    },
+  },
+  {
+    version: 9,
+    up: (db, transaction) => {
+      for (const spec of STAGE15_STORE_SPECS) {
         ensureStore(db, transaction, spec);
       }
     },

@@ -12,6 +12,7 @@ import { ChangePasswordPage } from './web/pages/account/ChangePasswordPage';
 import { ConfirmEmailPage } from './web/pages/account/ConfirmEmailPage';
 import { ForgotPasswordPage } from './web/pages/account/ForgotPasswordPage';
 import { LoginPage } from './web/pages/account/LoginPage';
+import { ProfilePage } from './web/pages/account/ProfilePage';
 import { RegisterPage } from './web/pages/account/RegisterPage';
 import { ResetPasswordPage } from './web/pages/account/ResetPasswordPage';
 import { HashRouter, type HashRouteConfig } from './web/router/HashRouter';
@@ -51,6 +52,10 @@ const routes: HashRouteConfig[] = [
   {
     path: '/account/login',
     render: (currentRoute) => <LoginPage currentRoute={currentRoute} />,
+  },
+  {
+    path: '/account/profile',
+    render: (currentRoute) => <ProfilePage currentRoute={currentRoute} />,
   },
   {
     path: '/account/forgot-password',

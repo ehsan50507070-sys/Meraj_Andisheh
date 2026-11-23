@@ -19,6 +19,7 @@ import { toPersianDigits } from '../resources/formatters';
 import type { ResourceKey } from '../resources/fa';
 import { t } from '../resources/i18n';
 import { navigateToHash } from '../router/HashRouter';
+import { appContainer } from '../services/appContainer';
 import { Alert, Button } from '../components/ui';
 
 export interface MainLayoutProps {
@@ -72,13 +73,50 @@ export function MainLayout({
   const isContentBankActive =
     normalizedPath === '/content' || normalizedPath.startsWith('/content/');
 
+  useEffect(() => {
+    let active = true;
+
+    const refreshFavoritesCount = async () => {
+      if (!currentUser || !currentUser.isActive) {
+        if (active) {
+          setFavoritesCount(0);
+        }
+        return;
+      }
+      await appContainer.ensureInitializedAtStartup();
+      const count = await appContainer.interactionService.countUserBookmarksAsync(
+        currentUser,
+        effectiveAgeGroup,
+      );
+      if (active) {
+        setFavoritesCount(count);
+      }
+    };
+
+    void refreshFavoritesCount();
+
+    const handleBookmarksChanged = () => {
+      void refreshFavoritesCount();
+    };
+    window.addEventListener('meraj:bookmarks-changed', handleBookmarksChanged);
+    return () => {
+      active = false;
+      window.removeEventListener('meraj:bookmarks-changed', handleBookmarksChanged);
+    };
+  }, [currentUser, effectiveAgeGroup, currentRoute]);
+
   const handleSampleAction = () => {
     setNoticeMessage(t('layout.nav.sampleNoticeDesc'));
   };
 
-  const handleToggleFavorites = () => {
-    setFavoritesCount((prev) => (prev === 0 ? 1 : 0));
-    setNoticeMessage(t('layout.nav.sampleNoticeDesc'));
+  const handleOpenFavorites = () => {
+    if (currentUser && currentUser.isActive) {
+      navigateToHash('/account/profile?tab=bookmarks');
+    } else {
+      navigateToHash(
+        `/account/login?returnUrl=${encodeURIComponent('#/account/profile?tab=bookmarks')}`,
+      );
+    }
   };
 
   return (
@@ -158,8 +196,15 @@ export function MainLayout({
 
             <button
               type="button"
-              onClick={handleToggleFavorites}
-              aria-label={t('layout.header.favoritesAriaLabel')}
+              onClick={handleOpenFavorites}
+              aria-label={
+                favoritesCount > 0
+                  ? t('layout.header.favoritesCountAria', {
+                      count: toPersianDigits(favoritesCount),
+                    })
+                  : t('layout.header.favoritesAriaLabel')
+              }
+              title={t('layout.header.favoritesAriaLabel')}
               className="inline-flex items-center justify-center gap-1 min-w-[38px] min-h-[38px] px-2 rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)] hover:bg-[var(--color-surface-alt)] transition-colors shrink-0 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--color-primary)]"
             >
               <Heart
@@ -175,18 +220,21 @@ export function MainLayout({
 
             {currentUser ? (
               <div className="flex items-center gap-1.5 shrink-0">
-                <div
-                  title={t('layout.header.myAccountLabel')}
-                  className="inline-flex items-center gap-1.5 min-h-[38px] px-2.5 py-1.5 text-xs font-semibold rounded-[var(--radius-control)] bg-[var(--color-surface-alt)] border border-[var(--color-border)] text-[var(--color-text)]"
+                <button
+                  type="button"
+                  onClick={() => navigateToHash('/account/profile')}
+                  title={t('layout.header.profileAction')}
+                  aria-label={t('layout.header.profileAction')}
+                  className="inline-flex items-center gap-1.5 min-h-[38px] px-2.5 py-1.5 text-xs font-semibold rounded-[var(--radius-control)] bg-[var(--color-surface-alt)] border border-[var(--color-border)] text-[var(--color-text)] hover:border-[var(--color-primary)] transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--color-primary)]"
                 >
                   <User className="w-3.5 h-3.5 text-[var(--color-primary)] shrink-0" aria-hidden="true" />
                   <span className="max-w-[84px] sm:max-w-[140px] truncate">
                     {currentUser.displayName}
                   </span>
                   <span className="hidden lg:inline text-[var(--color-muted)] font-normal">
-                    ({t('layout.header.myAccountLabel')})
+                    ({t('layout.header.profileAction')})
                   </span>
-                </div>
+                </button>
 
                 {currentUser.passwordHash !== null && (
                   <Button
@@ -361,6 +409,17 @@ export function MainLayout({
 
                 {currentUser && (
                   <div className="pt-2 border-t border-[var(--color-border)] flex flex-wrap items-center gap-2">
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        navigateToHash('/account/profile');
+                      }}
+                      startIcon={<User className="w-3.5 h-3.5" />}
+                    >
+                      {t('layout.header.profileAction')}
+                    </Button>
                     {currentUser.passwordHash !== null && (
                       <Button
                         variant="outline"

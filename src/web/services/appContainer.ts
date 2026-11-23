@@ -7,8 +7,10 @@ import { DownloadService } from '../../core/services/downloadService';
 import { FileUploadService } from '../../core/services/fileUploadService';
 import { HealthCheckService } from '../../core/services/HealthCheckService';
 import { InitialSuperAdminService } from '../../core/services/initialSuperAdminService';
+import { InteractionService } from '../../core/services/interactionService';
 import { OtpService } from '../../core/services/otpService';
 import { PermissionPolicyService } from '../../core/services/permissionPolicyService';
+import { ProfileService } from '../../core/services/profileService';
 import { RateLimiter } from '../../core/services/rateLimiter';
 import { SearchNormalizer } from '../../core/services/searchNormalizer';
 import { SearchSuggestionService } from '../../core/services/searchSuggestionService';
@@ -20,11 +22,13 @@ import { UserManagementService } from '../../core/services/userManagementService
 import { ViewTrackerService } from '../../core/services/viewTrackerService';
 import { SystemClock } from '../../infrastructure/clock/SystemClock';
 import { envConfig } from '../../infrastructure/config/envConfig';
+import { IndexedDbAccountCleanupRepository } from '../../infrastructure/data/IndexedDbAccountCleanupRepository';
 import { IndexedDbAdminRepository } from '../../infrastructure/data/IndexedDbAdminRepository';
 import { IndexedDbAuthRepository } from '../../infrastructure/data/IndexedDbAuthRepository';
 import { IndexedDbContentRepository } from '../../infrastructure/data/IndexedDbContentRepository';
 import { IndexedDbDataStore } from '../../infrastructure/data/IndexedDbDataStore';
 import { IndexedDbDownloadEventRepository } from '../../infrastructure/data/IndexedDbDownloadEventRepository';
+import { IndexedDbInteractionRepository } from '../../infrastructure/data/IndexedDbInteractionRepository';
 import { IndexedDbTaxonomyRepository } from '../../infrastructure/data/IndexedDbTaxonomyRepository';
 import { IndexedDbViewEventRepository } from '../../infrastructure/data/IndexedDbViewEventRepository';
 import { LocalSessionTokenStore } from '../../infrastructure/data/LocalSessionTokenStore';
@@ -51,6 +55,8 @@ export interface AppContainer {
   contentRepository: IndexedDbContentRepository;
   viewEventRepository: IndexedDbViewEventRepository;
   downloadEventRepository: IndexedDbDownloadEventRepository;
+  interactionRepository: IndexedDbInteractionRepository;
+  accountCleanupRepository: IndexedDbAccountCleanupRepository;
   downloadTokenProtector: HmacDownloadTokenProtector;
   fileStorage: LocalIndexedDbFileStorage;
   agePreferenceStorage: BrowserAgeCookieStorage;
@@ -75,6 +81,8 @@ export interface AppContainer {
   contentDetailService: ContentDetailService;
   viewTrackerService: ViewTrackerService;
   downloadService: DownloadService;
+  interactionService: InteractionService;
+  profileService: ProfileService;
   searchSuggestionService: SearchSuggestionService;
   smartImportService: SmartImportService;
   recordStartupLogOnce: () => void;
@@ -96,6 +104,8 @@ const taxonomyRepository = new IndexedDbTaxonomyRepository(dataStore);
 const contentRepository = new IndexedDbContentRepository(dataStore);
 const viewEventRepository = new IndexedDbViewEventRepository(dataStore);
 const downloadEventRepository = new IndexedDbDownloadEventRepository(dataStore);
+const interactionRepository = new IndexedDbInteractionRepository(dataStore);
+const accountCleanupRepository = new IndexedDbAccountCleanupRepository(dataStore);
 const downloadTokenProtector = new HmacDownloadTokenProtector();
 const fileStorage = new LocalIndexedDbFileStorage(dataStore, clock);
 const agePreferenceStorage = new BrowserAgeCookieStorage();
@@ -207,6 +217,25 @@ const downloadService = new DownloadService(
   clock,
   logger,
 );
+const interactionService = new InteractionService(
+  interactionRepository,
+  contentRepository,
+  taxonomyRepository,
+  clock,
+  logger,
+);
+const profileService = new ProfileService({
+  authRepository,
+  contentRepository,
+  interactionRepository,
+  downloadEventRepository,
+  cleanupRepository: accountCleanupRepository,
+  passwordHasher,
+  sessionTokenStore,
+  clock,
+  logger,
+  deletedDisplayName: t('user.deletedDisplayName'),
+});
 const searchSuggestionService = new SearchSuggestionService(
   contentRepository,
   taxonomyRepository,
@@ -272,6 +301,8 @@ export const appContainer: AppContainer = {
   contentRepository,
   viewEventRepository,
   downloadEventRepository,
+  interactionRepository,
+  accountCleanupRepository,
   downloadTokenProtector,
   fileStorage,
   agePreferenceStorage,
@@ -296,6 +327,8 @@ export const appContainer: AppContainer = {
   contentDetailService,
   viewTrackerService,
   downloadService,
+  interactionService,
+  profileService,
   searchSuggestionService,
   smartImportService,
   recordStartupLogOnce,

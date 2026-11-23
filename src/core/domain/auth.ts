@@ -20,6 +20,8 @@ export interface AppUser {
   mustChangePassword: boolean;
   /** Default true */
   isActive: boolean;
+  /** True after account deletion & PII erasure per Rule 6.7 */
+  isDeleted?: boolean;
   role: UserRole;
   failedLoginCount: number;
   /** ISO 8601 UTC timestamp */
@@ -28,6 +30,8 @@ export interface AppUser {
   createdAt: string;
   /** ISO 8601 UTC timestamp */
   lastLoginAt: string | null;
+  /** ISO 8601 UTC timestamp */
+  deletedAt?: string | null;
 }
 
 export interface AuthToken {

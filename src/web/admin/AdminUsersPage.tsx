@@ -236,7 +236,7 @@ export function AdminUsersPage({ currentRoute }: AdminUsersPageProps) {
 
           <div className="text-xs text-[var(--color-muted)] tabular-nums-strict">
             {t('admin.users.countLabel', {
-              count: toPersianDigits(members.length),
+              count: toPersianDigits(members.filter((m) => !m.isDeleted).length),
             })}
           </div>
         </section>
@@ -251,7 +251,7 @@ export function AdminUsersPage({ currentRoute }: AdminUsersPageProps) {
 
         <Table
           columns={columns}
-          rows={isLoading ? [] : members}
+          rows={isLoading ? [] : members.filter((m) => !m.isDeleted)}
           getRowKey={(row) => String(row.id)}
           emptyText={t('admin.users.emptyText')}
         />

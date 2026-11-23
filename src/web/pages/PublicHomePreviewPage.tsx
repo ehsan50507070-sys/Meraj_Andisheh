@@ -7,12 +7,13 @@ import {
 import type { PublicContentSummary } from '../../core/services/contentManagementService';
 import { resolveThemeKey, type ThemeKey } from '../../core/services/themeService';
 import { useAge } from '../context/AgeContext';
-import { ContentCard, Button } from '../components/ui';
+import { Alert, ContentCard, Button } from '../components/ui';
 import { MainLayout } from '../layouts/MainLayout';
 import { formatAgeGroupRange } from '../resources/ageGroupFormatters';
 import { toPersianDigits } from '../resources/formatters';
 import type { ResourceKey } from '../resources/fa';
 import { t } from '../resources/i18n';
+import { navigateToHash } from '../router/HashRouter';
 import { appContainer } from '../services/appContainer';
 
 interface PublicHomePreviewPageProps {
@@ -130,6 +131,15 @@ export function PublicHomePreviewPage({ currentRoute }: PublicHomePreviewPagePro
   }, [entries, effectiveAgeGroup]);
 
   const activeThemeKey = resolveThemeKey(effectiveAgeGroup?.themeKey ?? 'editorial');
+  const showAccountDeletedBanner = useMemo(() => {
+    const qIdx = currentRoute.indexOf('?');
+    if (qIdx === -1) {
+      return false;
+    }
+    const params = new URLSearchParams(currentRoute.slice(qIdx + 1));
+    return params.get('accountDeleted') === '1';
+  }, [currentRoute]);
+
   const sourceText =
     ageSource === 'profile'
       ? t('homePreview.activeSourceProfile')
@@ -140,6 +150,15 @@ export function PublicHomePreviewPage({ currentRoute }: PublicHomePreviewPagePro
   return (
     <MainLayout currentRoute={currentRoute}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
+        {showAccountDeletedBanner && (
+          <Alert
+            variant="success"
+            title={t('home.accountDeletedBannerTitle')}
+            message={t('home.accountDeletedBannerBody')}
+            onDismiss={() => navigateToHash('/')}
+          />
+        )}
+
         {/* Public Hero & Effective Age Summary */}
         <section className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-card)] shadow-[var(--shadow-card)] p-5 sm:p-7 space-y-5">
           <div className="flex flex-wrap items-start justify-between gap-4">

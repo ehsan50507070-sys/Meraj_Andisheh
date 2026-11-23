@@ -304,7 +304,7 @@ export class OtpService {
 
     const existingUser = await this.repository.getUserByNormalizedPhoneNumber(normalizedPhone);
     if (existingUser) {
-      if (!existingUser.isActive) {
+      if (!existingUser.isActive || existingUser.isDeleted) {
         return {
           ok: false,
           errorCode: 'ACCOUNT_INACTIVE',

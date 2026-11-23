@@ -1,5 +1,6 @@
 import {
   ArrowRight,
+  Bookmark,
   BookMarked,
   BookOpen,
   Check,
@@ -8,6 +9,7 @@ import {
   Download,
   Eye,
   ExternalLink,
+  Heart,
   Lock,
   Share2,
 } from 'lucide-react';
@@ -72,6 +74,12 @@ export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps
 
   const [displayViewCount, setDisplayViewCount] = useState<number>(0);
   const [displayDownloadCount, setDisplayDownloadCount] = useState<number>(0);
+  const [displayLikeCount, setDisplayLikeCount] = useState<number>(0);
+  const [liked, setLiked] = useState<boolean>(false);
+  const [bookmarked, setBookmarked] = useState<boolean>(false);
+  const [isTogglingLike, setIsTogglingLike] = useState<boolean>(false);
+  const [isTogglingBookmark, setIsTogglingBookmark] = useState<boolean>(false);
+  const [interactionAuthNotice, setInteractionAuthNotice] = useState<string | null>(null);
   const [downloadingFileId, setDownloadingFileId] = useState<number | null>(null);
   const [downloadFeedback, setDownloadFeedback] = useState<{
     type: 'success' | 'error';
@@ -133,7 +141,9 @@ export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps
         if (!isSameContentItem) {
           setDisplayViewCount(res.data.item.viewCount);
           setDisplayDownloadCount(res.data.item.downloadCount);
+          setDisplayLikeCount(res.data.item.likeCount);
           setDownloadFeedback(null);
+          setInteractionAuthNotice(null);
         } else {
           setDisplayViewCount((prev) => Math.max(prev, res.data.item.viewCount));
           setDisplayDownloadCount((prev) => Math.max(prev, res.data.item.downloadCount));
@@ -401,6 +411,86 @@ export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps
       }
     }
     await handleCopyLink();
+  };
+
+  useEffect(() => {
+    if (!detailItemId || !isAuthReady) {
+      setLiked(false);
+      setBookmarked(false);
+      return;
+    }
+
+    let active = true;
+    void (async () => {
+      const state = await appContainer.interactionService.getUserContentInteractionStateAsync(
+        currentUser,
+        detailItemId,
+      );
+      if (active) {
+        setLiked(state.liked);
+        setBookmarked(state.bookmarked);
+        setDisplayLikeCount(state.likeCount);
+        setInteractionAuthNotice(null);
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [detailItemId, currentUser, isAuthReady]);
+
+  const handleToggleLike = async () => {
+    if (!detail) {
+      return;
+    }
+    if (!currentUser || !currentUser.isActive) {
+      setInteractionAuthNotice(t('contentDetail.interaction.likeAuthRequired'));
+      return;
+    }
+    setInteractionAuthNotice(null);
+    setIsTogglingLike(true);
+    try {
+      const res = await appContainer.interactionService.toggleLikeAsync(
+        currentUser,
+        detail.item.id,
+      );
+      if (res.ok) {
+        setLiked(res.liked);
+        setDisplayLikeCount(res.likeCount);
+      } else if (res.errorCode === 'AUTH_REQUIRED') {
+        setInteractionAuthNotice(t('contentDetail.interaction.likeAuthRequired'));
+      }
+    } finally {
+      setIsTogglingLike(false);
+    }
+  };
+
+  const handleToggleBookmark = async () => {
+    if (!detail) {
+      return;
+    }
+    if (!currentUser || !currentUser.isActive) {
+      setInteractionAuthNotice(t('contentDetail.interaction.bookmarkAuthRequired'));
+      return;
+    }
+    setInteractionAuthNotice(null);
+    setIsTogglingBookmark(true);
+    try {
+      const res = await appContainer.interactionService.toggleBookmarkAsync(
+        currentUser,
+        detail.item.id,
+      );
+      if (res.ok) {
+        setBookmarked(res.bookmarked);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('meraj:bookmarks-changed'));
+        }
+      } else if (res.errorCode === 'AUTH_REQUIRED') {
+        setInteractionAuthNotice(t('contentDetail.interaction.bookmarkAuthRequired'));
+      }
+    } finally {
+      setIsTogglingBookmark(false);
+    }
   };
 
   const buildContentReturnPath = (): string => {
@@ -781,6 +871,18 @@ export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps
                 })}
               </span>
             </span>
+            <span aria-hidden="true">·</span>
+            <span className="inline-flex items-center gap-1">
+              <Heart
+                className={`w-3.5 h-3.5 shrink-0 ${liked ? 'fill-current text-[var(--color-primary)]' : ''}`}
+                aria-hidden="true"
+              />
+              <span>
+                {t('contentDetail.meta.likeCount', {
+                  count: toPersianDigits(displayLikeCount),
+                })}
+              </span>
+            </span>
             {typeof item.readWatchMinutes === 'number' && item.readWatchMinutes > 0 && (
               <>
                 <span aria-hidden="true">·</span>
@@ -816,44 +918,107 @@ export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps
             {item.summary}
           </p>
 
-          {/* Share & Copy Actions */}
-          <div className="pt-3 border-t border-[var(--color-border)] flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => void handleNativeShare()}
-                startIcon={<Share2 className="w-4 h-4" />}
-              >
-                {t('contentDetail.share.button')}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => void handleCopyLink()}
-                startIcon={
-                  shareFeedback?.type === 'success' ? (
-                    <Check className="w-4 h-4" />
-                  ) : (
-                    <Copy className="w-4 h-4" />
-                  )
-                }
-              >
-                {t('contentDetail.share.copyButton')}
-              </Button>
+          {/* Like, Bookmark, Share & Copy Actions */}
+          <div className="pt-3 border-t border-[var(--color-border)] space-y-2.5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  variant={liked ? 'primary' : 'outline'}
+                  size="sm"
+                  disabled={isTogglingLike}
+                  aria-pressed={liked}
+                  onClick={() => void handleToggleLike()}
+                  startIcon={
+                    <Heart
+                      className={`w-4 h-4 ${liked ? 'fill-current' : ''}`}
+                    />
+                  }
+                >
+                  <span>
+                    {liked
+                      ? t('contentDetail.interaction.likedButton')
+                      : t('contentDetail.interaction.likeButton')}
+                  </span>
+                  <span className="ms-1.5 text-xs font-bold tabular-nums-strict">
+                    ({toPersianDigits(displayLikeCount)})
+                  </span>
+                </Button>
+
+                <Button
+                  variant={bookmarked ? 'primary' : 'outline'}
+                  size="sm"
+                  disabled={isTogglingBookmark}
+                  aria-pressed={bookmarked}
+                  onClick={() => void handleToggleBookmark()}
+                  startIcon={
+                    <Bookmark
+                      className={`w-4 h-4 ${bookmarked ? 'fill-current' : ''}`}
+                    />
+                  }
+                >
+                  {bookmarked
+                    ? t('contentDetail.interaction.bookmarkedButton')
+                    : t('contentDetail.interaction.bookmarkButton')}
+                </Button>
+
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => void handleNativeShare()}
+                  startIcon={<Share2 className="w-4 h-4" />}
+                >
+                  {t('contentDetail.share.button')}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => void handleCopyLink()}
+                  startIcon={
+                    shareFeedback?.type === 'success' ? (
+                      <Check className="w-4 h-4" />
+                    ) : (
+                      <Copy className="w-4 h-4" />
+                    )
+                  }
+                >
+                  {t('contentDetail.share.copyButton')}
+                </Button>
+              </div>
+
+              {shareFeedback && (
+                <p
+                  role="status"
+                  className={`text-xs font-medium ${
+                    shareFeedback.type === 'success'
+                      ? 'text-[var(--color-success-text)]'
+                      : 'text-[var(--color-error-text)]'
+                  }`}
+                >
+                  {shareFeedback.text}
+                </p>
+              )}
             </div>
 
-            {shareFeedback && (
-              <p
+            {interactionAuthNotice && (
+              <div
                 role="status"
-                className={`text-xs font-medium ${
-                  shareFeedback.type === 'success'
-                    ? 'text-[var(--color-success-text)]'
-                    : 'text-[var(--color-error-text)]'
-                }`}
+                className="flex flex-wrap items-center justify-between gap-2.5 p-3 rounded-[var(--radius-control)] bg-[var(--color-surface-alt)] border border-[var(--color-border)] text-xs sm:text-sm"
               >
-                {shareFeedback.text}
-              </p>
+                <span className="text-[var(--color-text)] font-medium">
+                  {interactionAuthNotice}
+                </span>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() =>
+                    navigateToHash(
+                      `/account/login?returnUrl=${encodeURIComponent(buildContentReturnPath())}`,
+                    )
+                  }
+                >
+                  {t('contentDetail.interaction.loginLinkAction')}
+                </Button>
+              </div>
             )}
           </div>
         </header>

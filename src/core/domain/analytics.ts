@@ -20,7 +20,7 @@ export interface DownloadEvent {
   kind: DownloadKind;
   contentId: number;
   fileId: number | null;
-  userId: number;
+  userId: number | null;
   ageGroupId: number | null;
   /** ISO 8601 UTC timestamp */
   occurredAt: string;

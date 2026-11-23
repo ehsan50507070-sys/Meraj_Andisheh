@@ -3,7 +3,7 @@ export const faResources = {
   'app.name': 'معراج اندیشه',
   'app.subtitle': 'پلتفرم بانک محتوای فارسی',
   'app.stageLabel': 'مرحله {stage} از {total}',
-  'app.stageName': 'دانلود امضاشده‌ی ۵ دقیقه‌ای ویژه اعضا، پشتیبانی Range و ثبت رویداد دانلود',
+  'app.stageName': 'لایک و علاقه‌مندی، پروفایل کاربری، تاریخچه‌ی دانلودها و حذف حساب (قاعده‌ی ۶.۷)',
   'app.footerNote': 'پلتفرم معراج اندیشه · زیرساخت و سامانه طراحی پایه',
 
   // Themes
@@ -741,6 +741,8 @@ export const faResources = {
   'admin.staff.error.cannotDeactivateSelf': 'امکان غیرفعال کردن حساب فعال خودتان وجود ندارد.',
   'admin.staff.error.lastSuperAdmin':
     'حداقل یک مدیر کل فعال باید در سامانه باقی بماند.',
+  'admin.staff.error.cannotModifyDeletedUser':
+    'این حساب همکار توسط کاربر حذف و ناشناس شده است و امکان تغییر وضعیت یا فعال‌سازی مجدد آن وجود ندارد.',
 
   // Admin Users Management (#/admin/users)
   'admin.users.title': 'مدیریت کاربران (اعضای عادی)',
@@ -779,6 +781,8 @@ export const faResources = {
   'admin.users.error.memberNotFound': 'کاربر مورد نظر یافت نشد.',
   'admin.users.error.onlyMembersEditable':
     'از این بخش فقط حساب اعضای عادی قابل مدیریت است.',
+  'admin.users.error.cannotModifyDeletedUser':
+    'این حساب کاربری توسط کاربر حذف و ناشناس شده است و امکان تغییر وضعیت یا فعال‌سازی مجدد آن وجود ندارد.',
 
   // Admin Settings & Feature Flags (#/admin/settings)
   'admin.settings.title': 'تنظیمات سامانه و ماژول‌ها',
@@ -1906,6 +1910,181 @@ export const faResources = {
     'پشتیبانی Range در دانلود امضاشده و ثبت DownloadEvent در IndexedDB v8',
   'tests.stage14.rangeSupport.desc':
     'فراخوانی executeSignedDownloadAsync با بازه ۲ تا ۵ دقیقاً ۴ بایت درخواستی را با rangeMeta برگردانده و رویداد DownloadEvent را در جدول downloadEvents نسخه ۸ ذخیره می‌کند.',
+
+  // Stage 15: Likes, Bookmarks, User Profile (#/account/profile), Download History & Account Deletion (Rule 6.7)
+  'user.deletedDisplayName': 'کاربر حذف‌شده',
+
+  'layout.header.profileAction': 'پروفایل من',
+  'layout.header.favoritesCountAria': 'علاقه‌مندی‌های من ({count})',
+
+  'contentDetail.meta.likeCount': '{count} پسند',
+  'contentDetail.interaction.likeButton': 'پسندیدن',
+  'contentDetail.interaction.likedButton': 'پسندیده‌شده',
+  'contentDetail.interaction.bookmarkButton': 'افزودن به علاقه‌مندی‌ها',
+  'contentDetail.interaction.bookmarkedButton': 'در علاقه‌مندی‌ها',
+  'contentDetail.interaction.likeAuthRequired':
+    'برای پسندیدن محتوا وارد حساب کاربری شوید.',
+  'contentDetail.interaction.bookmarkAuthRequired':
+    'برای افزودن محتوا به فهرست علاقه‌مندی‌ها وارد حساب کاربری شوید.',
+  'contentDetail.interaction.loginLinkAction': 'ورود به حساب و بازگشت به همین صفحه',
+  'contentDetail.interaction.errorGeneric': 'خطا در ثبت تعامل؛ لطفاً دوباره تلاش کنید.',
+
+  'home.accountDeletedBannerTitle': 'حساب کاربری با موفقیت حذف شد',
+  'home.accountDeletedBannerBody':
+    'حساب کاربری شما و اطلاعات هویتی شخصی با موفقیت پاکسازی و از سامانه خارج شدید.',
+
+  'profile.pageTitle': 'پروفایل و حساب کاربری من',
+  'profile.pageSubtitle':
+    'مدیریت مشخصات نمایشی، رده‌ی سنی، فهرست علاقه‌مندی‌ها، تاریخچه‌ی دانلودها و تنظیمات حساب.',
+  'profile.loading': 'در حال بارگذاری اطلاعات حساب کاربری...',
+  'profile.tabs.ariaLabel': 'بخش‌های پروفایل کاربری',
+  'profile.tab.info': 'مشخصات من',
+  'profile.tab.bookmarks': 'علاقه‌مندی‌ها',
+  'profile.tab.bookmarksCount': 'علاقه‌مندی‌ها ({count})',
+  'profile.tab.downloads': 'تاریخچه‌ی دانلودها',
+  'profile.tab.requests': 'درخواست‌های من',
+  'profile.tab.personalization': 'شخصی‌سازی پیشنهادها',
+  'profile.tab.danger': 'حذف حساب کاربری',
+
+  'profile.role.Member': 'عضو سامانه',
+  'profile.role.Staff': 'همکار محتوا',
+  'profile.role.SuperAdmin': 'مدیرکل سامانه',
+
+  // Tab 1: Info & Edit
+  'profile.info.accountDetailsTitle': 'اطلاعات ثبت‌شده‌ی حساب',
+  'profile.info.emailLabel': 'ایمیل ثبت‌شده',
+  'profile.info.phoneLabel': 'شماره‌ی موبایل ثبت‌شده',
+  'profile.info.notRegistered': 'ثبت نشده',
+  'profile.info.roleLabel': 'نقش کاربری',
+  'profile.info.joinedAtLabel': 'تاریخ عضویت (شمسی)',
+  'profile.info.editTitle': 'ویرایش مشخصات نمایشی و رده‌ی سنی',
+  'profile.info.editSubtitle':
+    'نام نمایشی فقط یک لقب اختیاری است و تغییر رده‌ی سنی بلافاصله تم و تنظیمات سنی شما را به‌روز می‌کند.',
+  'profile.info.displayNameLabel': 'نام نمایشی (لقب، حداکثر ۶۰ نویسه)',
+  'profile.info.displayNamePlaceholder': 'نام نمایشی دلخواه خود را وارد کنید',
+  'profile.info.displayNameCounter': '{count} / ۶۰ نویسه',
+  'profile.info.ageGroupLabel': 'رده‌ی سنی فعال',
+  'profile.info.saveButton': 'ذخیره تغییرات پروفایل',
+  'profile.info.savingButton': 'در حال ذخیره...',
+  'profile.info.savedSuccess':
+    'مشخصات پروفایل ذخیره شد و تم رده‌ی سنی «{ageName}» به‌روز گردید.',
+  'profile.info.changePasswordButton': 'تغییر رمز عبور حساب',
+  'profile.info.error.INVALID_DISPLAY_NAME':
+    'نام نمایشی باید بین ۱ تا ۶۰ نویسه باشد.',
+  'profile.info.error.INVALID_AGE_GROUP':
+    'رده‌ی سنی انتخاب‌شده معتبر یا فعال نیست.',
+  'profile.info.error.AUTH_REQUIRED':
+    'نشست شما منقضی شده است؛ لطفاً دوباره وارد شوید.',
+
+  // Tab 2: Bookmarks
+  'profile.bookmarks.title': 'محتواهای علاقه‌مندی من ({count})',
+  'profile.bookmarks.subtitle':
+    'فهرست خصوصی محتواهایی که برای مطالعه‌ی دوباره نشانک کرده‌اید (فقط برای خود شما قابل مشاهده است).',
+  'profile.bookmarks.childFilterNote':
+    'با توجه به فعال بودن رده‌ی سنی کودک، تنها محتواهای مجاز برای این رده نمایش داده می‌شوند.',
+  'profile.bookmarks.emptyTitle': 'هنوز هیچ محتوایی را به علاقه‌مندی‌ها اضافه نکرده‌اید.',
+  'profile.bookmarks.emptyBody':
+    'هنگام مطالعه‌ی هر محتوا در بانک محتوا می‌توانید با دکمه‌ی نشانک آن را اینجا ذخیره کنید.',
+  'profile.bookmarks.browseBankButton': 'مشاهده‌ی بانک محتوا',
+  'profile.bookmarks.removeButton': 'حذف از علاقه‌مندی‌ها',
+  'profile.bookmarks.removingButton': 'در حال حذف...',
+  'profile.bookmarks.openContentButton': 'مشاهده محتوا',
+  'profile.bookmarks.savedAtLabel': 'زمان افزودن: {date}',
+
+  // Tab 3: Download History
+  'profile.downloads.title': 'تاریخچه‌ی دانلودهای من ({count})',
+  'profile.downloads.subtitle':
+    'فهرست خصوصی تمام فایل‌هایی که از طریق لینک امضاشده دریافت کرده‌اید (فقط برای خود شما قابل مشاهده است).',
+  'profile.downloads.emptyTitle': 'هنوز هیچ دانلودی برای حساب شما ثبت نشده است.',
+  'profile.downloads.emptyBody':
+    'پس از دریافت فایل‌های قابل دانلود از صفحات محتوا، تاریخچه‌ی آن‌ها اینجا نمایش داده می‌شود.',
+  'profile.downloads.col.content': 'محتوا',
+  'profile.downloads.col.file': 'نام و حجم فایل',
+  'profile.downloads.col.kind': 'نوع دانلود',
+  'profile.downloads.col.occurredAt': 'تاریخ و ساعت (شمسی)',
+  'profile.downloads.kind.file': 'فایل محتوا',
+  'profile.downloads.kind.story': 'خروجی استوری',
+  'profile.downloads.unavailableContent': 'محتوای بایگانی‌شده یا حذف‌شده',
+  'profile.downloads.unknownFile': 'فایل پیوست',
+
+  // Tab 4: My Requests Placeholder (Stage 17)
+  'profile.requests.title': 'درخواست‌های محتوای من',
+  'profile.requests.badge': 'آماده‌سازی برای مرحله‌ی ۱۷',
+  'profile.requests.desc':
+    'بخش ثبت درخواست تولید محتوای جدید و پیگیری وضعیت بررسی آن‌ها توسط تیم محتوا در مرحله‌ی ۱۷ سامانه فعال خواهد شد.',
+
+  // Tab 5: Personalization Placeholder (Stage 20)
+  'profile.personalization.title': 'تنظیمات شخصی‌سازی هوشمند پیشنهادها',
+  'profile.personalization.badge': 'آماده‌سازی برای مرحله‌ی ۲۰',
+  'profile.personalization.desc':
+    'موتور شخصی‌سازی هوشمند و امکان پاکسازی سابقه‌ی علایق موضوعی در مرحله‌ی ۲۰ فعال می‌شود.',
+  'profile.personalization.toggleLabel': 'فعالسازی پیشنهادهای هوشمند متناسب با علایق من',
+  'profile.personalization.toggleDisabledHint':
+    'این کلید به‌صورت موقت غیرفعال است و در مرحله‌ی ۲۰ قابل تنظیم خواهد شد.',
+
+  // Tab 6: Danger Zone / Account Deletion (Rule 6.7)
+  'profile.danger.title': 'حذف دائمی حساب کاربری',
+  'profile.danger.subtitle':
+    'پیش از ادامه‌ی کار، پیامدهای قطعی و غیرقابل بازگشت حذف حساب مطابق با خط‌مشی حریم خصوصی سامانه را مطالعه کنید:',
+  'profile.danger.consequence1':
+    'تمامی لایک‌ها و علاقه‌مندی‌های ثبت‌شده‌ی شما حذف و شمارنده‌ی پسند محتواها کاهش می‌یابد.',
+  'profile.danger.consequence2':
+    'اطلاعات هویتی (ایمیل، شماره‌ی موبایل، رمز عبور و نشست‌ها) به‌طور کامل پاکسازی می‌شوند.',
+  'profile.danger.consequence3':
+    'نظرهای ثبت‌شده‌ی شما برای حفظ یکپارچگی بحث‌ها با نام نمایشی «کاربر حذف‌شده» باقی می‌مانند.',
+  'profile.danger.consequence4':
+    'رویدادهای آمار بازدید و دانلود بدون پیوند به هویت شما (ناشناس‌شده) نگهداری می‌شوند.',
+  'profile.danger.requestDeleteButton': 'درخواست حذف حساب',
+  'profile.danger.lastSuperAdminWarning':
+    'حساب شما تنها مدیرکل فعال سامانه است و برای حفظ دسترسی مدیریت امکان حذف آن وجود ندارد.',
+
+  'profile.danger.modalTitle': 'تأیید نهایی حذف حساب کاربری',
+  'profile.danger.modalWarning':
+    'این عملیات غیرقابل بازگشت است و پس از تأیید، نشست فعلی شما بلافاصله بسته خواهد شد.',
+  'profile.danger.passwordLabel': 'رمز عبور فعلی خود را برای تأیید وارد کنید',
+  'profile.danger.passwordPlaceholder': 'رمز عبور فعلی...',
+  'profile.danger.otpSectionTitle': 'تأیید هویت با کد یک‌بارمصرف پیامکی (OTP)',
+  'profile.danger.otpPhoneLabel': 'شماره‌ی موبایل حساب: {phone}',
+  'profile.danger.sendOtpButton': 'ارسال کد تأیید ۶ رقمی به موبایل من',
+  'profile.danger.sendOtpCooldown': 'ارسال مجدد تا {seconds} ثانیه دیگر',
+  'profile.danger.otpSentSuccess':
+    'کد تأیید ۶ رقمی ارسال شد (در حالت توسعه در لاگ سامانه قابل مشاهده است).',
+  'profile.danger.otpCodeLabel': 'کد تأیید ۶ رقمی',
+  'profile.danger.otpCodePlaceholder': '۱۲۳۴۵۶',
+  'profile.danger.cancelButton': 'انصراف',
+  'profile.danger.confirmDeleteButton': 'تأیید و حذف دائمی حساب',
+  'profile.danger.deletingButton': 'در حال حذف و پاکسازی...',
+
+  'profile.danger.error.INVALID_PASSWORD': 'رمز عبور واردشده نادرست است.',
+  'profile.danger.error.INVALID_OTP': 'کد تأیید ۶ رقمی نامعتبر است.',
+  'profile.danger.error.OTP_EXPIRED': 'کد تأیید منقضی شده است؛ لطفاً کد جدید دریافت کنید.',
+  'profile.danger.error.OTP_LOCKED': 'تعداد تلاش‌های ناموفق بیش از حد مجاز بوده است.',
+  'profile.danger.error.CONFIRMATION_REQUIRED': 'تأیید هویت برای حذف حساب الزامی است.',
+  'profile.danger.error.CANNOT_DELETE_LAST_SUPERADMIN':
+    'امکان حذف آخرین مدیرکل فعال سامانه وجود ندارد.',
+  'profile.danger.error.AUTH_REQUIRED': 'نشست کاربری معتبر نیست.',
+
+  // Stage 15 Unit Tests
+  'tests.stage15.likeUnlikeAndGuestReject.name':
+    'لایک، آنلایک و رد لایک کاربر ورودنکرده با همگام‌سازی شمارنده',
+  'tests.stage15.likeUnlikeAndGuestReject.desc':
+    'لایک با کاربر مهمان با AUTH_REQUIRED رد می‌شود؛ لایک اول عضو واقعی شمارنده را به ۱ و کلیک دوم به ۰ برمی‌گرداند.',
+  'tests.stage15.bookmarksAndPrivacy.name':
+    'افزودن و حذف علاقه‌مندی و حریم خصوصی سخت‌گیرانه (فقط خود کاربر)',
+  'tests.stage15.bookmarksAndPrivacy.desc':
+    'عضو A علاقه‌مندی خود را می‌بیند و حذف می‌کند، اما تلاش عضو B یا مهمان برای خواندن علاقه‌مندی‌های A با FORBIDDEN رد می‌شود.',
+  'tests.stage15.downloadHistoryPrivacy.name':
+    'تاریخچه‌ی دانلود کاربر و منع دسترسی کاربران دیگر با FORBIDDEN',
+  'tests.stage15.downloadHistoryPrivacy.desc':
+    'رویداد دانلود ثبت‌شده برای عضو A در تاریخچه‌ی خودش دیده می‌شود و دسترسی عضو B یا مهمان با FORBIDDEN مسدود می‌گردد.',
+  'tests.stage15.profileUpdateValidation.name':
+    'ویرایش نام نمایشی و رده‌ی سنی پروفایل و اعتبارسنجی محدودیت ۶۰ نویسه',
+  'tests.stage15.profileUpdateValidation.desc':
+    'نام نمایشی معتبر و رده‌ی سنی در جدول users ذخیره می‌شوند و نام خالی یا بالای ۶۰ نویسه رد می‌گردد.',
+  'tests.stage15.accountDeletionRule67.name':
+    'حذف کامل حساب با تأیید رمز عبور و اجرای دقیق قاعده‌ی ۶.۷',
+  'tests.stage15.accountDeletionRule67.desc':
+    'رمز غلط با INVALID_PASSWORD رد می‌شود؛ با رمز درست لایک و علاقه‌مندی پاک و شمارنده ۰ شده، نشست بسته و ورود قبلی رد، آمار بدون userId حفظ و کاربر/نظر با «کاربر حذف‌شده» ناشناس می‌شوند.',
 } as const;
 
 export type ResourceKey = keyof typeof faResources;

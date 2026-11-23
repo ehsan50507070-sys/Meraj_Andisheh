@@ -39,7 +39,8 @@ export type StaffActionErrorCode =
   | 'TARGET_NOT_FOUND'
   | 'INVALID_TARGET_ROLE'
   | 'CANNOT_DEACTIVATE_SELF'
-  | 'LAST_SUPERADMIN';
+  | 'LAST_SUPERADMIN'
+  | 'CANNOT_MODIFY_DELETED_USER';
 
 export interface StaffListResult {
   ok: boolean;
@@ -116,7 +117,7 @@ export class StaffManagementService {
 
     const allUsers = await this.repository.getAllUsers();
     const staffAndAdmins = allUsers
-      .filter((u) => u.role === 'SuperAdmin' || u.role === 'Staff')
+      .filter((u) => (u.role === 'SuperAdmin' || u.role === 'Staff') && !u.isDeleted)
       .sort((a, b) => {
         if (a.role !== b.role) {
           return a.role === 'SuperAdmin' ? -1 : 1;
@@ -315,6 +316,15 @@ export class StaffManagementService {
       };
     }
 
+    if (target.isDeleted === true) {
+      return {
+        ok: false,
+        statusCode: 400,
+        errorCode: 'CANNOT_MODIFY_DELETED_USER',
+        messageKey: 'admin.staff.error.cannotModifyDeletedUser',
+      };
+    }
+
     if (target.role !== 'Staff') {
       return {
         ok: false,
@@ -378,6 +388,15 @@ export class StaffManagementService {
       };
     }
 
+    if (target.isDeleted === true) {
+      return {
+        ok: false,
+        statusCode: 400,
+        errorCode: 'CANNOT_MODIFY_DELETED_USER',
+        messageKey: 'admin.staff.error.cannotModifyDeletedUser',
+      };
+    }
+
     if (target.role !== 'Staff' && target.role !== 'SuperAdmin') {
       return {
         ok: false,
@@ -399,7 +418,7 @@ export class StaffManagementService {
     if (!isActive && target.role === 'SuperAdmin') {
       const allUsers = await this.repository.getAllUsers();
       const otherActiveSuperAdmins = allUsers.filter(
-        (u) => u.role === 'SuperAdmin' && u.isActive && u.id !== target.id,
+        (u) => u.role === 'SuperAdmin' && u.isActive && !u.isDeleted && u.id !== target.id,
       );
       if (otherActiveSuperAdmins.length === 0) {
         return {

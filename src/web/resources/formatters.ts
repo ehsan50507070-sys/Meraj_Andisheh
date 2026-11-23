@@ -79,6 +79,38 @@ export function formatJalaliDatePersian(isoTimestamp: string | null | undefined)
   return toPersianDigits(`${jy}/${pad(jm)}/${pad(jd)}`);
 }
 
+export function formatJalaliDateTimePersian(isoTimestamp: string | null | undefined): string {
+  if (!isoTimestamp) {
+    return '—';
+  }
+  const date = new Date(isoTimestamp);
+  if (Number.isNaN(date.getTime())) {
+    return '—';
+  }
+
+  try {
+    const formatter = new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
+    const formatted = formatter.format(date);
+    if (formatted && formatted.trim().length > 0) {
+      return toPersianDigits(formatted);
+    }
+  } catch {
+    // Fallback below
+  }
+
+  const datePart = formatJalaliDatePersian(isoTimestamp);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const timePart = toPersianDigits(`${pad(date.getHours())}:${pad(date.getMinutes())}`);
+  return `${datePart} - ${timePart}`;
+}
+
 export function formatMediaSecondsPersian(totalSeconds: number): string {
   const safe = Number.isFinite(totalSeconds) && totalSeconds > 0 ? Math.floor(totalSeconds) : 0;
   const hrs = Math.floor(safe / 3600);

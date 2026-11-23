@@ -15,7 +15,8 @@ export type MemberActionErrorCode =
   | 'NOT_FOUND'
   | 'FORBIDDEN'
   | 'MEMBER_NOT_FOUND'
-  | 'INVALID_TARGET_ROLE';
+  | 'INVALID_TARGET_ROLE'
+  | 'CANNOT_MODIFY_DELETED_USER';
 
 export interface ListMembersResult {
   ok: boolean;
@@ -79,7 +80,7 @@ export class UserManagementService {
     const ageGroupFilter = filter?.ageGroupId ?? null;
 
     const members = allUsers
-      .filter((user) => user.role === 'Member')
+      .filter((user) => user.role === 'Member' && !user.isDeleted)
       .filter((user) => {
         if (statusFilter === 'active' && !user.isActive) return false;
         if (statusFilter === 'inactive' && user.isActive) return false;
@@ -134,6 +135,15 @@ export class UserManagementService {
         statusCode: 400,
         errorCode: 'MEMBER_NOT_FOUND',
         messageKey: 'admin.users.error.memberNotFound',
+      };
+    }
+
+    if (target.isDeleted === true) {
+      return {
+        ok: false,
+        statusCode: 400,
+        errorCode: 'CANNOT_MODIFY_DELETED_USER',
+        messageKey: 'admin.users.error.cannotModifyDeletedUser',
       };
     }
 

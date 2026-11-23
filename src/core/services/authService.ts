@@ -678,7 +678,7 @@ export class AuthService {
     }
 
     const user = await this.repository.getUserById(session.userId);
-    if (!user || !user.isActive) {
+    if (!user || !user.isActive || user.isDeleted) {
       await this.repository.deleteSessionByTokenHash(tokenHash);
       this.sessionTokenStore.clearRawToken();
       return null;
