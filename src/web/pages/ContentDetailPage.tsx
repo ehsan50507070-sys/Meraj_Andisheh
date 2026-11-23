@@ -17,6 +17,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ContentFileKind, FileStorageType, type ContentFile } from '../../core/domain/content';
 import type { ContentDetailData } from '../../core/services/contentDetailService';
 import { useAuth } from '../auth/AuthContext';
+import { ContentCommentsSection } from '../components/ContentCommentsSection';
 import { AudioPlayerBox } from '../components/players/AudioPlayerBox';
 import { DocumentAttachmentCard } from '../components/players/DocumentAttachmentCard';
 import { ImageZoomViewer } from '../components/players/ImageZoomViewer';
@@ -1218,6 +1219,12 @@ export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps
             </div>
           </section>
         )}
+
+        {/* Comments Section (Automatically hidden when FeatureFlag('Comments') is disabled) */}
+        <ContentCommentsSection
+          contentId={detail.item.id}
+          contentSlug={detail.item.slug}
+        />
 
         {/* Back to Content Bank */}
         <div className="pt-2">

@@ -1,4 +1,5 @@
 import { AuthService } from '../../core/services/authService';
+import { CommentService } from '../../core/services/commentService';
 import { ContentCatalogService } from '../../core/services/contentCatalogService';
 import { ContentDetailService } from '../../core/services/contentDetailService';
 import { ContentIntegrityService } from '../../core/services/contentIntegrityService';
@@ -25,12 +26,14 @@ import { envConfig } from '../../infrastructure/config/envConfig';
 import { IndexedDbAccountCleanupRepository } from '../../infrastructure/data/IndexedDbAccountCleanupRepository';
 import { IndexedDbAdminRepository } from '../../infrastructure/data/IndexedDbAdminRepository';
 import { IndexedDbAuthRepository } from '../../infrastructure/data/IndexedDbAuthRepository';
+import { IndexedDbCommentRepository } from '../../infrastructure/data/IndexedDbCommentRepository';
 import { IndexedDbContentRepository } from '../../infrastructure/data/IndexedDbContentRepository';
 import { IndexedDbDataStore } from '../../infrastructure/data/IndexedDbDataStore';
 import { IndexedDbDownloadEventRepository } from '../../infrastructure/data/IndexedDbDownloadEventRepository';
 import { IndexedDbInteractionRepository } from '../../infrastructure/data/IndexedDbInteractionRepository';
 import { IndexedDbTaxonomyRepository } from '../../infrastructure/data/IndexedDbTaxonomyRepository';
 import { IndexedDbViewEventRepository } from '../../infrastructure/data/IndexedDbViewEventRepository';
+import { STORE_NAMES } from '../../infrastructure/data/migrations';
 import { LocalSessionTokenStore } from '../../infrastructure/data/LocalSessionTokenStore';
 import { DatabaseSeeder } from '../../infrastructure/data/seed';
 import { AppLogger } from '../../infrastructure/logging/AppLogger';
@@ -56,6 +59,7 @@ export interface AppContainer {
   viewEventRepository: IndexedDbViewEventRepository;
   downloadEventRepository: IndexedDbDownloadEventRepository;
   interactionRepository: IndexedDbInteractionRepository;
+  commentRepository: IndexedDbCommentRepository;
   accountCleanupRepository: IndexedDbAccountCleanupRepository;
   downloadTokenProtector: HmacDownloadTokenProtector;
   fileStorage: LocalIndexedDbFileStorage;
@@ -82,6 +86,7 @@ export interface AppContainer {
   viewTrackerService: ViewTrackerService;
   downloadService: DownloadService;
   interactionService: InteractionService;
+  commentService: CommentService;
   profileService: ProfileService;
   searchSuggestionService: SearchSuggestionService;
   smartImportService: SmartImportService;
@@ -105,6 +110,7 @@ const contentRepository = new IndexedDbContentRepository(dataStore);
 const viewEventRepository = new IndexedDbViewEventRepository(dataStore);
 const downloadEventRepository = new IndexedDbDownloadEventRepository(dataStore);
 const interactionRepository = new IndexedDbInteractionRepository(dataStore);
+const commentRepository = new IndexedDbCommentRepository(dataStore);
 const accountCleanupRepository = new IndexedDbAccountCleanupRepository(dataStore);
 const downloadTokenProtector = new HmacDownloadTokenProtector();
 const fileStorage = new LocalIndexedDbFileStorage(dataStore, clock);
@@ -224,6 +230,17 @@ const interactionService = new InteractionService(
   clock,
   logger,
 );
+const commentService = new CommentService({
+  commentRepository,
+  contentRepository,
+  adminRepository,
+  taxonomyRepository,
+  permissionPolicyService,
+  searchNormalizer,
+  clock,
+  logger,
+  deletedDisplayName: t('user.deletedDisplayName'),
+});
 const profileService = new ProfileService({
   authRepository,
   contentRepository,
@@ -247,6 +264,26 @@ const smartImportService = new SmartImportService(
   searchNormalizer,
   logger,
 );
+
+export const STAGE16_COMMENTS_FLAG_META_KEY = 'stage16_comments_default_enabled_v1';
+
+export async function ensureStage16CommentsDefaultFlagAsync(
+  store: IndexedDbDataStore = dataStore,
+): Promise<void> {
+  const existingMeta = await store.getMeta(STAGE16_COMMENTS_FLAG_META_KEY);
+  if (existingMeta) {
+    return;
+  }
+  await store.putRecord(STORE_NAMES.FEATURE_FLAGS, {
+    key: 'Comments',
+    isEnabled: true,
+  });
+  await store.setMeta({
+    key: STAGE16_COMMENTS_FLAG_META_KEY,
+    value: '1',
+    updatedAtUtc: clock.nowUtcIso(),
+  });
+}
 
 let startupRecordedInSession = false;
 let startupInitPromise: Promise<void> | null = null;
@@ -274,6 +311,7 @@ function ensureInitializedAtStartup(): Promise<void> {
     startupInitPromise = (async () => {
       try {
         await databaseSeeder.seed(t('logs.seedExecuted'));
+        await ensureStage16CommentsDefaultFlagAsync(dataStore);
         await initialSuperAdminService.bootstrapFromEnvIfConfigured(
           envConfig.initialSuperAdminEmail,
           envConfig.initialSuperAdminTempPassword,
@@ -302,6 +340,7 @@ export const appContainer: AppContainer = {
   viewEventRepository,
   downloadEventRepository,
   interactionRepository,
+  commentRepository,
   accountCleanupRepository,
   downloadTokenProtector,
   fileStorage,
@@ -328,6 +367,7 @@ export const appContainer: AppContainer = {
   viewTrackerService,
   downloadService,
   interactionService,
+  commentService,
   profileService,
   searchSuggestionService,
   smartImportService,

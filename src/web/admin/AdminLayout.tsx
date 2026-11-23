@@ -67,12 +67,14 @@ function renderNavIcon(id: string) {
 }
 
 export function AdminLayout({ currentRoute, children }: AdminLayoutProps) {
-  const { currentUser, userPermissions, siteTitle, logout } = useAuth();
+  const { currentUser, userPermissions, siteTitle, isCommentsEnabled, logout } = useAuth();
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
   const normalizedPath = currentRoute.split('?')[0].replace(/^#/, '').toLowerCase() || '/admin';
-  const visibleItems = ADMIN_ROUTES.filter((item) =>
-    canSeeAdminNavItem(currentUser, userPermissions, item.requirement),
+  const visibleItems = ADMIN_ROUTES.filter(
+    (item) =>
+      !(item.id === 'comments' && !isCommentsEnabled) &&
+      canSeeAdminNavItem(currentUser, userPermissions, item.requirement),
   );
 
   const roleLabelKey: ResourceKey =

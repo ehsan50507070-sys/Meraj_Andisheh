@@ -15,11 +15,13 @@ export interface AuthContextValue {
   currentUser: AppUser | null;
   userPermissions: PermissionKey[];
   siteTitle: string;
+  isCommentsEnabled: boolean;
   hasSuperAdmin: boolean;
   hasStaffUser: boolean;
   isAuthReady: boolean;
   refreshAuthState: () => Promise<void>;
   refreshSiteTitle: () => Promise<void>;
+  refreshFeatureFlags: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -29,6 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<AppUser | null>(null);
   const [userPermissions, setUserPermissions] = useState<PermissionKey[]>([]);
   const [siteTitle, setSiteTitle] = useState<string>(() => t('app.name'));
+  const [isCommentsEnabled, setIsCommentsEnabled] = useState<boolean>(false);
   const [hasSuperAdmin, setHasSuperAdmin] = useState<boolean>(true);
   const [hasStaffUser, setHasStaffUser] = useState<boolean>(true);
   const [isAuthReady, setIsAuthReady] = useState<boolean>(false);
@@ -41,20 +44,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSiteTitle(resolvedTitle);
   }, []);
 
+  const refreshFeatureFlags = useCallback(async () => {
+    await appContainer.ensureInitializedAtStartup();
+    const commentsEnabled =
+      await appContainer.settingsManagementService.getPublicFeatureFlagState('Comments');
+    setIsCommentsEnabled(commentsEnabled);
+  }, []);
+
   const refreshAuthState = useCallback(async () => {
     await appContainer.ensureInitializedAtStartup();
-    const [user, superAdminExists, staffExists, resolvedTitle] = await Promise.all([
-      appContainer.authService.getCurrentUser(),
-      appContainer.initialSuperAdminService.hasSuperAdmin(),
-      appContainer.initialSuperAdminService.hasStaffUser(),
-      appContainer.settingsManagementService.getPublicSiteTitle(t('app.name')),
-    ]);
+    const [user, superAdminExists, staffExists, resolvedTitle, commentsEnabled] =
+      await Promise.all([
+        appContainer.authService.getCurrentUser(),
+        appContainer.initialSuperAdminService.hasSuperAdmin(),
+        appContainer.initialSuperAdminService.hasStaffUser(),
+        appContainer.settingsManagementService.getPublicSiteTitle(t('app.name')),
+        appContainer.settingsManagementService.getPublicFeatureFlagState('Comments'),
+      ]);
     const permissions = await appContainer.permissionPolicyService.getUserPermissions(user);
     setCurrentUser(user);
     setUserPermissions(permissions);
     setHasSuperAdmin(superAdminExists);
     setHasStaffUser(staffExists);
     setSiteTitle(resolvedTitle);
+    setIsCommentsEnabled(commentsEnabled);
     setIsAuthReady(true);
   }, []);
 
@@ -73,11 +86,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         currentUser,
         userPermissions,
         siteTitle,
+        isCommentsEnabled,
         hasSuperAdmin,
         hasStaffUser,
         isAuthReady,
         refreshAuthState,
         refreshSiteTitle,
+        refreshFeatureFlags,
         logout,
       }}
     >

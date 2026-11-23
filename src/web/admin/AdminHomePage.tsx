@@ -12,11 +12,12 @@ interface AdminHomePageProps {
 }
 
 export function AdminHomePage({ currentRoute }: AdminHomePageProps) {
-  const { currentUser, userPermissions } = useAuth();
+  const { currentUser, userPermissions, isCommentsEnabled } = useAuth();
 
   const sectionCards = ADMIN_ROUTES.filter(
     (item) =>
       item.id !== 'home' &&
+      !(item.id === 'comments' && !isCommentsEnabled) &&
       canSeeAdminNavItem(currentUser, userPermissions, item.requirement),
   );
 

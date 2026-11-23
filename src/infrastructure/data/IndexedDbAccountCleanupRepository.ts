@@ -95,24 +95,20 @@ export class IndexedDbAccountCleanupRepository implements IAccountCleanupReposit
 
   public async anonymizeOptionalCommentsByUserId(
     userId: number,
-    deletedDisplayName: string,
+    _deletedDisplayName: string,
   ): Promise<number> {
     const storeNames = await this.dataStore.getObjectStoreNames();
-    if (!storeNames.includes('comments')) {
+    if (!storeNames.includes(STORE_NAMES.COMMENTS)) {
       return 0;
     }
-    const allComments = await this.dataStore.getAll<OptionalCommentRecord>('comments');
-    let count = 0;
-    for (const comment of allComments) {
-      if (comment.userId === userId) {
-        await this.dataStore.putRecord<OptionalCommentRecord>('comments', {
-          ...comment,
-          authorDisplayName: deletedDisplayName,
-        });
-        count += 1;
-      }
-    }
-    return count;
+    // Rule 6.7: Preserve comment records with their userId FK pointing to the anonymized AppUser
+    // (whose displayName is set to «کاربر حذف‌شده» and isDeleted = true); CommentService resolves that label.
+    const userComments = await this.dataStore.getAllByIndex<OptionalCommentRecord>(
+      STORE_NAMES.COMMENTS,
+      'by_userId',
+      userId,
+    );
+    return userComments.length;
   }
 
   public async deleteOptionalTopicAffinitiesByUserId(userId: number): Promise<number> {

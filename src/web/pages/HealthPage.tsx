@@ -37,6 +37,7 @@ import { stage12Tests } from '../../tests/stage12.tests';
 import { stage13Tests } from '../../tests/stage13.tests';
 import { stage14Tests } from '../../tests/stage14.tests';
 import { stage15Tests } from '../../tests/stage15.tests';
+import { stage16Tests } from '../../tests/stage16.tests';
 import { runUnitTests } from '../../tests/testRunner';
 import { useAuth } from '../auth/AuthContext';
 import { useAge } from '../context/AgeContext';
@@ -46,7 +47,10 @@ import { toPersianDigits } from '../resources/formatters';
 import type { ResourceKey } from '../resources/fa';
 import { t } from '../resources/i18n';
 import { navigateToHash } from '../router/HashRouter';
-import { appContainer } from '../services/appContainer';
+import {
+  appContainer,
+  ensureStage16CommentsDefaultFlagAsync,
+} from '../services/appContainer';
 
 interface HealthPageProps {
   currentRoute: string;
@@ -68,6 +72,7 @@ const ALL_UNIT_TESTS = [
   ...stage13Tests,
   ...stage14Tests,
   ...stage15Tests,
+  ...stage16Tests,
 ];
 
 const ARCHITECTURE_LAYERS: ReadonlyArray<{
@@ -239,6 +244,7 @@ export function HealthPage({ currentRoute }: HealthPageProps) {
       await appContainer.authService.logout();
       await appContainer.dataStore.resetDatabase();
       const result = await appContainer.databaseSeeder.seed(t('logs.databaseResetExecuted'));
+      await ensureStage16CommentsDefaultFlagAsync(appContainer.dataStore);
       await appContainer.initialSuperAdminService.bootstrapFromEnvIfConfigured(
         envConfig.initialSuperAdminEmail,
         envConfig.initialSuperAdminTempPassword,

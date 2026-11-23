@@ -23,7 +23,7 @@ function getFlagDescKey(key: FeatureFlagKey): ResourceKey {
 }
 
 export function AdminSettingsPage({ currentRoute }: AdminSettingsPageProps) {
-  const { currentUser, refreshSiteTitle } = useAuth();
+  const { currentUser, refreshSiteTitle, refreshFeatureFlags } = useAuth();
   const [flags, setFlags] = useState<FeatureFlag[]>([]);
   const [settingValues, setSettingValues] = useState<Record<string, string>>({});
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -75,6 +75,7 @@ export function AdminSettingsPage({ currentRoute }: AdminSettingsPageProps) {
         item.key === flag.key ? { ...item, isEnabled: !flag.isEnabled } : item,
       ),
     );
+    await refreshFeatureFlags();
     setFeedback({
       variant: 'success',
       message: t('admin.settings.flagUpdated', {

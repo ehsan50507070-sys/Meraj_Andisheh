@@ -67,7 +67,6 @@ export const ADMIN_ROUTES: readonly AdminRouteSpec[] = [
     labelKey: 'admin.nav.comments',
     requirement: 'comments.moderate',
     permissionDescKey: 'permissions.comments.moderate.desc',
-    isPlaceholder: true,
   },
   {
     id: 'users',

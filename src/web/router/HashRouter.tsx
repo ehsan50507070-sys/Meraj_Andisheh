@@ -9,6 +9,7 @@ import { AdminStorageTestPage } from '../admin/AdminStorageTestPage';
 import { AdminUsersPage } from '../admin/AdminUsersPage';
 import { AdminContentFormPage } from '../admin/pages/AdminContentFormPage';
 import { AdminContentListPage } from '../admin/pages/AdminContentListPage';
+import { AdminCommentsPage } from '../admin/pages/AdminCommentsPage';
 import { AdminSmartImportPage } from '../admin/pages/AdminSmartImportPage';
 import { AdminTaxonomyPage } from '../admin/pages/AdminTaxonomyPage';
 import { canSeeAdminNavItem, findAdminRouteSpec } from '../admin/adminNavConfig';
@@ -62,7 +63,7 @@ export function navigateToHash(path: string): void {
 }
 
 export function HashRouter({ routes, defaultRoute }: HashRouterProps) {
-  const { currentUser, userPermissions, isAuthReady } = useAuth();
+  const { currentUser, userPermissions, isCommentsEnabled, isAuthReady } = useAuth();
   const normalizedDefault = splitHashParts(defaultRoute).path;
   const mustForcePasswordChange = Boolean(isAuthReady && currentUser?.mustChangePassword);
   const lastDeniedLogKeyRef = useRef<string | null>(null);
@@ -121,13 +122,23 @@ export function HashRouter({ routes, defaultRoute }: HashRouterProps) {
     normalizedRouteLower === '/admin' || normalizedRouteLower.startsWith('/admin/');
   const matchedAdminSpec = isAdminRoute ? findAdminRouteSpec(routeState.path) : null;
   const hasAdminShellAccess = isAuthReady && canAccessAdminRoute(currentUser);
+  const isModuleDisabledAdminRoute =
+    matchedAdminSpec?.id === 'comments' && !isCommentsEnabled;
   const isAdminAllowed =
     hasAdminShellAccess &&
     matchedAdminSpec !== null &&
+    !isModuleDisabledAdminRoute &&
     canSeeAdminNavItem(currentUser, userPermissions, matchedAdminSpec.requirement);
 
   useEffect(() => {
-    if (!isAdminRoute || !isAuthReady || !hasAdminShellAccess || !matchedAdminSpec || isAdminAllowed) {
+    if (
+      !isAdminRoute ||
+      !isAuthReady ||
+      !hasAdminShellAccess ||
+      !matchedAdminSpec ||
+      isModuleDisabledAdminRoute ||
+      isAdminAllowed
+    ) {
       lastDeniedLogKeyRef.current = null;
       return;
     }
@@ -241,7 +252,7 @@ export function HashRouter({ routes, defaultRoute }: HashRouterProps) {
       return <NotFoundPage currentRoute={routeState.fullHash} />;
     }
 
-    if (!matchedAdminSpec) {
+    if (!matchedAdminSpec || isModuleDisabledAdminRoute) {
       return <NotFoundPage currentRoute={routeState.fullHash} />;
     }
 
@@ -271,6 +282,8 @@ export function HashRouter({ routes, defaultRoute }: HashRouterProps) {
         return <AdminSettingsPage currentRoute={routeState.fullHash} />;
       case 'taxonomy':
         return <AdminTaxonomyPage currentRoute={routeState.fullHash} />;
+      case 'comments':
+        return <AdminCommentsPage currentRoute={routeState.fullHash} />;
       case 'content': {
         const lowerPath = routeState.path.toLowerCase();
         if (lowerPath === '/admin/content/smart-import') {

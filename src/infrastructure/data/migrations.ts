@@ -24,6 +24,9 @@ export const STORE_NAMES = {
   DOWNLOAD_EVENTS: 'downloadEvents',
   LIKES: 'likes',
   BOOKMARKS: 'bookmarks',
+  COMMENTS: 'comments',
+  COMMENT_REPORTS: 'commentReports',
+  BLOCKED_WORDS: 'blockedWords',
 } as const;
 
 export const STAGE3_OBJECT_STORES: readonly string[] = [
@@ -74,6 +77,12 @@ export const STAGE15_OBJECT_STORES: readonly string[] = [
   STORE_NAMES.BOOKMARKS,
 ] as const;
 
+export const STAGE16_OBJECT_STORES: readonly string[] = [
+  STORE_NAMES.COMMENTS,
+  STORE_NAMES.COMMENT_REPORTS,
+  STORE_NAMES.BLOCKED_WORDS,
+] as const;
+
 interface IndexSpec {
   name: string;
   keyPath: string | string[];
@@ -89,7 +98,7 @@ interface StoreSpec {
 
 interface MigrationStep {
   version: number;
-  up: (db: IDBDatabase, transaction: IDBTransaction | null) => void;
+  up: (db: IDBDatabase, transaction: IDBTransaction | null, oldVersion: number) => void;
 }
 
 function ensureStore(
@@ -344,6 +353,36 @@ const STAGE15_STORE_SPECS: readonly StoreSpec[] = [
   },
 ];
 
+const STAGE16_STORE_SPECS: readonly StoreSpec[] = [
+  {
+    name: STORE_NAMES.COMMENTS,
+    keyPath: 'id',
+    autoIncrement: true,
+    indexes: [
+      { name: 'by_contentId', keyPath: 'contentId' },
+      { name: 'by_userId', keyPath: 'userId' },
+      { name: 'by_status', keyPath: 'status' },
+      { name: 'by_createdAt', keyPath: 'createdAt' },
+    ],
+  },
+  {
+    name: STORE_NAMES.COMMENT_REPORTS,
+    keyPath: 'id',
+    autoIncrement: true,
+    indexes: [
+      { name: 'by_commentId', keyPath: 'commentId' },
+      { name: 'by_userId', keyPath: 'userId' },
+      { name: 'by_comment_user', keyPath: ['commentId', 'userId'], unique: true },
+    ],
+  },
+  {
+    name: STORE_NAMES.BLOCKED_WORDS,
+    keyPath: 'id',
+    autoIncrement: true,
+    indexes: [{ name: 'by_word', keyPath: 'word', unique: true }],
+  },
+];
+
 export const DATABASE_MIGRATIONS: readonly MigrationStep[] = [
   {
     version: 1,
@@ -418,6 +457,30 @@ export const DATABASE_MIGRATIONS: readonly MigrationStep[] = [
       }
     },
   },
+  {
+    version: 10,
+    up: (db, transaction, oldVersion) => {
+      for (const spec of STAGE16_STORE_SPECS) {
+        ensureStore(db, transaction, spec);
+      }
+      if (
+        oldVersion > 0 &&
+        transaction &&
+        db.objectStoreNames.contains(STORE_NAMES.FEATURE_FLAGS)
+      ) {
+        transaction
+          .objectStore(STORE_NAMES.FEATURE_FLAGS)
+          .put({ key: 'Comments', isEnabled: true });
+      }
+      if (oldVersion > 0 && transaction && db.objectStoreNames.contains(STORE_NAMES.META)) {
+        transaction.objectStore(STORE_NAMES.META).put({
+          key: 'stage16_comments_default_enabled_v1',
+          value: '1',
+          updatedAtUtc: new Date().toISOString(),
+        });
+      }
+    },
+  },
 ];
 
 export function applyMigrations(
@@ -428,7 +491,7 @@ export function applyMigrations(
 ): void {
   for (const migration of DATABASE_MIGRATIONS) {
     if (migration.version > oldVersion && migration.version <= newVersion) {
-      migration.up(db, transaction);
+      migration.up(db, transaction, oldVersion);
     }
   }
 }

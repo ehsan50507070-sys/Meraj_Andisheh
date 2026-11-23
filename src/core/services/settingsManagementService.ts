@@ -86,6 +86,11 @@ export class SettingsManagementService {
     return trimmed && trimmed.length > 0 ? trimmed : fallbackTitle;
   }
 
+  public async getPublicFeatureFlagState(key: FeatureFlagKey): Promise<boolean> {
+    const stored = await this.repository.getAllFeatureFlags();
+    return stored.find((flag) => flag.key === key)?.isEnabled === true;
+  }
+
   public async getFeatureFlags(actor: AppUser | null): Promise<GetFeatureFlagsResult> {
     const auth = await this.policyService.authorizePermission(
       actor,

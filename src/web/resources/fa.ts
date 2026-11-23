@@ -3,7 +3,7 @@ export const faResources = {
   'app.name': 'معراج اندیشه',
   'app.subtitle': 'پلتفرم بانک محتوای فارسی',
   'app.stageLabel': 'مرحله {stage} از {total}',
-  'app.stageName': 'لایک و علاقه‌مندی، پروفایل کاربری، تاریخچه‌ی دانلودها و حذف حساب (قاعده‌ی ۶.۷)',
+  'app.stageName': 'سیستم نظرات، ایمنی کودک، کلمات ممنوع و پنل نظارت',
   'app.footerNote': 'پلتفرم معراج اندیشه · زیرساخت و سامانه طراحی پایه',
 
   // Themes
@@ -2085,6 +2085,170 @@ export const faResources = {
     'حذف کامل حساب با تأیید رمز عبور و اجرای دقیق قاعده‌ی ۶.۷',
   'tests.stage15.accountDeletionRule67.desc':
     'رمز غلط با INVALID_PASSWORD رد می‌شود؛ با رمز درست لایک و علاقه‌مندی پاک و شمارنده ۰ شده، نشست بسته و ورود قبلی رد، آمار بدون userId حفظ و کاربر/نظر با «کاربر حذف‌شده» ناشناس می‌شوند.',
+
+  // Stage 16: Comments, Child Safety, Blocked Words, Reporting & Moderation (#/admin/comments)
+  'comments.section.title': 'دیدگاه‌ها و نظرات کاربران',
+  'comments.section.countBadge': '{count} دیدگاه',
+  'comments.section.subtitle': 'نقطه‌نظرها و پرسش‌های خود را دربارهٔ این محتوا به اشتراک بگذارید.',
+  'comments.section.emptyTitle': 'هنوز دیدگاهی ثبت نشده است.',
+  'comments.section.emptyBody': 'نخستین نفری باشید که نظر محترمانه و سازنده‌ی خود را ثبت می‌کند.',
+
+  'comments.guest.title': 'برای ثبت دیدگاه وارد حساب کاربری خود شوید',
+  'comments.guest.subtitle':
+    'ثبت نظر و گزارش دیدگاه‌ها تنها برای اعضای واردشده سامانه فعال است.',
+  'comments.guest.loginButton': 'ورود و بازگشت به همین صفحه',
+  'comments.guest.registerButton': 'ثبت‌نام عضو جدید',
+
+  'comments.form.label': 'متن دیدگاه شما',
+  'comments.form.placeholder': 'نظر یا پرسش خود را دربارهٔ این محتوا بنویسید...',
+  'comments.form.charCounter': '{current} / {max} نویسه',
+  'comments.form.noLinksHint': 'ثبت لینک و آدرس سایت در متن نظر مجاز نیست و نظرات به‌صورت متن ساده منتشر می‌شوند.',
+  'comments.form.childSafetyNotice':
+    'برای حفظ ایمنی رده‌ی سنی کودک، نظر شما پیش از نمایش عمومی توسط همکاران بررسی و تأیید خواهد شد.',
+  'comments.form.submitButton': 'ارسال دیدگاه',
+  'comments.form.submittingButton': 'در حال ثبت...',
+  'comments.form.publishedSuccess': 'دیدگاه شما با موفقیت ثبت و منتشر شد.',
+  'comments.form.pendingSuccess':
+    'دیدگاه شما ثبت شد و پس از بررسی همکاران در بخش نظرات نمایش داده می‌شود.',
+
+  'comments.item.ownPendingBadge': 'در انتظار تأیید ناظر (فقط برای شما قابل مشاهده)',
+  'comments.item.deletedAuthorLabel': 'کاربر حذف‌شده',
+  'comments.item.reportButton': 'گزارش',
+  'comments.item.reportedBadge': 'گزارش ثبت شد',
+
+  'comments.report.modalTitle': 'گزارش دیدگاه نامناسب',
+  'comments.report.modalSubtitle':
+    'اگر این دیدگاه حاوی محتوای توهین‌آمیز، تبلیغاتی یا مغایر با ضوابط است، دلیل خود را به‌طور کوتاه بنویسید.',
+  'comments.report.reasonLabel': 'دلیل گزارش (حداکثر ۳۰۰ نویسه)',
+  'comments.report.reasonPlaceholder': 'توضیح کوتاه دربارهٔ مشکل دیدگاه...',
+  'comments.report.charCounter': '{current} / ۳۰۰ نویسه',
+  'comments.report.cancelButton': 'انصراف',
+  'comments.report.submitButton': 'ثبت گزارش',
+  'comments.report.submittingButton': 'در حال ارسال...',
+  'comments.report.successMessage': 'گزارش شما برای بررسی تیم نظارت ثبت شد.',
+
+  'comments.error.featureDisabled': 'ماژول نظرات در حال حاضر غیرفعال است.',
+  'comments.error.authRequired': 'برای انجام این کار باید وارد حساب کاربری خود شوید.',
+  'comments.error.contentNotFound': 'این محتوا در دسترس نیست.',
+  'comments.error.empty': 'لطفاً متن دیدگاه را وارد کنید.',
+  'comments.error.tooLong': 'متن دیدگاه از حداکثر طول مجاز ({max} نویسه) بیشتر است.',
+  'comments.error.linksNotAllowed':
+    'درج لینک یا نشانی وب‌سایت در متن دیدگاه مجاز نیست.',
+  'comments.error.rateLimit':
+    'به سقف مجاز ثبت ۵ نظر در ساعت رسیده‌اید؛ لطفاً ساعتی دیگر دوباره تلاش کنید.',
+
+  'comments.report.error.notFound': 'دیدگاه مورد نظر یافت نشد یا منتشر نشده است.',
+  'comments.report.error.empty': 'لطفاً دلیل گزارش را بنویسید.',
+  'comments.report.error.tooLong': 'متن دلیل گزارش نباید بیشتر از ۳۰۰ نویسه باشد.',
+  'comments.report.error.alreadyReported': 'شما پیش‌تر این دیدگاه را گزارش کرده‌اید.',
+
+  // Admin Comments Panel (#/admin/comments)
+  'admin.comments.title': 'مدیریت و نظارت بر دیدگاه‌ها',
+  'admin.comments.subtitle':
+    'بررسی صف نظرات در انتظار تأیید، مدیریت گزارش‌های کاربران و تنظیم فهرست کلمات ممنوع.',
+  'admin.comments.tabs.ariaLabel': 'بخش‌های پنل نظارت نظرات',
+  'admin.comments.tab.pending': 'صف در انتظار تأیید',
+  'admin.comments.tab.pendingWithCount': 'صف در انتظار تأیید ({count})',
+  'admin.comments.tab.all': 'همه دیدگاه‌ها',
+  'admin.comments.tab.reports': 'گزارش‌های کاربران',
+  'admin.comments.tab.reportsWithCount': 'گزارش‌های کاربران ({count})',
+  'admin.comments.tab.blockedWords': 'کلمات ممنوع',
+
+  'admin.comments.status.1': 'در انتظار تأیید',
+  'admin.comments.status.2': 'منتشرشده',
+  'admin.comments.status.3': 'مخفی‌شده',
+
+  'admin.comments.reason.childAuthor': 'ایمنی کودک',
+  'admin.comments.reason.blockedWord': 'کلمهٔ ممنوع',
+
+  'admin.comments.filter.searchLabel': 'جستجو در متن، کاربر یا محتوا',
+  'admin.comments.filter.searchPlaceholder': 'بخشی از متن دیدگاه، نام کاربر یا عنوان محتوا...',
+  'admin.comments.filter.statusLabel': 'وضعیت دیدگاه',
+  'admin.comments.filter.statusAll': 'همه وضعیت‌ها',
+
+  'admin.comments.col.author': 'نویسنده',
+  'admin.comments.col.content': 'محتوا',
+  'admin.comments.col.body': 'متن دیدگاه',
+  'admin.comments.col.status': 'وضعیت',
+  'admin.comments.col.createdAt': 'زمان ثبت',
+  'admin.comments.col.actions': 'عملیات',
+
+  'admin.comments.action.approve': 'تأیید و انتشار',
+  'admin.comments.action.hide': 'مخفی‌کردن',
+  'admin.comments.action.hardDelete': 'حذف کامل (مدیرکل)',
+  'admin.comments.action.openContent': 'مشاهده محتوا',
+  'admin.comments.reportCountBadge': '{count} گزارش',
+  'admin.comments.ageSnapshotBadge': 'سن ثبت: {age}',
+  'admin.comments.moderatedByHint': 'بررسی‌شده توسط: {name}',
+
+  'admin.comments.emptyPendingTitle': 'صف بررسی خالی است.',
+  'admin.comments.emptyPendingBody': 'هیچ دیدگاهی در انتظار تأیید ناظر نیست.',
+  'admin.comments.emptyAllTitle': 'دیدگاهی مطابق فیلتر یافت نشد.',
+  'admin.comments.emptyAllBody': 'فیلترها را تغییر دهید یا منتظر ثبت دیدگاه‌های جدید باشید.',
+
+  'admin.comments.reports.col.reporter': 'گزارش‌دهنده',
+  'admin.comments.reports.col.reason': 'دلیل گزارش',
+  'admin.comments.reports.col.commentPreview': 'متن دیدگاه و محتوا',
+  'admin.comments.reports.col.createdAt': 'زمان گزارش',
+  'admin.comments.reports.col.actions': 'عملیات',
+  'admin.comments.reports.action.hideComment': 'مخفی‌کردن دیدگاه',
+  'admin.comments.reports.action.dismiss': 'بستن گزارش',
+  'admin.comments.reports.emptyTitle': 'هیچ گزارش بررسی‌نشده‌ای وجود ندارد.',
+  'admin.comments.reports.emptyBody': 'تمامی گزارش‌های ثبت‌شده بررسی شده‌اند.',
+
+  'admin.comments.blockedWords.title': 'فهرست کلمات ممنوع و فیلتر هوشمند',
+  'admin.comments.blockedWords.subtitle':
+    'نظرات حاوی این واژه‌ها (حتی با حروف عربی ك/ي، اعراب، کشیدگی یا نیم‌فاصله) پیش از انتشار به صف انتظار می‌روند.',
+  'admin.comments.blockedWords.inputLabel': 'افزودن واژه یا عبارت ممنوع جدید',
+  'admin.comments.blockedWords.inputPlaceholder': 'واژه را بنویسید (مثلاً: توهین)...',
+  'admin.comments.blockedWords.addButton': 'افزودن به فهرست',
+  'admin.comments.blockedWords.addingButton': 'در حال ثبت...',
+  'admin.comments.blockedWords.deleteButton': 'حذف واژه',
+  'admin.comments.blockedWords.col.word': 'واژه نرمال‌شده',
+  'admin.comments.blockedWords.col.createdAt': 'تاریخ ثبت',
+  'admin.comments.blockedWords.col.actions': 'عملیات',
+  'admin.comments.blockedWords.empty': 'هنوز هیچ کلمهٔ ممنوعی ثبت نشده است.',
+  'admin.comments.blockedWords.error.invalid': 'واژه باید حداقل ۲ و حداکثر ۸۰ نویسهٔ معتبر داشته باشد.',
+  'admin.comments.blockedWords.error.duplicate': 'این واژه پیش‌تر در فهرست ثبت شده است.',
+
+  'admin.comments.confirmDelete.title': 'تأیید حذف کامل دیدگاه',
+  'admin.comments.confirmDelete.body':
+    'آیا مطمئن هستید که می‌خواهید دیدگاه «{author}» را به‌صورت کامل از پایگاه داده و همراه با گزارش‌هایش حذف کنید؟ این عملیات بازگشت‌ناپذیر است.',
+  'admin.comments.confirmDelete.cancel': 'انصراف',
+  'admin.comments.confirmDelete.submit': 'تأیید و حذف کامل',
+
+  'admin.comments.feedback.approved': 'دیدگاه تأیید و برای عموم منتشر شد.',
+  'admin.comments.feedback.hidden': 'دیدگاه با موفقیت مخفی شد.',
+  'admin.comments.feedback.hardDeleted': 'دیدگاه و گزارش‌های وابسته‌ی آن به‌صورت کامل حذف شدند.',
+  'admin.comments.feedback.reportDismissed': 'گزارش با موفقیت بسته شد.',
+  'admin.comments.feedback.wordAdded': 'واژه به فهرست کلمات ممنوع افزوده شد.',
+  'admin.comments.feedback.wordDeleted': 'واژه از فهرست کلمات ممنوع حذف شد.',
+
+  // Stage 16 Unit Tests
+  'tests.stage16.childSafetyAndLifecycle.name':
+    'ایمنی کودک در نظرات، عدم افشا برای دیگران و تأیید/مخفی‌سازی توسط ناظر',
+  'tests.stage16.childSafetyAndLifecycle.desc':
+    'نظر کاربر کودک با status=Pending ثبت و فقط برای خودش نمایش داده می‌شود؛ پس از تأیید ناظر عمومی شده و با مخفی‌کردن برای همه پنهان می‌گردد.',
+  'tests.stage16.blockedWordsNormalization.name':
+    'تشخیص کلمات ممنوع با نرمال‌سازی فارسی (ك/ي، کشیدگی و اعراب) بدون مثبت کاذب',
+  'tests.stage16.blockedWordsNormalization.desc':
+    'درج واژه «توهین» سبب می‌شود متن «تـوهـيـن!» در Pending قرار گیرد، اما نظر سالم بزرگسال بلافاصله Published می‌شود.',
+  'tests.stage16.linkValidationAndLength.name':
+    'جلوگیری از ثبت لینک در نظر و رعایت حد مجاز طول متن بدون خطای نقطه فارسی',
+  'tests.stage16.linkValidationAndLength.desc':
+    'متن‌های حاوی https://، example.com و t.me با COMMENT_LINKS_NOT_ALLOWED رد و متن بالای ۱۰۰۰ نویسه با COMMENT_TOO_LONG مسدود می‌شوند، ولی «سلام. خوبید» مجاز است.',
+  'tests.stage16.rateLimit5PerHour.name':
+    'محدودیت نرخ ۵ نظر در ساعت برای هر کاربر و آزاد شدن پس از ۶۱ دقیقه',
+  'tests.stage16.rateLimit5PerHour.desc':
+    'پنج نظر متوالی مجاز، ششمین نظر در بازه یک‌ساعته با COMMENT_RATE_LIMIT رد و با جلو بردن ساعت شبیه‌ساز (FakeClock) به ۶۱ دقیقه بعد دوباره مجاز می‌شود.',
+  'tests.stage16.reportAndRbacPermissions.name':
+    'گزارش نظر، منع گزارش تکراری، و تفکیک دسترسی همکار (Staff) از مدیرکل (SuperAdmin)',
+  'tests.stage16.reportAndRbacPermissions.desc':
+    'گزارش دوم کاربر با ALREADY_REPORTED رد می‌شود؛ همکار بدون دسترسی 403 می‌گیرد، همکار دارای comments.moderate مخفی می‌کند اما حذف کاملش با 403 و لاگ WARN رد و فقط برای SuperAdmin مجاز است.',
+  'tests.stage16.featureFlagDeletedUserAndIdbV10.name':
+    'کلید ماژول Comments، نمایش «کاربر حذف‌شده» و ماندگاری در IndexedDB v10',
+  'tests.stage16.featureFlagDeletedUserAndIdbV10.desc':
+    'خاموشی ماژول Comments ارسال و نمایش نظر و پنل را غیرفعال اما داده‌ها را حفظ می‌کند؛ نظر کاربر حذف‌شده با «کاربر حذف‌شده» برمی‌گردد و جدول‌های نسخه ۱۰ IndexedDB تأیید می‌شوند.',
 } as const;
 
 export type ResourceKey = keyof typeof faResources;
