@@ -3,7 +3,8 @@ export const faResources = {
   'app.name': 'معراج اندیشه',
   'app.subtitle': 'پلتفرم بانک محتوای فارسی',
   'app.stageLabel': 'مرحله {stage} از {total}',
-  'app.stageName': 'پایان فاز ۱: سخت‌سازی امنیتی تولید، سئو، خطای ۵۰۰ و آمادگی GitHub Pages',
+  'app.stageName':
+    'پرتال فیلم و مستند (FilmInfo، ویترین فیلم‌ها، صفحه پخش اختصاصی و مدیریت پرتال‌ها)',
   'app.footerNote': 'پلتفرم معراج اندیشه · بانک محتوای فارسی متناسب با هر رده سنی',
 
   // Themes
@@ -40,6 +41,7 @@ export const faResources = {
   'layout.nav.categoriesButton': 'دسته‌بندی موضوعات',
   'layout.nav.home': 'صفحه اصلی',
   'layout.nav.contentBank': 'بانک محتوا',
+  'layout.nav.films': 'فیلم و مستند',
   'layout.nav.requests': 'درخواست محتوا',
   'layout.nav.health': 'وضعیت سلامت',
   'layout.nav.devComponents': 'آزمایشگاه کامپوننت‌ها',
@@ -60,6 +62,7 @@ export const faResources = {
   'layout.footer.quickAccessTitle': 'دسترسی سریع',
   'layout.footer.linkHome': 'صفحه اصلی',
   'layout.footer.linkContentBank': 'بانک محتوا',
+  'layout.footer.linkFilms': 'فیلم و مستند',
   'layout.footer.linkRequests': 'درخواست محتوا',
   'layout.footer.linkAccount': 'حساب کاربری / ورود',
   'layout.footer.linkProfile': 'پروفایل کاربری',
@@ -1244,7 +1247,7 @@ export const faResources = {
   'admin.content.field.summaryCounter': '{count} / ۶۰۰ نویسه',
   'admin.content.field.format': 'قالب محتوا',
   'admin.content.field.phase2FormatHint':
-    'توجه: فیلدهای تخصصی کتاب و فیلم در فاز ۲ به این فرم اضافه می‌شوند؛ هم‌اکنون می‌توانید با فیلدهای پایه آن را ثبت و منتشر کنید.',
+    'توجه: فیلدهای تخصصی پرتال کتاب در مرحله ۲۴ به این فرم اضافه می‌شوند؛ هم‌اکنون می‌توانید با فیلدهای پایه آن را ثبت و منتشر کنید.',
   'admin.content.field.minutes': 'مدت مطالعه یا تماشا (دقیقه — اختیاری)',
   'admin.content.field.minutesPlaceholder': 'مثلاً: ۱۲',
   'admin.content.field.isFeatured': 'نمایش به‌عنوان محتوای شاخص در پیشنهادها',
@@ -2934,6 +2937,8 @@ export const faResources = {
   'meta.title.home': 'صفحه اصلی',
   'meta.title.catalog': 'بانک محتوا',
   'meta.title.contentDetail': 'مشاهده محتوا',
+  'meta.title.films': 'فیلم و مستند',
+  'meta.title.filmDetail': 'نمایش فیلم',
   'meta.title.search': 'جستجو',
   'meta.title.requests': 'درخواست محتوا',
   'meta.title.staticPage': 'راهنما و معرفی',
@@ -3043,6 +3048,159 @@ export const faResources = {
     'بررسی نهایی آمادگی ساختار فاز ۱ (مرحله ۲۲ و جدول‌های IndexedDB نسخه ۱۴)',
   'tests.stage22.buildAndPhase1Readiness.desc':
     'نسخه‌ی ۲۲ و Migrationهای تا نسخه‌ی ۱۴ همراه با وجود همه‌ی ObjectStoreهای اصلی فاز ۱ در IndexedDB بررسی می‌شوند.',
+
+  // Stage 23: Film & Documentary Portal (#/films, #/films/:slug, #/admin/portals)
+  'films.kind.Film': 'فیلم داستانی',
+  'films.kind.Documentary': 'مستند',
+  'films.kind.Animation': 'پویانمایی',
+
+  // FilmInfo Section in AdminContentFormPage
+  'admin.content.film.sectionTitle': 'مشخصات تخصصی پرتال فیلم و مستند (FilmInfo)',
+  'admin.content.film.sectionSubtitle':
+    'این مشخصات در ویترین فیلم‌ها (#/films) و صفحه‌ی پخش اختصاصی نمایش داده می‌شوند.',
+  'admin.content.film.kindLabel': 'گونه‌ی اثر تصویری',
+  'admin.content.film.releaseYearLabel': 'سال تولید (اختیاری)',
+  'admin.content.film.releaseYearPlaceholder': 'مثلاً: ۱۴۰۳ یا 2024',
+  'admin.content.film.runtimeMinutesLabel': 'مدت‌زمان فیلم (دقیقه — اختیاری)',
+  'admin.content.film.runtimeMinutesPlaceholder': 'مثلاً: ۵۸',
+  'admin.content.film.ageRatingNoteLabel': 'توضیح رده‌بندی سنی / راهنمای والدین (اختیاری، حداکثر ۲۰۰ نویسه)',
+  'admin.content.film.ageRatingNotePlaceholder':
+    'مثلاً: مناسب نوجوانان بالای ۱۲ سال؛ دارای صحنه‌های تاریخی و علمی...',
+  'admin.content.film.ageRatingNoteCounter': '{count} / ۲۰۰ نویسه',
+  'admin.content.film.weeklyPickLabel': 'انتخاب به‌عنوان فیلم شاخص هفته در پرتال فیلم',
+  'admin.content.film.weeklyPickHint':
+    'در کل سامانه همواره فقط یک فیلم می‌تواند به‌عنوان «شاخص هفته» فعال باشد؛ با ذخیره، فیلم شاخص قبلی خودکار غیرفعال می‌شود.',
+
+  // Public Film Showcase (#/films)
+  'films.portal.badge': 'پرتال فیلم و مستند',
+  'films.portal.title': 'ویترین فیلم، مستند و پویانمایی',
+  'films.portal.subtitle':
+    'تماشای آنلاین یا دریافت قانونی مستندهای علمی، فیلم‌های منتخب و پویانمایی‌های متناسب با رده‌ی سنی شما.',
+  'films.portal.loading': 'در حال بارگذاری آثار پرتال فیلم و مستند...',
+  'films.portal.weeklyPickLabel': 'انتخاب شاخص هفته',
+  'films.portal.watchNowAction': 'تماشای فیلم و منابع',
+  'films.portal.filterAriaLabel': 'فیلتر آثار بر اساس گونه',
+  'films.portal.filterAll': 'همه ({count})',
+  'films.portal.filterFilm': 'فیلم‌ها ({count})',
+  'films.portal.filterDocumentary': 'مستندها ({count})',
+  'films.portal.filterAnimation': 'پویانمایی‌ها ({count})',
+  'films.portal.searchLabel': 'جستجو در فیلم‌ها و مستندها',
+  'films.portal.searchPlaceholder': 'جستجوی عنوان، موضوع، سال تولید یا یادداشت سنی...',
+  'films.portal.searchClear': 'پاک‌سازی فیلترها',
+  'films.portal.resultsCount': '{count} اثر آماده نمایش',
+  'films.portal.shelf.kind.Documentary': 'مستندهای علمی و فرهنگی',
+  'films.portal.shelf.kind.Film': 'فیلم‌های برگزیده',
+  'films.portal.shelf.kind.Animation': 'پویانمایی و انیمیشن',
+  'films.portal.shelf.topicPrefix': 'فیلم‌های موضوع {topic}',
+  'films.portal.shelf.countLabel': '{count} اثر',
+  'films.portal.card.yearValue': 'تولید {year}',
+  'films.portal.card.durationValue': '{minutes} دقیقه',
+  'films.portal.emptyTitle': 'هنوز فیلم یا مستندی مطابق این فیلتر منتشر نشده است.',
+  'films.portal.emptyBody':
+    'فیلتر گونه‌ی اثر یا عبارت جستجو را تغییر دهید یا از بانک محتوا دیدن کنید.',
+  'films.portal.emptyCatalogButton': 'مرور کل بانک محتوا',
+
+  // Public Film Detail Page (#/films/:slug)
+  'filmDetail.breadcrumb.portal': 'فیلم و مستند',
+  'filmDetail.meta.kindLabel': 'گونه',
+  'filmDetail.meta.releaseYear': 'سال تولید: {year}',
+  'filmDetail.meta.runtimeMinutes': 'مدت‌زمان: {minutes} دقیقه',
+  'filmDetail.meta.weeklyPickTag': 'فیلم شاخص هفته',
+  'filmDetail.meta.ageNoteHeading': 'راهنمای رده‌بندی سنی و والدین',
+  'filmDetail.related.title': 'آثار مرتبط در پرتال فیلم و مستند',
+  'filmDetail.related.subtitle': 'سایر فیلم‌ها و مستندهای منتشرشده و مجاز برای رده‌ی سنی فعال',
+  'filmDetail.backToPortal': 'بازگشت به پرتال فیلم و مستند',
+  'filmDetail.backToBank': 'مشاهده در بانک محتوا',
+
+  'contentDetail.film.portalLinkBannerTitle': 'نمایش سینمایی در پرتال فیلم و مستند',
+  'contentDetail.film.portalLinkButton': 'باز کردن صفحه‌ی اختصاصی فیلم',
+
+  // Admin Portals Page (#/admin/portals)
+  'admin.portals.title': 'مدیریت پرتال‌های تخصصی (فیلم و کتاب)',
+  'admin.portals.subtitle':
+    'تعیین فیلم شاخص هفته، ویرایش سریع شناسنامه فیلم‌ها و مستندها و پایش وضعیت انتشار پرتال‌های عمومی.',
+  'admin.portals.tabs.ariaLabel': 'انتخاب پرتال تخصصی',
+  'admin.portals.tab.films': 'پرتال فیلم و مستند',
+  'admin.portals.tab.books': 'پرتال کتاب (مرحله ۲۴)',
+
+  'admin.portals.films.flagLabel': 'وضعیت ماژول عمومی پرتال فیلم:',
+  'admin.portals.films.flagEnabled': 'فعال (نمایش در #/films)',
+  'admin.portals.films.flagDisabled': 'غیرفعال (مخفی با خطای ۴۰۴)',
+  'admin.portals.films.openShowcase': 'مشاهده ویترین عمومی',
+  'admin.portals.films.openSettings': 'تنظیم کلید ماژول',
+  'admin.portals.films.weeklyPickBannerTitle': 'فیلم شاخص هفته‌ی فعلی',
+  'admin.portals.films.weeklyPickNone': 'هنوز هیچ فیلمی به‌عنوان شاخص هفته انتخاب نشده است.',
+  'admin.portals.films.weeklyPickNotPublishedWarn':
+    'توجه: این فیلم در حال حاضر «منتشرشده» نیست و تا زمان انتشار در ویترین عمومی نمایش داده نمی‌شود.',
+  'admin.portals.films.exclusivityNote':
+    'با انتخاب هر فیلم به‌عنوان «شاخص هفته»، این وضعیت به‌صورت تراکنشی و انحصاری از فیلم قبلی برداشته می‌شود.',
+  'admin.portals.films.searchLabel': 'جستجو در فیلم‌ها و مستندهای ثبت‌شده',
+  'admin.portals.films.searchPlaceholder': 'عنوان، اسلاگ، سال تولید یا یادداشت رده‌ی سنی...',
+  'admin.portals.films.addNewContentFilm': 'ثبت فیلم جدید در مدیریت محتوا',
+  'admin.portals.films.loading': 'در حال بارگذاری فهرست فیلم‌ها و مستندها...',
+  'admin.portals.films.emptyTitle': 'هنوز هیچ محتوایی با قالب «فیلم» ثبت نشده است.',
+  'admin.portals.films.emptyBody':
+    'از بخش «افزودن محتوای جدید» یک محتوا با قالب «فیلم» بسازید تا در این فهرست ظاهر شود.',
+  'admin.portals.films.col.title': 'عنوان و اطلاعات محتوا',
+  'admin.portals.films.col.kind': 'گونه و سال',
+  'admin.portals.films.col.runtimeAndAge': 'مدت و یادداشت سنی',
+  'admin.portals.films.col.status': 'وضعیت انتشار',
+  'admin.portals.films.col.actions': 'عملیات',
+  'admin.portals.films.weeklyPickActiveBadge': 'شاخص هفته فعلی',
+  'admin.portals.films.setWeeklyPickAction': 'انتخاب به‌عنوان شاخص هفته',
+  'admin.portals.films.settingWeeklyPick': 'در حال ثبت...',
+  'admin.portals.films.quickEditAction': 'ویرایش مشخصات فیلم',
+  'admin.portals.films.editFullContentAction': 'ویرایش محتوا',
+  'admin.portals.films.previewFilmAction': 'پخش عمومی',
+  'admin.portals.films.unsetValue': 'ثبت‌نشده',
+  'admin.portals.films.yearLabel': 'سال: {year}',
+  'admin.portals.films.runtimeLabel': '{minutes} دقیقه',
+  'admin.portals.films.feedback.weeklyPickSet':
+    'فیلم «{title}» به‌عنوان شاخص هفته‌ی جدید انتخاب و انحصاری شد.',
+  'admin.portals.films.feedback.filmInfoSaved':
+    'مشخصات فیلم «{title}» با موفقیت ذخیره شد.',
+
+  'admin.portals.films.modal.title': 'ویرایش سریع مشخصات فیلم: {title}',
+  'admin.portals.films.modal.cancel': 'انصراف',
+  'admin.portals.films.modal.save': 'ذخیره مشخصات فیلم',
+  'admin.portals.films.modal.saving': 'در حال ذخیره...',
+
+  'admin.portals.books.placeholderTitle': 'پرتال کتاب در مرحله ۲۴ پیاده‌سازی می‌شود',
+  'admin.portals.books.placeholderBody':
+    'در این مرحله تنها پرتال فیلم و مستند فعال است؛ فیلدها و مدیریت اختصاصی کتاب‌ها در مرحله ۲۴ به این بخش افزوده خواهند شد.',
+
+  'admin.portals.film.error.contentNotFound': 'محتوای مورد نظر یافت نشد.',
+  'admin.portals.film.error.invalidContentFormat':
+    'تنها محتواهایی با قالب «فیلم» می‌توانند دارای شناسنامه فیلم و مستند باشند.',
+  'admin.portals.film.error.invalidKind': 'گونه‌ی انتخاب‌شده برای اثر معتبر نیست.',
+  'admin.portals.film.error.invalidReleaseYear':
+    'سال تولید باید یک عدد صحیح معتبر (مثلاً ۱۴۰۳ یا 2024) باشد.',
+  'admin.portals.film.error.invalidRuntimeMinutes':
+    'مدت‌زمان فیلم باید عدد صحیح بین ۱ تا ۱۰۰۰۰ دقیقه باشد.',
+  'admin.portals.film.error.ageNoteTooLong':
+    'توضیح رده‌بندی سنی نباید بیشتر از ۲۰۰ نویسه باشد.',
+
+  // Stage 23 Unit Tests
+  'tests.stage23.featureFlagLifecycle.name':
+    'کلید ماژول Films: خطای ۴۰۴ هنگام خاموشی و نمایش ویترین فیلم‌ها هنگام روشنی',
+  'tests.stage23.featureFlagLifecycle.desc':
+    'با خاموشی FeatureFlag("Films") مسیرهای #/films و #/films/:slug نتیجه‌ی ۴۰۴ می‌دهند و با روشن‌شدن، فیلم‌های منتشرشده با دسته‌بندی Film/Documentary/Animation نمایش داده می‌شوند.',
+  'tests.stage23.weeklyPickExclusivity.name':
+    'انحصار یکتای IsWeeklyPick (حداکثر یک فیلم شاخص هفته در کل پایگاه داده)',
+  'tests.stage23.weeklyPickExclusivity.desc':
+    'انتخاب فیلم اول به‌عنوان شاخص هفته و سپس انتخاب فیلم دوم، به‌طور خودکار پرچم فیلم اول را پاک و دقیقاً یک فیلم شاخص هفته را در جدول filmInfos حفظ می‌کند.',
+  'tests.stage23.childSafetyOnShowcaseAndDetail.name':
+    'ایمنی سخت رده‌ی سنی کودک در پرتال فیلم (#/films و #/films/:slug)',
+  'tests.stage23.childSafetyOnShowcaseAndDetail.desc':
+    'فیلم ویژه بزرگسال (حتی اگر WeeklyPick باشد) در پروفایل کودک از فهرست و قهرمان هفته حذف، و دسترسی مستقیم به نشانی #/films/:slug آن با not_found (۴۰۴) مسدود می‌شود.',
+  'tests.stage23.detailSourcesPlaybackAndViewTracker.name':
+    'جزئیات فیلم با منابع، پخش/جاسازی آپارات و ثبت بازدید ۳۰ دقیقه‌ای (IViewTracker)',
+  'tests.stage23.detailSourcesPlaybackAndViewTracker.desc':
+    'صفحه پخش فیلم داده‌های FilmInfo، منابع معتبر، لینک Embed آپارات و ثبت شمارنده‌ی بازدید (۱ بار در بازه ۳۰ دقیقه) را بدون تکرار تأیید می‌کند.',
+  'tests.stage23.rbacAndIndexedDbV15.name':
+    'کنترل دسترسی portals.manage (۴۰۳ با WARN و ۴۰۴ عضو) و بررسی IndexedDB v15 (filmInfos)',
+  'tests.stage23.rbacAndIndexedDbV15.desc':
+    'همکار بدون مجوز ۴۰۳ با لاگ WARN و عضو ۴۰۴ می‌گیرد؛ همکار دارای portals.manage یا مدیرکل مجازند و ObjectStore فیلم‌ها (filmInfos) در IndexedDB v15 تأیید می‌شود.',
 } as const;
 
 export type ResourceKey = keyof typeof faResources;

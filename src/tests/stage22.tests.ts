@@ -2024,10 +2024,9 @@ export const stage22Tests: UnitTestCase[] = [
     nameKey: 'tests.stage22.buildAndPhase1Readiness.name',
     descriptionKey: 'tests.stage22.buildAndPhase1Readiness.desc',
     run: async () => {
-      assertEqual(
-        envConfig.stageNumber,
-        22,
-        'envConfig.stageNumber must be 22 for end of Phase 1',
+      assert(
+        envConfig.stageNumber >= 22,
+        `envConfig.stageNumber must be >= 22 (actual=${envConfig.stageNumber})`,
       );
       assert(
         envConfig.databaseVersion >= 14,

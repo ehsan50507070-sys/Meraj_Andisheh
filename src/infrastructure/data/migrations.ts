@@ -34,6 +34,7 @@ export const STORE_NAMES = {
   USER_TOPIC_AFFINITIES: 'userTopicAffinities',
   BACKUP_LOGS: 'backupLogs',
   BACKUP_ARCHIVES: 'backupArchives',
+  FILM_INFOS: 'filmInfos',
 } as const;
 
 export const STAGE3_OBJECT_STORES: readonly string[] = [
@@ -107,6 +108,10 @@ export const STAGE20_OBJECT_STORES: readonly string[] = [
 export const STAGE21_OBJECT_STORES: readonly string[] = [
   STORE_NAMES.BACKUP_LOGS,
   STORE_NAMES.BACKUP_ARCHIVES,
+] as const;
+
+export const STAGE23_OBJECT_STORES: readonly string[] = [
+  STORE_NAMES.FILM_INFOS,
 ] as const;
 
 interface IndexSpec {
@@ -488,6 +493,18 @@ const STAGE21_STORE_SPECS: readonly StoreSpec[] = [
   },
 ];
 
+const STAGE23_STORE_SPECS: readonly StoreSpec[] = [
+  {
+    name: STORE_NAMES.FILM_INFOS,
+    keyPath: 'contentId',
+    indexes: [
+      { name: 'by_kind', keyPath: 'kind' },
+      { name: 'by_isWeeklyPick', keyPath: 'isWeeklyPick' },
+      { name: 'by_releaseYear', keyPath: 'releaseYear' },
+    ],
+  },
+];
+
 export const DATABASE_MIGRATIONS: readonly MigrationStep[] = [
   {
     version: 1,
@@ -631,6 +648,30 @@ export const DATABASE_MIGRATIONS: readonly MigrationStep[] = [
     up: (db, transaction) => {
       for (const spec of STAGE21_STORE_SPECS) {
         ensureStore(db, transaction, spec);
+      }
+    },
+  },
+  {
+    version: 15,
+    up: (db, transaction, oldVersion) => {
+      for (const spec of STAGE23_STORE_SPECS) {
+        ensureStore(db, transaction, spec);
+      }
+      if (
+        oldVersion > 0 &&
+        transaction &&
+        db.objectStoreNames.contains(STORE_NAMES.FEATURE_FLAGS)
+      ) {
+        transaction
+          .objectStore(STORE_NAMES.FEATURE_FLAGS)
+          .put({ key: 'Films', isEnabled: true });
+      }
+      if (oldVersion > 0 && transaction && db.objectStoreNames.contains(STORE_NAMES.META)) {
+        transaction.objectStore(STORE_NAMES.META).put({
+          key: 'stage23_films_default_enabled_v1',
+          value: '1',
+          updatedAtUtc: new Date().toISOString(),
+        });
       }
     },
   },

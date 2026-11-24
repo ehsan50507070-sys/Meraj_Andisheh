@@ -13,6 +13,7 @@ import { AdminBackupPage } from '../admin/pages/AdminBackupPage';
 import { AdminCommentsPage } from '../admin/pages/AdminCommentsPage';
 import { AdminDashboardPage } from '../admin/pages/AdminDashboardPage';
 import { AdminLayoutPage } from '../admin/pages/AdminLayoutPage';
+import { AdminPortalsPage } from '../admin/pages/AdminPortalsPage';
 import { AdminRequestsPage } from '../admin/pages/AdminRequestsPage';
 import { AdminSmartImportPage } from '../admin/pages/AdminSmartImportPage';
 import { AdminTaxonomyPage } from '../admin/pages/AdminTaxonomyPage';
@@ -20,6 +21,7 @@ import { canSeeAdminNavItem, findAdminRouteSpec } from '../admin/adminNavConfig'
 import { useAuth } from '../auth/AuthContext';
 import { MainLayout } from '../layouts/MainLayout';
 import { ContentDetailPage } from '../pages/ContentDetailPage';
+import { FilmDetailPage } from '../pages/FilmDetailPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 import { PublicMediaPage } from '../pages/PublicMediaPage';
 import { ServerErrorPage } from '../pages/ServerErrorPage';
@@ -264,6 +266,26 @@ export function HashRouter({ routes, defaultRoute }: HashRouterProps) {
     );
   }
 
+  // Public Film Detail Route (#/films/:slug)
+  if (normalizedRouteLower.startsWith('/films/')) {
+    const rawSlug = routeState.path.slice('/films/'.length);
+    let decodedSlug = rawSlug;
+    try {
+      decodedSlug = decodeURIComponent(rawSlug);
+    } catch {
+      decodedSlug = rawSlug;
+    }
+    if (!decodedSlug.trim()) {
+      return <NotFoundPage currentRoute={routeState.fullHash} />;
+    }
+    return (
+      <FilmDetailPage
+        currentRoute={routeState.fullHash}
+        slug={decodedSlug}
+      />
+    );
+  }
+
   // Public Static Page Route (#/p/:slug)
   if (normalizedRouteLower.startsWith('/p/')) {
     const rawSlug = routeState.path.slice('/p/'.length);
@@ -335,6 +357,8 @@ export function HashRouter({ routes, defaultRoute }: HashRouterProps) {
         return <AdminRequestsPage currentRoute={routeState.fullHash} />;
       case 'layout':
         return <AdminLayoutPage currentRoute={routeState.fullHash} />;
+      case 'portals':
+        return <AdminPortalsPage currentRoute={routeState.fullHash} />;
       case 'backup':
         return <AdminBackupPage currentRoute={routeState.fullHash} />;
       case 'content': {

@@ -9,6 +9,7 @@ import { ContentManagementService } from '../../core/services/contentManagementS
 import { ContentRequestService } from '../../core/services/contentRequestService';
 import { DownloadService } from '../../core/services/downloadService';
 import { FileUploadService } from '../../core/services/fileUploadService';
+import { FilmPortalService } from '../../core/services/filmPortalService';
 import { HealthCheckService } from '../../core/services/HealthCheckService';
 import { HomePageService } from '../../core/services/homePageService';
 import { InitialSuperAdminService } from '../../core/services/initialSuperAdminService';
@@ -40,6 +41,7 @@ import { IndexedDbContentRepository } from '../../infrastructure/data/IndexedDbC
 import { IndexedDbContentRequestRepository } from '../../infrastructure/data/IndexedDbContentRequestRepository';
 import { IndexedDbDataStore } from '../../infrastructure/data/IndexedDbDataStore';
 import { IndexedDbDownloadEventRepository } from '../../infrastructure/data/IndexedDbDownloadEventRepository';
+import { IndexedDbFilmRepository } from '../../infrastructure/data/IndexedDbFilmRepository';
 import { IndexedDbInteractionRepository } from '../../infrastructure/data/IndexedDbInteractionRepository';
 import { IndexedDbLayoutRepository } from '../../infrastructure/data/IndexedDbLayoutRepository';
 import { IndexedDbTaxonomyRepository } from '../../infrastructure/data/IndexedDbTaxonomyRepository';
@@ -78,6 +80,7 @@ export interface AppContainer {
   contentRequestRepository: IndexedDbContentRequestRepository;
   layoutRepository: IndexedDbLayoutRepository;
   userTopicAffinityRepository: IndexedDbUserTopicAffinityRepository;
+  filmRepository: IndexedDbFilmRepository;
   accountCleanupRepository: IndexedDbAccountCleanupRepository;
   backupRepository: IndexedDbBackupRepository;
   backupSnapshotProvider: IndexedDbBackupSnapshotProvider;
@@ -110,6 +113,7 @@ export interface AppContainer {
   commentService: CommentService;
   contentRequestService: ContentRequestService;
   personalizationService: PersonalizationService;
+  filmPortalService: FilmPortalService;
   homePageService: HomePageService;
   layoutManagementService: LayoutManagementService;
   analyticsDashboardService: AnalyticsDashboardService;
@@ -143,6 +147,7 @@ const commentRepository = new IndexedDbCommentRepository(dataStore);
 const contentRequestRepository = new IndexedDbContentRequestRepository(dataStore);
 const layoutRepository = new IndexedDbLayoutRepository(dataStore);
 const userTopicAffinityRepository = new IndexedDbUserTopicAffinityRepository(dataStore);
+const filmRepository = new IndexedDbFilmRepository(dataStore);
 const accountCleanupRepository = new IndexedDbAccountCleanupRepository(dataStore);
 const backupRepository = new IndexedDbBackupRepository(dataStore, clock);
 const backupSnapshotProvider = new IndexedDbBackupSnapshotProvider(dataStore);
@@ -306,6 +311,16 @@ const contentRequestService = new ContentRequestService({
   logger,
   deletedDisplayName: t('user.deletedDisplayName'),
 });
+const filmPortalService = new FilmPortalService({
+  filmRepository,
+  contentRepository,
+  taxonomyRepository,
+  adminRepository,
+  policyService: permissionPolicyService,
+  logger,
+  searchNormalizer,
+  fileStorage,
+});
 const homePageService = new HomePageService({
   layoutRepository,
   contentRepository,
@@ -417,6 +432,26 @@ export async function ensureStage17ContentRequestsDefaultFlagAsync(
   });
 }
 
+export const STAGE23_FILMS_FLAG_META_KEY = 'stage23_films_default_enabled_v1';
+
+export async function ensureStage23FilmsDefaultFlagAsync(
+  store: IndexedDbDataStore = dataStore,
+): Promise<void> {
+  const existingMeta = await store.getMeta(STAGE23_FILMS_FLAG_META_KEY);
+  if (existingMeta) {
+    return;
+  }
+  await store.putRecord(STORE_NAMES.FEATURE_FLAGS, {
+    key: 'Films',
+    isEnabled: true,
+  });
+  await store.setMeta({
+    key: STAGE23_FILMS_FLAG_META_KEY,
+    value: '1',
+    updatedAtUtc: clock.nowUtcIso(),
+  });
+}
+
 let startupRecordedInSession = false;
 let startupInitPromise: Promise<void> | null = null;
 
@@ -445,6 +480,7 @@ function ensureInitializedAtStartup(): Promise<void> {
         await databaseSeeder.seed(t('logs.seedExecuted'));
         await ensureStage16CommentsDefaultFlagAsync(dataStore);
         await ensureStage17ContentRequestsDefaultFlagAsync(dataStore);
+        await ensureStage23FilmsDefaultFlagAsync(dataStore);
         await ensureStage18LayoutSeededAsync(dataStore);
         await initialSuperAdminService.bootstrapFromEnvIfConfigured(
           envConfig.initialSuperAdminEmail,
@@ -478,6 +514,7 @@ export const appContainer: AppContainer = {
   contentRequestRepository,
   layoutRepository,
   userTopicAffinityRepository,
+  filmRepository,
   accountCleanupRepository,
   backupRepository,
   backupSnapshotProvider,
@@ -510,6 +547,7 @@ export const appContainer: AppContainer = {
   commentService,
   contentRequestService,
   personalizationService,
+  filmPortalService,
   homePageService,
   layoutManagementService,
   analyticsDashboardService,

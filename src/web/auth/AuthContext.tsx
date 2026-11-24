@@ -18,6 +18,7 @@ export interface AuthContextValue {
   siteSubtitle: string;
   isCommentsEnabled: boolean;
   isContentRequestsEnabled: boolean;
+  isFilmsEnabled: boolean;
   hasSuperAdmin: boolean;
   hasStaffUser: boolean;
   isAuthReady: boolean;
@@ -37,6 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isCommentsEnabled, setIsCommentsEnabled] = useState<boolean>(false);
   const [isContentRequestsEnabled, setIsContentRequestsEnabled] =
     useState<boolean>(false);
+  const [isFilmsEnabled, setIsFilmsEnabled] = useState<boolean>(false);
   const [hasSuperAdmin, setHasSuperAdmin] = useState<boolean>(true);
   const [hasStaffUser, setHasStaffUser] = useState<boolean>(true);
   const [isAuthReady, setIsAuthReady] = useState<boolean>(false);
@@ -53,14 +55,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshFeatureFlags = useCallback(async () => {
     await appContainer.ensureInitializedAtStartup();
-    const [commentsEnabled, contentRequestsEnabled] = await Promise.all([
+    const [commentsEnabled, contentRequestsEnabled, filmsEnabled] = await Promise.all([
       appContainer.settingsManagementService.getPublicFeatureFlagState('Comments'),
       appContainer.settingsManagementService.getPublicFeatureFlagState(
         'ContentRequests',
       ),
+      appContainer.settingsManagementService.getPublicFeatureFlagState('Films'),
     ]);
     setIsCommentsEnabled(commentsEnabled);
     setIsContentRequestsEnabled(contentRequestsEnabled);
+    setIsFilmsEnabled(filmsEnabled);
   }, []);
 
   const refreshAuthState = useCallback(async () => {
@@ -73,6 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       resolvedSubtitle,
       commentsEnabled,
       contentRequestsEnabled,
+      filmsEnabled,
     ] = await Promise.all([
       appContainer.authService.getCurrentUser(),
       appContainer.initialSuperAdminService.hasSuperAdmin(),
@@ -83,6 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       appContainer.settingsManagementService.getPublicFeatureFlagState(
         'ContentRequests',
       ),
+      appContainer.settingsManagementService.getPublicFeatureFlagState('Films'),
     ]);
     const permissions = await appContainer.permissionPolicyService.getUserPermissions(user);
     setCurrentUser(user);
@@ -93,6 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSiteSubtitle(resolvedSubtitle);
     setIsCommentsEnabled(commentsEnabled);
     setIsContentRequestsEnabled(contentRequestsEnabled);
+    setIsFilmsEnabled(filmsEnabled);
     setIsAuthReady(true);
   }, []);
 
@@ -114,6 +121,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         siteSubtitle,
         isCommentsEnabled,
         isContentRequestsEnabled,
+        isFilmsEnabled,
         hasSuperAdmin,
         hasStaffUser,
         isAuthReady,

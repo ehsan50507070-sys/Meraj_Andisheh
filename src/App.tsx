@@ -7,6 +7,7 @@ import { AgeProvider } from './web/context/AgeContext';
 import { ComponentsLabPage } from './web/pages/ComponentsLabPage';
 import { ContentBankPage } from './web/pages/ContentBankPage';
 import { ContentRequestsPage } from './web/pages/ContentRequestsPage';
+import { FilmsPortalPage } from './web/pages/FilmsPortalPage';
 import { HealthPage } from './web/pages/HealthPage';
 import { HomePage } from './web/pages/HomePage';
 import { InitialAdminSetupPage } from './web/pages/InitialAdminSetupPage';
@@ -35,6 +36,10 @@ const routes: HashRouteConfig[] = [
   {
     path: '/content',
     render: (currentRoute) => <ContentBankPage currentRoute={currentRoute} />,
+  },
+  {
+    path: '/films',
+    render: (currentRoute) => <FilmsPortalPage currentRoute={currentRoute} />,
   },
   {
     path: '/search',

@@ -166,6 +166,38 @@ export class IndexedDbDataStore implements IDataStore {
   }
 
   /**
+   * Atomically updates matching existing records and upserts a target record in a single readwrite transaction.
+   */
+  public async updateAllAndPut<T>(
+    storeName: string,
+    transformExisting: (record: T) => T | null,
+    upsertRecord: T,
+  ): Promise<void> {
+    const db = await this.getDatabase();
+
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(storeName, 'readwrite');
+      const store = tx.objectStore(storeName);
+      const getAllReq = store.getAll();
+
+      getAllReq.onsuccess = () => {
+        const rows = (getAllReq.result as T[]) ?? [];
+        for (const row of rows) {
+          const modified = transformExisting(row);
+          if (modified !== null) {
+            store.put(modified);
+          }
+        }
+        store.put(upsertRecord);
+      };
+
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error ?? new Error('INDEXEDDB_ATOMIC_UPSERT_FAILED'));
+      tx.onabort = () => reject(tx.error ?? new Error('INDEXEDDB_TX_ABORTED'));
+    });
+  }
+
+  /**
    * Inserts a record atomically only when the primary key does not already exist.
    * Returns true if inserted, false if already present.
    */

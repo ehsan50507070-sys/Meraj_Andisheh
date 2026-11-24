@@ -50,6 +50,7 @@ export function MainLayout({
     siteTitle,
     siteSubtitle,
     isContentRequestsEnabled,
+    isFilmsEnabled,
     logout,
     refreshAuthState,
   } = useAuth();
@@ -90,6 +91,8 @@ export function MainLayout({
   const normalizedPath = currentRoute.split('?')[0].replace(/^#/, '') || '/';
   const isContentBankActive =
     normalizedPath === '/content' || normalizedPath.startsWith('/content/');
+  const isFilmsActive =
+    normalizedPath === '/films' || normalizedPath.startsWith('/films/');
   const isRequestsActive = normalizedPath === '/requests';
 
   useEffect(() => {
@@ -432,6 +435,19 @@ export function MainLayout({
                   {t('layout.nav.contentBank')}
                 </a>
 
+                {isFilmsEnabled && (
+                  <a
+                    href="#/films"
+                    className={`whitespace-nowrap shrink-0 py-1 hover:underline underline-offset-4 transition-colors ${
+                      isFilmsActive
+                        ? 'font-bold text-[var(--color-text)] underline'
+                        : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
+                    }`}
+                  >
+                    {t('layout.nav.films')}
+                  </a>
+                )}
+
                 {isContentRequestsEnabled && (
                   <a
                     href="#/requests"
@@ -512,6 +528,19 @@ export function MainLayout({
                   >
                     {t('layout.nav.contentBank')}
                   </a>
+                  {isFilmsEnabled && (
+                    <a
+                      href="#/films"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`py-1 whitespace-nowrap ${
+                        isFilmsActive
+                          ? 'font-bold text-[var(--color-text)] underline underline-offset-4'
+                          : 'text-[var(--color-muted)]'
+                      }`}
+                    >
+                      {t('layout.nav.films')}
+                    </a>
+                  )}
                   {isContentRequestsEnabled && (
                     <a
                       href="#/requests"
@@ -673,6 +702,13 @@ export function MainLayout({
                     {t('layout.footer.linkContentBank')}
                   </a>
                 </li>
+                {isFilmsEnabled && (
+                  <li>
+                    <a href="#/films" className="hover:text-[var(--color-text)] hover:underline underline-offset-4">
+                      {t('layout.footer.linkFilms')}
+                    </a>
+                  </li>
+                )}
                 {isContentRequestsEnabled && (
                   <li>
                     <a href="#/requests" className="hover:text-[var(--color-text)] hover:underline underline-offset-4">

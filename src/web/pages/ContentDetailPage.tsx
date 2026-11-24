@@ -9,6 +9,7 @@ import {
   Download,
   Eye,
   ExternalLink,
+  Film,
   Heart,
   Lock,
   Share2,
@@ -62,7 +63,7 @@ function isPdfFile(file: ContentFile | null | undefined): boolean {
 }
 
 export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps) {
-  const { currentUser, siteTitle, isAuthReady } = useAuth();
+  const { currentUser, siteTitle, isFilmsEnabled, isAuthReady } = useAuth();
   const { effectiveAgeGroup, isAgeReady } = useAge();
 
   const [detail, setDetail] = useState<ContentDetailData | null>(null);
@@ -1031,6 +1032,23 @@ export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps
             )}
           </div>
         </header>
+
+        {/* Dedicated Film Portal Banner when format === 'Film' */}
+        {item.format === 'Film' && isFilmsEnabled && (
+          <div className="rounded-[var(--radius-card)] border border-[var(--color-border-strong)] bg-[var(--color-surface-alt)] px-4 py-3.5 sm:px-5 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5 text-xs sm:text-sm font-semibold text-[var(--color-text)]">
+              <Film className="w-4 h-4 text-[var(--color-primary)] shrink-0" aria-hidden="true" />
+              <span>{t('contentDetail.film.portalLinkBannerTitle')}</span>
+            </div>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => navigateToHash(`/films/${encodeURIComponent(item.slug)}`)}
+            >
+              {t('contentDetail.film.portalLinkButton')}
+            </Button>
+          </div>
+        )}
 
         {/* Primary Format Player / Viewer */}
         {renderPrimaryPlayer()}

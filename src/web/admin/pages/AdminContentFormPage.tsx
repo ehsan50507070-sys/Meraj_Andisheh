@@ -36,6 +36,11 @@ import {
   FileStorageType,
   type ContentFormat,
 } from '../../../core/domain/content';
+import {
+  FILM_AGE_RATING_NOTE_MAX_LENGTH,
+  FILM_KINDS,
+  type FilmKind,
+} from '../../../core/domain/portals';
 import type {
   AgeGroup,
   ImpactLevel,
@@ -215,6 +220,13 @@ export function AdminContentFormPage({ currentRoute, contentId }: AdminContentFo
   const [body, setBody] = useState('');
   const [showBodyPreview, setShowBodyPreview] = useState(false);
 
+  // FilmInfo fields (Stage 23, shown when format === 'Film')
+  const [filmKind, setFilmKind] = useState<FilmKind>('Film');
+  const [filmReleaseYear, setFilmReleaseYear] = useState('');
+  const [filmRuntimeMinutes, setFilmRuntimeMinutes] = useState('');
+  const [filmAgeRatingNote, setFilmAgeRatingNote] = useState('');
+  const [filmIsWeeklyPick, setFilmIsWeeklyPick] = useState(false);
+
   // Collections
   const [files, setFiles] = useState<SaveContentFileInput[]>([]);
   const [sources, setSources] = useState<SaveContentSourceInput[]>([]);
@@ -363,6 +375,35 @@ export function AdminContentFormPage({ currentRoute, contentId }: AdminContentFo
         setPersonIds(agg.personIds);
         setImpactLevelId(agg.item.impactLevelId !== null ? String(agg.item.impactLevelId) : '');
         setAgeGroupIds(agg.ageGroupIds);
+        if (agg.item.format === 'Film') {
+          const filmRes = await appContainer.filmPortalService.getFilmInfoByContentIdForAdminAsync(
+            currentUser,
+            agg.item.id,
+          );
+          if (filmRes.ok && filmRes.data) {
+            setFilmKind(filmRes.data.kind);
+            setFilmReleaseYear(
+              filmRes.data.releaseYear !== null ? String(filmRes.data.releaseYear) : '',
+            );
+            setFilmRuntimeMinutes(
+              filmRes.data.runtimeMinutes !== null ? String(filmRes.data.runtimeMinutes) : '',
+            );
+            setFilmAgeRatingNote(filmRes.data.ageRatingNote ?? '');
+            setFilmIsWeeklyPick(filmRes.data.isWeeklyPick);
+          } else {
+            setFilmKind('Film');
+            setFilmReleaseYear('');
+            setFilmRuntimeMinutes('');
+            setFilmAgeRatingNote('');
+            setFilmIsWeeklyPick(false);
+          }
+        } else {
+          setFilmKind('Film');
+          setFilmReleaseYear('');
+          setFilmRuntimeMinutes('');
+          setFilmAgeRatingNote('');
+          setFilmIsWeeklyPick(false);
+        }
         setSmartImportPrefilled(false);
         setRemainingSuggestions(null);
       } else {
@@ -397,6 +438,11 @@ export function AdminContentFormPage({ currentRoute, contentId }: AdminContentFo
           setPersonIds(draft.personIds);
           setImpactLevelId(draft.impactLevelId !== null ? String(draft.impactLevelId) : '');
           setAgeGroupIds(draft.ageGroupIds);
+          setFilmKind('Film');
+          setFilmReleaseYear('');
+          setFilmRuntimeMinutes('');
+          setFilmAgeRatingNote('');
+          setFilmIsWeeklyPick(false);
           setSmartImportPrefilled(true);
           setRemainingSuggestions(suggestions);
         } else {
@@ -419,6 +465,11 @@ export function AdminContentFormPage({ currentRoute, contentId }: AdminContentFo
           setPersonIds([]);
           setImpactLevelId('');
           setAgeGroupIds([]);
+          setFilmKind('Film');
+          setFilmReleaseYear('');
+          setFilmRuntimeMinutes('');
+          setFilmAgeRatingNote('');
+          setFilmIsWeeklyPick(false);
           setSmartImportPrefilled(false);
           setRemainingSuggestions(null);
         }
@@ -463,6 +514,15 @@ export function AdminContentFormPage({ currentRoute, contentId }: AdminContentFo
       CONTENT_FORMATS.map((fmt) => ({
         value: fmt,
         label: t(getFormatResourceKey(fmt)),
+      })),
+    [],
+  );
+
+  const filmKindOptions: SelectOption[] = useMemo(
+    () =>
+      FILM_KINDS.map((kind) => ({
+        value: kind,
+        label: t(`films.kind.${kind}` as ResourceKey),
       })),
     [],
   );
@@ -795,6 +855,39 @@ export function AdminContentFormPage({ currentRoute, contentId }: AdminContentFo
       setStatus(saved.item.status);
       setSlug(saved.item.slug);
       setBody(saved.item.body ?? '');
+
+      if (saved.item.format === 'Film') {
+        const filmInfoRes = await appContainer.filmPortalService.upsertFilmInfoAsync(
+          currentUser,
+          {
+            contentId: saved.item.id,
+            kind: filmKind,
+            releaseYear: filmReleaseYear,
+            runtimeMinutes: filmRuntimeMinutes,
+            ageRatingNote: filmAgeRatingNote,
+            isWeeklyPick: filmIsWeeklyPick,
+          },
+          {
+            sourceContext: 'contentForm',
+            routePath: currentRoute,
+          },
+        );
+        if (!filmInfoRes.ok) {
+          setActiveTab('basic');
+          setFeedback({
+            variant: 'error',
+            message: filmInfoRes.messageKey
+              ? t(filmInfoRes.messageKey as ResourceKey)
+              : t('admin.portals.film.error.invalidReleaseYear'),
+          });
+          if (editingId === undefined) {
+            justCreatedIdRef.current = saved.item.id;
+            navigateToHash(`/admin/content/edit/${saved.item.id}`);
+          }
+          return null;
+        }
+      }
+
       setFeedback({
         variant: 'success',
         message: t('admin.content.form.savedSuccess'),
@@ -838,6 +931,38 @@ export function AdminContentFormPage({ currentRoute, contentId }: AdminContentFo
       setEditingId(savedId);
       setSlug(saveRes.data.item.slug);
       setBody(saveRes.data.item.body ?? '');
+
+      if (saveRes.data.item.format === 'Film') {
+        const filmInfoRes = await appContainer.filmPortalService.upsertFilmInfoAsync(
+          currentUser,
+          {
+            contentId: savedId,
+            kind: filmKind,
+            releaseYear: filmReleaseYear,
+            runtimeMinutes: filmRuntimeMinutes,
+            ageRatingNote: filmAgeRatingNote,
+            isWeeklyPick: filmIsWeeklyPick,
+          },
+          {
+            sourceContext: 'contentForm',
+            routePath: currentRoute,
+          },
+        );
+        if (!filmInfoRes.ok) {
+          setActiveTab('basic');
+          setFeedback({
+            variant: 'error',
+            message: filmInfoRes.messageKey
+              ? t(filmInfoRes.messageKey as ResourceKey)
+              : t('admin.portals.film.error.invalidReleaseYear'),
+          });
+          if (editingId === undefined) {
+            justCreatedIdRef.current = savedId;
+            navigateToHash(`/admin/content/edit/${savedId}`);
+          }
+          return;
+        }
+      }
 
       const pubRes = await appContainer.contentManagementService.publishContent(
         currentUser,
@@ -1230,8 +1355,86 @@ export function AdminContentFormPage({ currentRoute, contentId }: AdminContentFo
                   </div>
                 </div>
 
-                {(format === 'Book' || format === 'Film') && (
+                {format === 'Book' && (
                   <Alert variant="info" message={t('admin.content.field.phase2FormatHint')} />
+                )}
+
+                {format === 'Film' && (
+                  <div className="p-4 sm:p-5 rounded-[var(--radius-control)] border border-[var(--color-border-strong)] bg-[var(--color-surface-alt)] space-y-4">
+                    <div className="space-y-1">
+                      <h2 className="text-sm sm:text-base font-bold text-[var(--color-text)]">
+                        {t('admin.content.film.sectionTitle')}
+                      </h2>
+                      <p className="text-xs text-[var(--color-muted)]">
+                        {t('admin.content.film.sectionSubtitle')}
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <FormField
+                        id="content-film-kind"
+                        label={t('admin.content.film.kindLabel')}
+                        kind="select"
+                        value={filmKind}
+                        onChange={(val) => setFilmKind(val as FilmKind)}
+                        options={filmKindOptions}
+                      />
+
+                      <FormField
+                        id="content-film-year"
+                        label={t('admin.content.film.releaseYearLabel')}
+                        value={filmReleaseYear}
+                        onChange={setFilmReleaseYear}
+                        placeholder={t('admin.content.film.releaseYearPlaceholder')}
+                      />
+
+                      <FormField
+                        id="content-film-runtime"
+                        label={t('admin.content.film.runtimeMinutesLabel')}
+                        value={filmRuntimeMinutes}
+                        onChange={setFilmRuntimeMinutes}
+                        placeholder={t('admin.content.film.runtimeMinutesPlaceholder')}
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <FormField
+                        id="content-film-age-note"
+                        label={t('admin.content.film.ageRatingNoteLabel')}
+                        kind="textarea"
+                        rows={2}
+                        value={filmAgeRatingNote}
+                        onChange={setFilmAgeRatingNote}
+                        placeholder={t('admin.content.film.ageRatingNotePlaceholder')}
+                      />
+                      <p
+                        className={`text-xs tabular-nums-strict ${
+                          filmAgeRatingNote.trim().length > FILM_AGE_RATING_NOTE_MAX_LENGTH
+                            ? 'text-[var(--color-error-text)] font-semibold'
+                            : 'text-[var(--color-muted)]'
+                        }`}
+                      >
+                        {t('admin.content.film.ageRatingNoteCounter', {
+                          count: toPersianDigits(filmAgeRatingNote.trim().length),
+                        })}
+                      </p>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="inline-flex items-center gap-2.5 text-sm font-medium text-[var(--color-text)] cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={filmIsWeeklyPick}
+                          onChange={(e) => setFilmIsWeeklyPick(e.target.checked)}
+                          className="w-4 h-4 accent-[var(--color-primary)]"
+                        />
+                        <span>{t('admin.content.film.weeklyPickLabel')}</span>
+                      </label>
+                      <p className="text-xs text-[var(--color-muted)] leading-relaxed">
+                        {t('admin.content.film.weeklyPickHint')}
+                      </p>
+                    </div>
+                  </div>
                 )}
 
                 {/* Thumbnail Uploader (Public IFileStorage) */}
