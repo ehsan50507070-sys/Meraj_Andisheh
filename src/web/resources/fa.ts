@@ -3,7 +3,7 @@ export const faResources = {
   'app.name': 'معراج اندیشه',
   'app.subtitle': 'پلتفرم بانک محتوای فارسی',
   'app.stageLabel': 'مرحله {stage} از {total}',
-  'app.stageName': 'پشتیبان‌گیری هفتگی، نگهداری ۴ نسخه و بازیابی آزمایشی',
+  'app.stageName': 'پایان فاز ۱: سخت‌سازی امنیتی تولید، سئو، خطای ۵۰۰ و آمادگی GitHub Pages',
   'app.footerNote': 'پلتفرم معراج اندیشه · بانک محتوای فارسی متناسب با هر رده سنی',
 
   // Themes
@@ -2926,6 +2926,123 @@ export const faResources = {
     'کنترل دسترسی backup.manage (۴۰۳+WARN، ۴۰۴ برای عضو) و بررسی IndexedDB v14',
   'tests.stage21.rbacAndIdbV14.desc':
     'همکار بدون backup.manage کد ۴۰۳ با لاگ WARN و عضو/مهمان ۴۰۴ می‌گیرند؛ جداول backupLogs و backupArchives در IndexedDB نسخه‌ی ۱۴ تایید می‌شوند.',
+
+  // Stage 22: SEO Meta & Dynamic Title/Noindex
+  'meta.titleFormat': '{page} | {site}',
+  'meta.defaultDescription':
+    'پلتفرم بانک محتوای فارسی معراج اندیشه — بانک محتوای علمی، فرهنگی و آموزشی متناسب با رده‌ی سنی مخاطبان.',
+  'meta.title.home': 'صفحه اصلی',
+  'meta.title.catalog': 'بانک محتوا',
+  'meta.title.contentDetail': 'مشاهده محتوا',
+  'meta.title.search': 'جستجو',
+  'meta.title.requests': 'درخواست محتوا',
+  'meta.title.staticPage': 'راهنما و معرفی',
+  'meta.title.health': 'وضعیت سلامت سامانه',
+  'meta.title.error500': 'خطای غیرمنتظره (۵۰۰)',
+  'meta.title.admin': 'پنل مدیریت',
+  'meta.title.account': 'حساب کاربری',
+  'meta.title.setup': 'راه‌اندازی اولیه',
+  'meta.title.download': 'دریافت فایل',
+  'meta.title.dev': 'آزمایشگاه توسعه',
+  'meta.title.notFound': 'صفحه یافت نشد',
+
+  // Stage 22: Safe 500 Server Error Page & ErrorBoundary
+  'error500.title': 'بروز خطای غیرمنتظره در پردازش صفحه',
+  'error500.safeBody':
+    'متأسفانه در بارگذاری این بخش مشکلی غیرمنتظره رخ داد. برای حفظ امنیت و محرمانگی داده‌ها، جزئیات فنی نمایش داده نمی‌شود؛ می‌توانید به صفحه‌ی اصلی برگردید یا دوباره تلاش کنید.',
+  'error500.trackingCodeLabel': 'کد پیگیری خطا',
+  'error500.copyButton': 'کپی کد',
+  'error500.copiedButton': 'کپی شد',
+  'error500.occurredAtLabel': 'زمان رخداد (شمسی)',
+  'error500.backHomeButton': 'بازگشت به صفحه اصلی',
+  'error500.retryButton': 'تلاش مجدد',
+  'error500.devDetailsSummary': 'جزئیات فنی خطا (فقط در محیط توسعه)',
+
+  // Stage 22: Admin Settings SEO & Sitemap Card
+  'admin.settings.seo.title': 'سئو، نمایه‌سازی و تولید sitemap.xml',
+  'admin.settings.seo.subtitle':
+    'تولید فایل استاندارد sitemap.xml تنها از محتواهای منتشرشده (Published) و صفحات عمومی؛ مسیرهای مدیریت، حساب کاربری، پیش‌نویس‌ها و سلامت از نقشه سایت و موتورهای جستجو خارج می‌شوند.',
+  'admin.settings.seo.refreshButton': 'تولید مجدد نقشه',
+  'admin.settings.seo.downloadButton': 'دانلود sitemap.xml',
+  'admin.settings.seo.downloadSuccess':
+    'فایل sitemap.xml با {count} نشانی عمومی با موفقیت تولید و دانلود شد.',
+  'admin.settings.seo.totalUrlsLabel': 'کل نشانی‌های نقشه سایت',
+  'admin.settings.seo.publishedContentsLabel': 'محتواهای منتشرشده',
+  'admin.settings.seo.staticPagesLabel': 'صفحات ثابت عمومی',
+  'admin.settings.seo.githubHint':
+    'برای به‌روزرسانی نقشه سایت در GitHub Pages، پس از افزودن محتوای تازه فایل دانلودشده را جایگزین public/sitemap.xml کرده و بیلد جدید منتشر کنید.',
+  'admin.settings.seo.previewLabel': 'پیش‌نمایش خروجی XML:',
+
+  // Stage 22: Health Page Dev Simulation & Release Readiness Card
+  'health.card.seed.simulateError500Button': 'شبیه‌سازی خطای ۵۰۰ (تست ErrorBoundary)',
+  'health.card.release.title': 'آمادگی انتشار فاز ۱ روی GitHub Pages',
+  'health.card.release.subtitle':
+    'بازبینی نهایی امنیت تولید، نبود CDN بیرونی، سیاست CSP، نقشه سایت، صفحه‌ی خطای ۵۰۰ و گذراندن همه‌ی تست‌های فاز ۱.',
+  'health.card.release.preview500Button': 'پیش‌نمایش صفحه ۵۰۰',
+  'health.card.release.openHomeButton': 'مشاهده صفحه اصلی',
+  'health.card.release.statusPass': 'تاییدشده',
+  'health.card.release.statusPending': 'در انتظار بررسی',
+  'health.card.release.statusChecking': 'در حال بررسی...',
+  'health.card.release.statusFail': 'نیازمند بررسی',
+  'health.card.release.testsPassedValue': '{passed} از {total} موفق',
+  'health.card.release.testsFailedValue': '{failed} تست ناموفق',
+  'health.card.release.testsNotRunYet': 'هنوز اجرا نشده',
+  'health.card.release.item.routingAndBase':
+    'مسیر نسبی (base: ./) و مسیریابی Hash برای انتشار بدون خطا روی GitHub Pages',
+  'health.card.release.item.databaseSchema':
+    'ساختار پایگاه داده محلی IndexedDB (نسخه {version}) و سرویس‌های هسته',
+  'health.card.release.item.cspAndZeroCdn':
+    'سیاست امنیت محتوا (CSP) فعال بدون هیچ منبع جاوااسکریپت یا فونت CDN بیرونی',
+  'health.card.release.item.seoAndNoindex':
+    'مدیریت خودکار متا، robots.txt و برچسب noindex روی صفحات مدیریتی و خصوصی',
+  'health.card.release.item.errorBoundary500':
+    'پایشگر خطای سراسری (ErrorBoundary) و صفحه‌ی ایمن ۵۰۰ با کد پیگیری',
+  'health.card.release.item.unitTestsSuite':
+    'نتیجه‌ی مجموعه‌تست‌های واحد مراحل ۱ تا ۲۲ ({total} تست)',
+  'health.card.release.reason.routingNotHash':
+    'شرط برقرارنشده: نشانی فعال مرورگر از مسیریاب Hash (#/) پیروی نمی‌کند.',
+  'health.card.release.reason.dbNotReady':
+    'شرط برقرارنشده: اتصال پایگاه داده برقرار نیست یا نسخه ساختار از ۱۴ کمتر است.',
+  'health.card.release.reason.cspMetaMissing':
+    'شرط برقرارنشده: تگ متای Content-Security-Policy در سند HTML یافت نشد.',
+  'health.card.release.reason.cspInvalidDirectives':
+    'شرط برقرارنشده: سیاست CSP معتبر نیست ({issues}).',
+  'health.card.release.reason.externalCdnDetected':
+    'شرط برقرارنشده: منبع CDN بیرونی در صفحه شناسایی شد ({urls}).',
+  'health.card.release.reason.robotsMetaMissing':
+    'شرط برقرارنشده: برچسب متای robots روی این صفحه مقدار noindex, nofollow ندارد (مقدار فعلی: {actual}).',
+  'health.card.release.reason.robotsTxtMissing':
+    'شرط برقرارنشده: فایل robots.txt بارگذاری نشد یا فاقد قوانین Allow / Disallow (/admin، /setup، /account، /download) و Sitemap است ({missing}).',
+  'health.card.release.reason.seoBothMissing':
+    'شرط برقرارنشده: هم برچسب noindex متای صفحه و هم فایل robots.txt نیاز به بررسی دارند.',
+  'health.card.release.reason.testsNotRunYet':
+    'برای تایید این ردیف، دکمه‌ی «اجرای تست‌ها» را در کارت تست‌های واحد بزنید تا نتیجه‌ی همه تست‌ها ثبت شود.',
+  'health.card.release.reason.testsHaveFailures':
+    'شرط برقرارنشده: {failed} تست واحد ناموفق وجود دارد؛ جزئیات را در کارت تست‌های واحد بررسی کنید.',
+  'health.card.release.deployHint':
+    'راهنمای گام‌به‌گام ساخت خروجی نهایی و انتشار رایگان روی GitHub Pages همراه با راه‌اندازی مدیر کل اولیه در فایل GITHUB_PAGES_DEPLOY.md پروژه قرار دارد.',
+
+  // Stage 22 Unit Tests
+  'tests.stage22.phase1E2eSmoke.name':
+    'آزمون دودی سرتاسری فاز ۱ (انتشار، محدودیت کودک، جستجو، بازدید، دانلود، تعامل، نظر، درخواست، آمار و پشتیبان)',
+  'tests.stage22.phase1E2eSmoke.desc':
+    'چرخه کامل فاز ۱ از ساخت کاربر و انتشار محتوای بزرگسالان، مسدودشدن برای کودک، جستجوی نرمال‌شده، بازدید با قانون ۳۰ دقیقه، دانلود امضاشده، لایک/نشانک، نظر بزرگسال/کودک، درخواست محتوا تا داشبورد آمار و بازیابی آزمایشی بررسی می‌شود.',
+  'tests.stage22.sitemapPublishedOnly.name':
+    'تولید استاندارد sitemap.xml فقط برای محتواهای منتشرشده و حذف پیش‌نویس و پنل مدیریت',
+  'tests.stage22.sitemapPublishedOnly.desc':
+    'خروجی XML شامل خانه، بانک محتوا، صفحات ثابت و اسلاگ کدگذاری‌شده‌ی محتوای Published است و هیچ نشانی از Draft، Archived، /admin، /account، /download یا /health ندارد.',
+  'tests.stage22.robotsMetaAndCspAudit.name':
+    'مدیریت پویا ی noindex برای مسیرهای خصوصی و ممیزی سیاست CSP تولید',
+  'tests.stage22.robotsMetaAndCspAudit.desc':
+    'مسیرهای مدیریت، حساب، دانلود، راه‌اندازی، سلامت و خطا برچسب noindex و صفحات عمومی index دریافت می‌کنند؛ سیاست CSP تولید پذیرفته و دامنه‌های بیرونی/unsafe-eval رد می‌شوند.',
+  'tests.stage22.safeErrorReport500.name':
+    'گزارش ایمن خطای ۵۰۰ با کد پیگیری MA-ERR و پنهان‌شدن جزئیات فنی در تولید',
+  'tests.stage22.safeErrorReport500.desc':
+    'در حالت تولید technicalDetails کاملاً null و کد پیگیری با ثبت لاگ ERROR صادر می‌شود، در حالی که در حالت توسعه جزئیات فنی خطا قابل مشاهده است.',
+  'tests.stage22.buildAndPhase1Readiness.name':
+    'بررسی نهایی آمادگی ساختار فاز ۱ (مرحله ۲۲ و جدول‌های IndexedDB نسخه ۱۴)',
+  'tests.stage22.buildAndPhase1Readiness.desc':
+    'نسخه‌ی ۲۲ و Migrationهای تا نسخه‌ی ۱۴ همراه با وجود همه‌ی ObjectStoreهای اصلی فاز ۱ در IndexedDB بررسی می‌شوند.',
 } as const;
 
 export type ResourceKey = keyof typeof faResources;

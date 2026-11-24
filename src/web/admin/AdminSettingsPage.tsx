@@ -1,6 +1,7 @@
-import { Save, Settings, ToggleRight } from 'lucide-react';
+import { Download, Globe, RefreshCw, Save, Settings, ToggleRight } from 'lucide-react';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import type { FeatureFlag, FeatureFlagKey } from '../../core/domain/settings';
+import type { SitemapGenerationResult } from '../../core/services/sitemapService';
 import { KNOWN_SITE_SETTING_KEYS } from '../../core/services/settingsManagementService';
 import { useAuth } from '../auth/AuthContext';
 import { Alert, Button, FormField, Tag } from '../components/ui';
@@ -28,10 +29,28 @@ export function AdminSettingsPage({ currentRoute }: AdminSettingsPageProps) {
   const [settingValues, setSettingValues] = useState<Record<string, string>>({});
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [sitemapResult, setSitemapResult] = useState<SitemapGenerationResult | null>(null);
+  const [isLoadingSitemap, setIsLoadingSitemap] = useState(false);
   const [feedback, setFeedback] = useState<{
     variant: 'success' | 'error';
     message: string;
   } | null>(null);
+
+  const loadSitemap = useCallback(async () => {
+    setIsLoadingSitemap(true);
+    try {
+      const originBase =
+        typeof window !== 'undefined'
+          ? `${window.location.origin}${window.location.pathname.replace(/\/index\.html$/i, '')}`
+          : '.';
+      const generated = await appContainer.sitemapService.generateSitemapXmlAsync(
+        originBase,
+      );
+      setSitemapResult(generated);
+    } finally {
+      setIsLoadingSitemap(false);
+    }
+  }, []);
 
   const loadSettings = useCallback(async () => {
     const [flagsRes, settingsRes] = await Promise.all([
@@ -53,7 +72,8 @@ export function AdminSettingsPage({ currentRoute }: AdminSettingsPageProps) {
 
   useEffect(() => {
     void loadSettings();
-  }, [loadSettings]);
+    void loadSitemap();
+  }, [loadSettings, loadSitemap]);
 
   const handleToggleFlag = async (flag: FeatureFlag) => {
     const res = await appContainer.settingsManagementService.toggleFeatureFlag(
@@ -130,6 +150,32 @@ export function AdminSettingsPage({ currentRoute }: AdminSettingsPageProps) {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleDownloadSitemap = async () => {
+    const originBase =
+      typeof window !== 'undefined'
+        ? `${window.location.origin}${window.location.pathname.replace(/\/index\.html$/i, '')}`
+        : '.';
+    const fresh = await appContainer.sitemapService.generateSitemapXmlAsync(originBase);
+    setSitemapResult(fresh);
+    const blob = new Blob([fresh.xml], {
+      type: 'application/xml;charset=utf-8',
+    });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = 'sitemap.xml';
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(url);
+    setFeedback({
+      variant: 'success',
+      message: t('admin.settings.seo.downloadSuccess', {
+        count: toPersianDigits(fresh.urlCount),
+      }),
+    });
   };
 
   return (
@@ -312,6 +358,93 @@ export function AdminSettingsPage({ currentRoute }: AdminSettingsPageProps) {
               </Button>
             </div>
           </form>
+        </section>
+
+        {/* Section 3: SEO & Sitemap Generator */}
+        <section className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-card)] shadow-[var(--shadow-card)] p-5 sm:p-6 space-y-4">
+          <div className="flex flex-wrap items-start justify-between gap-3 pb-4 border-b border-[var(--color-border)]">
+            <div className="space-y-1 min-w-0">
+              <h2 className="text-base sm:text-lg font-bold text-[var(--color-text)] flex items-center gap-2">
+                <Globe className="w-5 h-5 text-[var(--color-primary)] shrink-0" aria-hidden="true" />
+                <span>{t('admin.settings.seo.title')}</span>
+              </h2>
+              <p className="text-xs sm:text-sm text-[var(--color-muted)] leading-relaxed">
+                {t('admin.settings.seo.subtitle')}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => void loadSitemap()}
+                disabled={isLoadingSitemap}
+                startIcon={
+                  <RefreshCw
+                    className={`w-4 h-4 ${isLoadingSitemap ? 'animate-spin' : ''}`}
+                  />
+                }
+              >
+                {t('admin.settings.seo.refreshButton')}
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => void handleDownloadSitemap()}
+                disabled={isLoadingSitemap}
+                startIcon={<Download className="w-4 h-4" />}
+              >
+                {t('admin.settings.seo.downloadButton')}
+              </Button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs sm:text-sm">
+            <div className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface-alt)] p-3 space-y-1">
+              <span className="text-xs text-[var(--color-muted)]">
+                {t('admin.settings.seo.totalUrlsLabel')}
+              </span>
+              <p className="text-base font-bold text-[var(--color-text)] tabular-nums-strict">
+                {sitemapResult ? toPersianDigits(sitemapResult.urlCount) : '—'}
+              </p>
+            </div>
+            <div className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface-alt)] p-3 space-y-1">
+              <span className="text-xs text-[var(--color-muted)]">
+                {t('admin.settings.seo.publishedContentsLabel')}
+              </span>
+              <p className="text-base font-bold text-[var(--color-text)] tabular-nums-strict">
+                {sitemapResult
+                  ? toPersianDigits(sitemapResult.publishedContentsCount)
+                  : '—'}
+              </p>
+            </div>
+            <div className="rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface-alt)] p-3 space-y-1">
+              <span className="text-xs text-[var(--color-muted)]">
+                {t('admin.settings.seo.staticPagesLabel')}
+              </span>
+              <p className="text-base font-bold text-[var(--color-text)] tabular-nums-strict">
+                {sitemapResult ? toPersianDigits(sitemapResult.staticPagesCount) : '—'}
+              </p>
+            </div>
+          </div>
+
+          <p className="text-xs text-[var(--color-muted)] leading-relaxed">
+            {t('admin.settings.seo.githubHint')}
+          </p>
+
+          {sitemapResult && (
+            <div className="space-y-1.5">
+              <span className="text-xs font-medium text-[var(--color-text)] block">
+                {t('admin.settings.seo.previewLabel')}
+              </span>
+              <pre
+                dir="ltr"
+                className="text-left text-[11px] font-mono bg-[var(--color-surface-alt)] border border-[var(--color-border)] rounded-[var(--radius-control)] p-3.5 overflow-x-auto max-h-56 text-[var(--color-text)]"
+              >
+                {sitemapResult.xml}
+              </pre>
+            </div>
+          )}
         </section>
       </div>
     </AdminLayout>

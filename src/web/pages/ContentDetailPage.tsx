@@ -31,6 +31,7 @@ import {
   type BreadcrumbItem,
 } from '../components/ui';
 import { useAge } from '../context/AgeContext';
+import { usePageMeta } from '../hooks/usePageMeta';
 import { MainLayout } from '../layouts/MainLayout';
 import { formatJalaliDatePersian, toPersianDigits } from '../resources/formatters';
 import type { ResourceKey } from '../resources/fa';
@@ -61,12 +62,19 @@ function isPdfFile(file: ContentFile | null | undefined): boolean {
 }
 
 export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps) {
-  const { currentUser, isAuthReady } = useAuth();
+  const { currentUser, siteTitle, isAuthReady } = useAuth();
   const { effectiveAgeGroup, isAgeReady } = useAge();
 
   const [detail, setDetail] = useState<ContentDetailData | null>(null);
   const [isNotFound, setIsNotFound] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  usePageMeta({
+    currentRoute,
+    siteTitle,
+    pageTitle: detail?.item.title ?? null,
+    description: detail?.item.summary ?? null,
+  });
 
   const [mainMedia, setMainMedia] = useState<LoadedMediaAsset | null>(null);
   const [previewPdfMedia, setPreviewPdfMedia] = useState<LoadedMediaAsset | null>(null);

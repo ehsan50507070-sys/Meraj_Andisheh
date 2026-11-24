@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /setup
+Disallow: /account
+Disallow: /download
+Disallow: /health
+Disallow: /dev
+Disallow: /error
+
+Sitemap: ./sitemap.xml

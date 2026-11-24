@@ -1,13 +1,16 @@
 import {
+  AlertTriangle,
   CheckCircle2,
   Database,
   Download,
   ExternalLink,
   FileText,
+  Globe,
   Layers,
   LogIn,
   Play,
   RefreshCw,
+  Rocket,
   RotateCcw,
   ShieldCheck,
   Trash2,
@@ -19,6 +22,11 @@ import { useCallback, useEffect, useState } from 'react';
 import type { HealthStatus } from '../../core/domain/HealthStatus';
 import type { LogEntry, LogLevel } from '../../core/domain/LogEntry';
 import type { TestSuiteResult } from '../../core/domain/TestResult';
+import {
+  auditDocumentExternalCdnUrls,
+  validateCspPolicy,
+  validateRobotsTxtContent,
+} from '../../core/services/securityAuditService';
 import { envConfig } from '../../infrastructure/config/envConfig';
 import { seedDevAllFormatsSamplesAsync } from '../../infrastructure/data/devStage13Samples';
 import type { SeedSummary } from '../../infrastructure/data/seed';
@@ -44,6 +52,7 @@ import { stage18Tests } from '../../tests/stage18.tests';
 import { stage19Tests } from '../../tests/stage19.tests';
 import { stage20Tests } from '../../tests/stage20.tests';
 import { stage21Tests } from '../../tests/stage21.tests';
+import { stage22Tests } from '../../tests/stage22.tests';
 import { runUnitTests } from '../../tests/testRunner';
 import { useAuth } from '../auth/AuthContext';
 import { useAge } from '../context/AgeContext';
@@ -85,6 +94,7 @@ const ALL_UNIT_TESTS = [
   ...stage19Tests,
   ...stage20Tests,
   ...stage21Tests,
+  ...stage22Tests,
 ];
 
 const ARCHITECTURE_LAYERS: ReadonlyArray<{
@@ -175,6 +185,157 @@ export function HealthPage({ currentRoute }: HealthPageProps) {
   const [isSeedingSamples, setIsSeedingSamples] = useState<boolean>(false);
   const [seedFeedback, setSeedFeedback] = useState<string | null>(null);
   const [devStaffFeedback, setDevStaffFeedback] = useState<string | null>(null);
+  const [simulateError500, setSimulateError500] = useState<boolean>(false);
+
+  if (envConfig.isDevelopment && simulateError500) {
+    throw new Error('DEV_SIMULATED_ERROR_500_TEST');
+  }
+
+  const [releaseAudit, setReleaseAudit] = useState<{
+    isChecking: boolean;
+    routingReady: boolean;
+    cspMetaPresent: boolean;
+    cspValid: boolean;
+    cspIssues: string[];
+    externalCdnUrls: string[];
+    robotsMetaContent: string;
+    robotsMetaIsNoindex: boolean;
+    robotsTxtReady: boolean;
+    robotsTxtMissing: string[];
+  }>({
+    isChecking: true,
+    routingReady: true,
+    cspMetaPresent: true,
+    cspValid: true,
+    cspIssues: [],
+    externalCdnUrls: [],
+    robotsMetaContent: '',
+    robotsMetaIsNoindex: false,
+    robotsTxtReady: false,
+    robotsTxtMissing: [],
+  });
+
+  useEffect(() => {
+    if (typeof document === 'undefined' || typeof window === 'undefined') {
+      return;
+    }
+
+    let isCancelled = false;
+    let domSettled = false;
+    let robotsFetchSettled = false;
+    let robotsTxtReady = false;
+    let robotsTxtMissing: string[] = [];
+
+    const readDomAudit = () => {
+      if (isCancelled) {
+        return;
+      }
+
+      const cspMetaNodes = Array.from(
+        document.head.querySelectorAll<HTMLMetaElement>(
+          'meta[http-equiv="Content-Security-Policy"]',
+        ),
+      );
+      const cspMetaPresent = cspMetaNodes.length > 0;
+      const cspChecks = cspMetaNodes.map((node) =>
+        validateCspPolicy(node.getAttribute('content') ?? ''),
+      );
+      const validCspCheck = cspChecks.find((check) => check.isValid);
+      const cspValid = Boolean(validCspCheck);
+      const cspIssues = validCspCheck
+        ? []
+        : cspChecks[0]?.issues ?? ['CSP_META_MISSING'];
+
+      const rawResourceUrls: string[] = [
+        ...Array.from(document.querySelectorAll<HTMLLinkElement>('link[href]')).map(
+          (el) => el.getAttribute('href') ?? '',
+        ),
+        ...Array.from(document.querySelectorAll<HTMLScriptElement>('script[src]')).map(
+          (el) => el.getAttribute('src') ?? '',
+        ),
+      ];
+      const externalCdnUrls = auditDocumentExternalCdnUrls(
+        rawResourceUrls,
+        window.location.hostname,
+      );
+
+      const robotsMetaEl = document.head.querySelector<HTMLMetaElement>(
+        'meta[name="robots"]',
+      );
+      const robotsMetaContent = (robotsMetaEl?.getAttribute('content') ?? '').trim();
+      const robotsMetaIsNoindex = robotsMetaContent
+        .toLowerCase()
+        .includes('noindex');
+
+      const routingReady =
+        window.location.hash.startsWith('#/') || currentRoute.startsWith('#/');
+
+      setReleaseAudit({
+        isChecking: !(domSettled && robotsFetchSettled),
+        routingReady,
+        cspMetaPresent,
+        cspValid,
+        cspIssues,
+        externalCdnUrls,
+        robotsMetaContent,
+        robotsMetaIsNoindex,
+        robotsTxtReady,
+        robotsTxtMissing,
+      });
+    };
+
+    const verifyRobotsTxt = async () => {
+      try {
+        const res = await fetch('./robots.txt', { cache: 'no-store' });
+        if (!res.ok) {
+          robotsTxtReady = false;
+          robotsTxtMissing = [`HTTP_${res.status}`];
+        } else {
+          const text = await res.text();
+          const validation = validateRobotsTxtContent(text);
+          robotsTxtReady = validation.isValid;
+          robotsTxtMissing = validation.missingDirectives;
+        }
+      } catch {
+        robotsTxtReady = false;
+        robotsTxtMissing = ['FETCH_FAILED'];
+      } finally {
+        robotsFetchSettled = true;
+        readDomAudit();
+      }
+    };
+
+    const headObserver =
+      typeof MutationObserver !== 'undefined'
+        ? new MutationObserver(() => {
+            readDomAudit();
+          })
+        : null;
+    if (headObserver && document.head) {
+      headObserver.observe(document.head, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['content', 'href', 'src'],
+      });
+    }
+
+    // Run after parent HashRouter usePageMeta useEffect commits DOM meta tags
+    const timerId = window.setTimeout(() => {
+      domSettled = true;
+      readDomAudit();
+    }, 0);
+    queueMicrotask(() => {
+      readDomAudit();
+    });
+    void verifyRobotsTxt();
+
+    return () => {
+      isCancelled = true;
+      window.clearTimeout(timerId);
+      headObserver?.disconnect();
+    };
+  }, [currentRoute]);
 
   const refreshLogs = useCallback(() => {
     setLogs(appContainer.logger.getLogs());
@@ -281,6 +442,9 @@ export function HealthPage({ currentRoute }: HealthPageProps) {
   };
 
   const handleClearAgeCookie = () => {
+    if (!envConfig.isDevelopment) {
+      return;
+    }
     clearVisitorAgeCookie();
     setSeedFeedback(t('health.card.seed.clearAgeCookieDone'));
   };
@@ -830,6 +994,7 @@ export function HealthPage({ currentRoute }: HealthPageProps) {
                   {logs.map((entry) => {
                     const safeHashUrl = extractSafeHashActionUrl(entry);
                     const otpCode =
+                      envConfig.isDevelopment &&
                       typeof entry.details?.otpCode === 'string'
                         ? entry.details.otpCode
                         : null;
@@ -936,28 +1101,40 @@ export function HealthPage({ currentRoute }: HealthPageProps) {
                   : t('health.card.seed.resetButton')}
               </Button>
 
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={handleClearAgeCookie}
-                disabled={isReseeding || isResettingDb || isSeedingSamples}
-                startIcon={<Trash2 className="w-4 h-4" />}
-              >
-                {t('health.card.seed.clearAgeCookieButton')}
-              </Button>
-
               {envConfig.isDevelopment && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleSeedDevSamples}
-                  disabled={isReseeding || isResettingDb || isSeedingSamples}
-                  startIcon={<FileText className="w-4 h-4" />}
-                >
-                  {isSeedingSamples
-                    ? t('health.card.seed.devSamplesRunning')
-                    : t('health.card.seed.devSamplesButton')}
-                </Button>
+                <>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleClearAgeCookie}
+                    disabled={isReseeding || isResettingDb || isSeedingSamples}
+                    startIcon={<Trash2 className="w-4 h-4" />}
+                  >
+                    {t('health.card.seed.clearAgeCookieButton')}
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSeedDevSamples}
+                    disabled={isReseeding || isResettingDb || isSeedingSamples}
+                    startIcon={<FileText className="w-4 h-4" />}
+                  >
+                    {isSeedingSamples
+                      ? t('health.card.seed.devSamplesRunning')
+                      : t('health.card.seed.devSamplesButton')}
+                  </Button>
+
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={() => setSimulateError500(true)}
+                    disabled={isReseeding || isResettingDb || isSeedingSamples}
+                    startIcon={<AlertTriangle className="w-4 h-4" />}
+                  >
+                    {t('health.card.seed.simulateError500Button')}
+                  </Button>
+                </>
               )}
             </div>
           </div>
@@ -1200,6 +1377,256 @@ export function HealthPage({ currentRoute }: HealthPageProps) {
               </dd>
             </div>
           </dl>
+        </section>
+
+        {/* Stage 22 Card: Phase 1 GitHub Pages Launch Readiness */}
+        <section className="mt-6 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-card)] shadow-[var(--shadow-card)] p-5 sm:p-6 space-y-5">
+          <div className="flex flex-wrap items-start justify-between gap-4 pb-4 border-b border-[var(--color-border)]">
+            <div className="min-w-0">
+              <h2 className="text-base sm:text-lg font-semibold text-[var(--color-text)] flex items-center gap-2">
+                <Rocket className="w-5 h-5 text-[var(--color-primary)] shrink-0" aria-hidden="true" />
+                <span>{t('health.card.release.title')}</span>
+              </h2>
+              <p className="mt-1 text-xs sm:text-sm text-[var(--color-muted)]">
+                {t('health.card.release.subtitle')}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigateToHash('/error/500')}
+                startIcon={<AlertTriangle className="w-4 h-4" />}
+              >
+                {t('health.card.release.preview500Button')}
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => navigateToHash('/')}
+                startIcon={<Globe className="w-4 h-4" />}
+              >
+                {t('health.card.release.openHomeButton')}
+              </Button>
+            </div>
+          </div>
+
+          <ul className="divide-y divide-[var(--color-border)] text-xs sm:text-sm border border-[var(--color-border)] rounded-[var(--radius-control)] px-4">
+            <li className="py-3 space-y-1">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[var(--color-text)]">
+                  {t('health.card.release.item.routingAndBase')}
+                </span>
+                <span
+                  className={`inline-flex items-center gap-1.5 font-semibold shrink-0 ${
+                    releaseAudit.routingReady
+                      ? 'text-[var(--color-success-text)]'
+                      : 'text-[var(--color-error-text)]'
+                  }`}
+                >
+                  {releaseAudit.routingReady ? (
+                    <CheckCircle2 className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  ) : (
+                    <XCircle className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  )}
+                  <span>
+                    {releaseAudit.routingReady
+                      ? t('health.card.release.statusPass')
+                      : t('health.card.release.statusFail')}
+                  </span>
+                </span>
+              </div>
+              {!releaseAudit.routingReady && (
+                <p className="text-[11px] sm:text-xs text-[var(--color-error-text)]">
+                  {t('health.card.release.reason.routingNotHash')}
+                </p>
+              )}
+            </li>
+
+            <li className="py-3 space-y-1">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[var(--color-text)]">
+                  {t('health.card.release.item.databaseSchema', {
+                    version: toPersianDigits(envConfig.databaseVersion),
+                  })}
+                </span>
+                <span
+                  className={`inline-flex items-center gap-1.5 font-semibold shrink-0 ${
+                    envConfig.databaseVersion >= 14 && isDbConnected
+                      ? 'text-[var(--color-success-text)]'
+                      : isCheckingHealth
+                        ? 'text-[var(--color-warning-text)]'
+                        : 'text-[var(--color-error-text)]'
+                  }`}
+                >
+                  {envConfig.databaseVersion >= 14 && isDbConnected ? (
+                    <CheckCircle2 className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  ) : (
+                    <XCircle className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  )}
+                  <span>
+                    {envConfig.databaseVersion >= 14 && isDbConnected
+                      ? t('health.card.release.statusPass')
+                      : isCheckingHealth
+                        ? t('health.card.release.statusChecking')
+                        : t('health.card.release.statusFail')}
+                  </span>
+                </span>
+              </div>
+              {!isCheckingHealth && !(envConfig.databaseVersion >= 14 && isDbConnected) && (
+                <p className="text-[11px] sm:text-xs text-[var(--color-error-text)]">
+                  {t('health.card.release.reason.dbNotReady')}
+                </p>
+              )}
+            </li>
+
+            <li className="py-3 space-y-1">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[var(--color-text)]">
+                  {t('health.card.release.item.cspAndZeroCdn')}
+                </span>
+                <span
+                  className={`inline-flex items-center gap-1.5 font-semibold shrink-0 ${
+                    releaseAudit.cspValid && releaseAudit.externalCdnUrls.length === 0
+                      ? 'text-[var(--color-success-text)]'
+                      : 'text-[var(--color-error-text)]'
+                  }`}
+                >
+                  {releaseAudit.cspValid && releaseAudit.externalCdnUrls.length === 0 ? (
+                    <CheckCircle2 className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  ) : (
+                    <XCircle className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  )}
+                  <span>
+                    {releaseAudit.cspValid && releaseAudit.externalCdnUrls.length === 0
+                      ? t('health.card.release.statusPass')
+                      : t('health.card.release.statusFail')}
+                  </span>
+                </span>
+              </div>
+              {!releaseAudit.cspValid && (
+                <p className="text-[11px] sm:text-xs text-[var(--color-error-text)]">
+                  {releaseAudit.cspMetaPresent
+                    ? t('health.card.release.reason.cspInvalidDirectives', {
+                        issues: releaseAudit.cspIssues.join(', '),
+                      })
+                    : t('health.card.release.reason.cspMetaMissing')}
+                </p>
+              )}
+              {releaseAudit.externalCdnUrls.length > 0 && (
+                <p className="text-[11px] sm:text-xs text-[var(--color-error-text)] break-all">
+                  {t('health.card.release.reason.externalCdnDetected', {
+                    urls: releaseAudit.externalCdnUrls.join(', '),
+                  })}
+                </p>
+              )}
+            </li>
+
+            <li className="py-3 space-y-1">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[var(--color-text)]">
+                  {t('health.card.release.item.seoAndNoindex')}
+                </span>
+                <span
+                  className={`inline-flex items-center gap-1.5 font-semibold shrink-0 ${
+                    releaseAudit.robotsMetaIsNoindex && releaseAudit.robotsTxtReady
+                      ? 'text-[var(--color-success-text)]'
+                      : releaseAudit.isChecking
+                        ? 'text-[var(--color-warning-text)]'
+                        : 'text-[var(--color-error-text)]'
+                  }`}
+                >
+                  {releaseAudit.robotsMetaIsNoindex && releaseAudit.robotsTxtReady ? (
+                    <CheckCircle2 className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  ) : releaseAudit.isChecking ? (
+                    <RefreshCw className="w-4 h-4 animate-spin shrink-0" aria-hidden="true" />
+                  ) : (
+                    <XCircle className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  )}
+                  <span>
+                    {releaseAudit.robotsMetaIsNoindex && releaseAudit.robotsTxtReady
+                      ? t('health.card.release.statusPass')
+                      : releaseAudit.isChecking
+                        ? t('health.card.release.statusChecking')
+                        : t('health.card.release.statusFail')}
+                  </span>
+                </span>
+              </div>
+              {!releaseAudit.isChecking &&
+                !(releaseAudit.robotsMetaIsNoindex && releaseAudit.robotsTxtReady) && (
+                  <p className="text-[11px] sm:text-xs text-[var(--color-error-text)]">
+                    {!releaseAudit.robotsMetaIsNoindex && !releaseAudit.robotsTxtReady
+                      ? t('health.card.release.reason.seoBothMissing')
+                      : !releaseAudit.robotsMetaIsNoindex
+                        ? t('health.card.release.reason.robotsMetaMissing', {
+                            actual: releaseAudit.robotsMetaContent || 'empty',
+                          })
+                        : t('health.card.release.reason.robotsTxtMissing', {
+                            missing: releaseAudit.robotsTxtMissing.join(', '),
+                          })}
+                  </p>
+                )}
+            </li>
+
+            <li className="py-3 space-y-1">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[var(--color-text)]">
+                  {t('health.card.release.item.errorBoundary500')}
+                </span>
+                <span className="inline-flex items-center gap-1.5 font-semibold shrink-0 text-[var(--color-success-text)]">
+                  <CheckCircle2 className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  <span>{t('health.card.release.statusPass')}</span>
+                </span>
+              </div>
+            </li>
+
+            <li className="py-3 space-y-1">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[var(--color-text)]">
+                  {t('health.card.release.item.unitTestsSuite', {
+                    total: toPersianDigits(ALL_UNIT_TESTS.length),
+                  })}
+                </span>
+                <span
+                  className={`font-semibold tabular-nums-strict shrink-0 ${
+                    testSuite
+                      ? testSuite.failed === 0
+                        ? 'text-[var(--color-success-text)]'
+                        : 'text-[var(--color-error-text)]'
+                      : 'text-[var(--color-muted)]'
+                  }`}
+                >
+                  {testSuite
+                    ? testSuite.failed === 0
+                      ? t('health.card.release.testsPassedValue', {
+                          passed: toPersianDigits(testSuite.passed),
+                          total: toPersianDigits(testSuite.total),
+                        })
+                      : t('health.card.release.testsFailedValue', {
+                          failed: toPersianDigits(testSuite.failed),
+                        })
+                    : t('health.card.release.testsNotRunYet')}
+                </span>
+              </div>
+              {!testSuite && (
+                <p className="text-[11px] sm:text-xs text-[var(--color-muted)]">
+                  {t('health.card.release.reason.testsNotRunYet')}
+                </p>
+              )}
+              {testSuite && testSuite.failed > 0 && (
+                <p className="text-[11px] sm:text-xs text-[var(--color-error-text)]">
+                  {t('health.card.release.reason.testsHaveFailures', {
+                    failed: toPersianDigits(testSuite.failed),
+                  })}
+                </p>
+              )}
+            </li>
+          </ul>
+
+          <p className="text-xs text-[var(--color-muted)] leading-relaxed">
+            {t('health.card.release.deployHint')}
+          </p>
         </section>
       </div>
     </MainLayout>

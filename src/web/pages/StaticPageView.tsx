@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import type { StaticPage } from '../../core/domain/layout';
 import { SanitizedArticleBody } from '../components/players/SanitizedArticleBody';
 import { Breadcrumb, Button, type BreadcrumbItem } from '../components/ui';
+import { useAuth } from '../auth/AuthContext';
+import { usePageMeta } from '../hooks/usePageMeta';
 import { MainLayout } from '../layouts/MainLayout';
 import { t } from '../resources/i18n';
 import { navigateToHash } from '../router/HashRouter';
@@ -15,9 +17,16 @@ export interface StaticPageViewProps {
 }
 
 export function StaticPageView({ currentRoute, slug }: StaticPageViewProps) {
+  const { siteTitle } = useAuth();
   const [page, setPage] = useState<StaticPage | null>(null);
   const [isNotFound, setIsNotFound] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  usePageMeta({
+    currentRoute,
+    siteTitle,
+    pageTitle: page?.title ?? null,
+  });
 
   useEffect(() => {
     let active = true;

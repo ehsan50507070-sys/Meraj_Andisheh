@@ -22,6 +22,7 @@ import { RateLimiter } from '../../core/services/rateLimiter';
 import { SearchNormalizer } from '../../core/services/searchNormalizer';
 import { SearchSuggestionService } from '../../core/services/searchSuggestionService';
 import { SettingsManagementService } from '../../core/services/settingsManagementService';
+import { SitemapService } from '../../core/services/sitemapService';
 import { SmartImportService } from '../../core/services/smartImportService';
 import { StaffManagementService } from '../../core/services/staffManagementService';
 import { TaxonomyService } from '../../core/services/taxonomyService';
@@ -116,6 +117,7 @@ export interface AppContainer {
   backupScheduler: BackupScheduler;
   profileService: ProfileService;
   searchSuggestionService: SearchSuggestionService;
+  sitemapService: SitemapService;
   smartImportService: SmartImportService;
   recordStartupLogOnce: () => void;
   ensureInitializedAtStartup: () => Promise<void>;
@@ -152,7 +154,11 @@ const visitorIdStorage = new BrowserVisitorIdStorage();
 const passwordHasher = new BrowserPasswordHasher();
 const sessionTokenStore = new LocalSessionTokenStore(envConfig.sessionStorageKey);
 const emailSender = new DevEmailSender(logger, t('logs.devEmailPrefix'));
-const smsSender = new DevSmsSender(logger, t('logs.devSmsPrefix'));
+const smsSender = new DevSmsSender(
+  logger,
+  t('logs.devSmsPrefix'),
+  envConfig.isDevelopment,
+);
 const rateLimiter = new RateLimiter(clock, 20, 60 * 1000);
 const searchNormalizer = new SearchNormalizer();
 
@@ -356,6 +362,11 @@ const searchSuggestionService = new SearchSuggestionService(
   taxonomyRepository,
   searchNormalizer,
 );
+const sitemapService = new SitemapService({
+  contentRepository,
+  layoutRepository,
+  clock,
+});
 const smartImportService = new SmartImportService(
   taxonomyRepository,
   permissionPolicyService,
@@ -506,6 +517,7 @@ export const appContainer: AppContainer = {
   backupScheduler,
   profileService,
   searchSuggestionService,
+  sitemapService,
   smartImportService,
   recordStartupLogOnce,
   ensureInitializedAtStartup,

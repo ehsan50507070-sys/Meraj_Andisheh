@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { envConfig } from './infrastructure/config/envConfig';
 import { AuthProvider } from './web/auth/AuthContext';
 import { AgeGateModal } from './web/components/AgeGateModal';
+import { ErrorBoundary } from './web/components/ErrorBoundary';
 import { AgeProvider } from './web/context/AgeContext';
 import { ComponentsLabPage } from './web/pages/ComponentsLabPage';
 import { ContentBankPage } from './web/pages/ContentBankPage';
@@ -108,8 +109,10 @@ export default function App() {
   return (
     <AuthProvider>
       <AgeProvider>
-        <HashRouter routes={routes} defaultRoute={envConfig.defaultHashRoute} />
-        <AgeGateModal />
+        <ErrorBoundary>
+          <HashRouter routes={routes} defaultRoute={envConfig.defaultHashRoute} />
+          <AgeGateModal />
+        </ErrorBoundary>
       </AgeProvider>
     </AuthProvider>
   );

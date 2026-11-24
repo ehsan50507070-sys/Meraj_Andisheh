@@ -22,9 +22,11 @@ import { MainLayout } from '../layouts/MainLayout';
 import { ContentDetailPage } from '../pages/ContentDetailPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 import { PublicMediaPage } from '../pages/PublicMediaPage';
+import { ServerErrorPage } from '../pages/ServerErrorPage';
 import { SignedDownloadPage } from '../pages/SignedDownloadPage';
 import { StaticPageView } from '../pages/StaticPageView';
 import { ChangePasswordPage } from '../pages/account/ChangePasswordPage';
+import { usePageMeta } from '../hooks/usePageMeta';
 import { appContainer } from '../services/appContainer';
 import { ThemeManager } from '../theme/ThemeManager';
 
@@ -70,6 +72,7 @@ export function navigateToHash(path: string): void {
 export function HashRouter({ routes, defaultRoute }: HashRouterProps) {
   const {
     currentUser,
+    siteTitle,
     userPermissions,
     isCommentsEnabled,
     isContentRequestsEnabled,
@@ -127,6 +130,11 @@ export function HashRouter({ routes, defaultRoute }: HashRouterProps) {
       setRouteState({ path: '/account/change-password', fullHash: targetHash });
     }
   }, [mustForcePasswordChange, routeState.path]);
+
+  usePageMeta({
+    currentRoute: routeState.fullHash,
+    siteTitle,
+  });
 
   const normalizedRouteLower = routeState.path.toLowerCase();
   const isAdminRoute =
@@ -197,6 +205,11 @@ export function HashRouter({ routes, defaultRoute }: HashRouterProps) {
 
   if (mustForcePasswordChange) {
     return <ChangePasswordPage currentRoute="#/account/change-password" />;
+  }
+
+  // 500 Server Error Preview Route (#/error/500)
+  if (normalizedRouteLower === '/error/500') {
+    return <ServerErrorPage currentRoute={routeState.fullHash} />;
   }
 
   // Public Media Route (#/media/:storageKey)
