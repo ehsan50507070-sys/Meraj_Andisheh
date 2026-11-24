@@ -92,3 +92,92 @@ export interface AdminFilmListItem {
   sourcesCount: number;
   filesCount: number;
 }
+
+// Stage 24: Book Portal (BookInfo & Showcase/Detail types)
+export const BOOK_AUTHOR_MAX_LENGTH = 200;
+export const BOOK_PUBLISHER_MAX_LENGTH = 150;
+export const BOOK_PUBLISH_YEAR_MIN = 1;
+export const BOOK_PUBLISH_YEAR_MAX = 2200;
+export const BOOK_PAGES_MIN = 1;
+export const BOOK_PAGES_MAX = 100000;
+export const BOOK_KEY_EXCERPTS_MAX_LENGTH = 4000;
+export const BOOK_STUDIO_NOTE_MAX_LENGTH = 3000;
+export const DEFAULT_MAX_RELATED_BOOKS = 6;
+
+export interface BookInfo {
+  contentId: number;
+  author: string;
+  publisher: string | null;
+  publishYear: number | null;
+  pages: number | null;
+  keyExcerpts: string | null;
+  studioNote: string | null;
+}
+
+export const DEFAULT_BOOK_INFO_VALUES: Omit<BookInfo, 'contentId'> = {
+  author: '',
+  publisher: null,
+  publishYear: null,
+  pages: null,
+  keyExcerpts: null,
+  studioNote: null,
+};
+
+export interface BookPortalItem {
+  item: ContentItem;
+  bookInfo: BookInfo;
+  topicIds: number[];
+  tagIds: number[];
+  personIds: number[];
+  ageGroupIds: number[];
+  primaryTopicName: string | null;
+  priorityGroup: AgePriorityGroup;
+}
+
+export interface BookPortalShelf {
+  id: string;
+  topic: Topic;
+  items: BookPortalItem[];
+}
+
+export interface BookPortalData {
+  items: BookPortalItem[];
+  featuredBooks: BookPortalItem[];
+  allAllowedBooksCount: number;
+  shelves: BookPortalShelf[];
+  availableTopics: Topic[];
+}
+
+export type BookPortalDataResult =
+  | { enabled: false }
+  | { enabled: true; data: BookPortalData };
+
+export interface PublicBookDetailData {
+  item: ContentItem;
+  bookInfo: BookInfo;
+  sanitizedBodyHtml: string;
+  sources: ContentSource[];
+  files: ContentFile[];
+  topics: Topic[];
+  topicBreadcrumbChain: Topic[];
+  primaryRootTopicId: number | null;
+  tags: Tag[];
+  persons: Person[];
+  impactLevel: ImpactLevel | null;
+  targetAgeGroups: AgeGroup[];
+  relatedBooks: BookPortalItem[];
+}
+
+export type PublicBookDetailResult =
+  | { status: 'not_found' }
+  | { status: 'ok'; data: PublicBookDetailData };
+
+export interface AdminBookListItem {
+  item: ContentItem;
+  bookInfo: BookInfo;
+  hasExplicitBookInfo: boolean;
+  primaryTopicName: string | null;
+  sourcesCount: number;
+  filesCount: number;
+}
+

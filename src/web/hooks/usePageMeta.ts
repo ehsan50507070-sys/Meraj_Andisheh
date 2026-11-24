@@ -29,6 +29,12 @@ function resolveDefaultRouteTitleKey(normalizedPath: string): ResourceKey {
   if (normalizedPath.startsWith('/films/')) {
     return 'meta.title.filmDetail';
   }
+  if (normalizedPath === '/books') {
+    return 'meta.title.books';
+  }
+  if (normalizedPath.startsWith('/books/')) {
+    return 'meta.title.bookDetail';
+  }
   if (normalizedPath === '/search') {
     return 'meta.title.search';
   }

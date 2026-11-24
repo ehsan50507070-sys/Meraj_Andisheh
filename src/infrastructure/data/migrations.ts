@@ -35,6 +35,7 @@ export const STORE_NAMES = {
   BACKUP_LOGS: 'backupLogs',
   BACKUP_ARCHIVES: 'backupArchives',
   FILM_INFOS: 'filmInfos',
+  BOOK_INFOS: 'bookInfos',
 } as const;
 
 export const STAGE3_OBJECT_STORES: readonly string[] = [
@@ -112,6 +113,10 @@ export const STAGE21_OBJECT_STORES: readonly string[] = [
 
 export const STAGE23_OBJECT_STORES: readonly string[] = [
   STORE_NAMES.FILM_INFOS,
+] as const;
+
+export const STAGE24_OBJECT_STORES: readonly string[] = [
+  STORE_NAMES.BOOK_INFOS,
 ] as const;
 
 interface IndexSpec {
@@ -505,6 +510,18 @@ const STAGE23_STORE_SPECS: readonly StoreSpec[] = [
   },
 ];
 
+const STAGE24_STORE_SPECS: readonly StoreSpec[] = [
+  {
+    name: STORE_NAMES.BOOK_INFOS,
+    keyPath: 'contentId',
+    indexes: [
+      { name: 'by_author', keyPath: 'author' },
+      { name: 'by_publisher', keyPath: 'publisher' },
+      { name: 'by_publishYear', keyPath: 'publishYear' },
+    ],
+  },
+];
+
 export const DATABASE_MIGRATIONS: readonly MigrationStep[] = [
   {
     version: 1,
@@ -669,6 +686,30 @@ export const DATABASE_MIGRATIONS: readonly MigrationStep[] = [
       if (oldVersion > 0 && transaction && db.objectStoreNames.contains(STORE_NAMES.META)) {
         transaction.objectStore(STORE_NAMES.META).put({
           key: 'stage23_films_default_enabled_v1',
+          value: '1',
+          updatedAtUtc: new Date().toISOString(),
+        });
+      }
+    },
+  },
+  {
+    version: 16,
+    up: (db, transaction, oldVersion) => {
+      for (const spec of STAGE24_STORE_SPECS) {
+        ensureStore(db, transaction, spec);
+      }
+      if (
+        oldVersion > 0 &&
+        transaction &&
+        db.objectStoreNames.contains(STORE_NAMES.FEATURE_FLAGS)
+      ) {
+        transaction
+          .objectStore(STORE_NAMES.FEATURE_FLAGS)
+          .put({ key: 'Books', isEnabled: true });
+      }
+      if (oldVersion > 0 && transaction && db.objectStoreNames.contains(STORE_NAMES.META)) {
+        transaction.objectStore(STORE_NAMES.META).put({
+          key: 'stage24_books_default_enabled_v1',
           value: '1',
           updatedAtUtc: new Date().toISOString(),
         });

@@ -4,7 +4,7 @@ export const faResources = {
   'app.subtitle': 'پلتفرم بانک محتوای فارسی',
   'app.stageLabel': 'مرحله {stage} از {total}',
   'app.stageName':
-    'پرتال فیلم و مستند (FilmInfo، ویترین فیلم‌ها، صفحه پخش اختصاصی و مدیریت پرتال‌ها)',
+    'پرتال کتاب (BookInfo، ویترین کتاب‌ها، صفحه معرفی و دانلود کتاب و مدیریت پرتال‌ها)',
   'app.footerNote': 'پلتفرم معراج اندیشه · بانک محتوای فارسی متناسب با هر رده سنی',
 
   // Themes
@@ -42,6 +42,7 @@ export const faResources = {
   'layout.nav.home': 'صفحه اصلی',
   'layout.nav.contentBank': 'بانک محتوا',
   'layout.nav.films': 'فیلم و مستند',
+  'layout.nav.books': 'کتاب‌ها',
   'layout.nav.requests': 'درخواست محتوا',
   'layout.nav.health': 'وضعیت سلامت',
   'layout.nav.devComponents': 'آزمایشگاه کامپوننت‌ها',
@@ -63,6 +64,7 @@ export const faResources = {
   'layout.footer.linkHome': 'صفحه اصلی',
   'layout.footer.linkContentBank': 'بانک محتوا',
   'layout.footer.linkFilms': 'فیلم و مستند',
+  'layout.footer.linkBooks': 'کتاب‌ها',
   'layout.footer.linkRequests': 'درخواست محتوا',
   'layout.footer.linkAccount': 'حساب کاربری / ورود',
   'layout.footer.linkProfile': 'پروفایل کاربری',
@@ -2939,6 +2941,8 @@ export const faResources = {
   'meta.title.contentDetail': 'مشاهده محتوا',
   'meta.title.films': 'فیلم و مستند',
   'meta.title.filmDetail': 'نمایش فیلم',
+  'meta.title.books': 'پرتال کتاب',
+  'meta.title.bookDetail': 'معرفی و دانلود کتاب',
   'meta.title.search': 'جستجو',
   'meta.title.requests': 'درخواست محتوا',
   'meta.title.staticPage': 'راهنما و معرفی',
@@ -3118,10 +3122,10 @@ export const faResources = {
   // Admin Portals Page (#/admin/portals)
   'admin.portals.title': 'مدیریت پرتال‌های تخصصی (فیلم و کتاب)',
   'admin.portals.subtitle':
-    'تعیین فیلم شاخص هفته، ویرایش سریع شناسنامه فیلم‌ها و مستندها و پایش وضعیت انتشار پرتال‌های عمومی.',
+    'تعیین فیلم شاخص هفته، ویرایش سریع شناسنامه‌ی فیلم‌ها و کتاب‌ها و پایش وضعیت انتشار پرتال‌های عمومی.',
   'admin.portals.tabs.ariaLabel': 'انتخاب پرتال تخصصی',
   'admin.portals.tab.films': 'پرتال فیلم و مستند',
-  'admin.portals.tab.books': 'پرتال کتاب (مرحله ۲۴)',
+  'admin.portals.tab.books': 'پرتال کتاب',
 
   'admin.portals.films.flagLabel': 'وضعیت ماژول عمومی پرتال فیلم:',
   'admin.portals.films.flagEnabled': 'فعال (نمایش در #/films)',
@@ -3201,6 +3205,153 @@ export const faResources = {
     'کنترل دسترسی portals.manage (۴۰۳ با WARN و ۴۰۴ عضو) و بررسی IndexedDB v15 (filmInfos)',
   'tests.stage23.rbacAndIndexedDbV15.desc':
     'همکار بدون مجوز ۴۰۳ با لاگ WARN و عضو ۴۰۴ می‌گیرد؛ همکار دارای portals.manage یا مدیرکل مجازند و ObjectStore فیلم‌ها (filmInfos) در IndexedDB v15 تأیید می‌شود.',
+
+  // Stage 24: Book Portal (#/books, #/books/:slug, #/admin/portals Book Tab)
+  'admin.content.book.sectionTitle': 'مشخصات تخصصی پرتال کتاب (BookInfo)',
+  'admin.content.book.sectionSubtitle':
+    'این مشخصات کتاب‌شناختی و بریده‌های کلیدی در ویترین کتاب‌ها (#/books) و صفحه‌ی معرفی کتاب نمایش داده می‌شوند.',
+  'admin.content.book.authorLabel': 'نویسنده / پدیدآورنده',
+  'admin.content.book.authorPlaceholder': 'نام کامل نویسنده یا پدیدآورنده‌ی کتاب (حداکثر ۲۰۰ نویسه)',
+  'admin.content.book.authorCounter': '{count} / ۲۰۰ نویسه',
+  'admin.content.book.publisherLabel': 'ناشر (اختیاری)',
+  'admin.content.book.publisherPlaceholder': 'نام ناشر یا مؤسسه انتشاراتی (حداکثر ۱۵۰ نویسه)',
+  'admin.content.book.publishYearLabel': 'سال انتشار (اختیاری)',
+  'admin.content.book.publishYearPlaceholder': 'مثلاً: ۱۴۰۲ یا 2023',
+  'admin.content.book.pagesLabel': 'تعداد صفحات (اختیاری)',
+  'admin.content.book.pagesPlaceholder': 'مثلاً: ۲۴۰',
+  'admin.content.book.keyExcerptsLabel': 'بریده‌های کلیدی کتاب (اختیاری، حداکثر ۴۰۰۰ نویسه)',
+  'admin.content.book.keyExcerptsPlaceholder':
+    'جملات برگزیده یا فرازهای مهم کتاب را برای نمایش در صفحه‌ی معرفی کتاب بنویسید...',
+  'admin.content.book.keyExcerptsCounter': '{count} / ۴۰۰۰ نویسه',
+  'admin.content.book.studioNoteLabel': 'یادداشت تبیینی استودیو (اختیاری، حداکثر ۳۰۰۰ نویسه)',
+  'admin.content.book.studioNotePlaceholder':
+    'تحلیل، راهنمای مطالعه و ارزش علمی یا تربیتی کتاب برای مخاطب...',
+  'admin.content.book.studioNoteCounter': '{count} / ۳۰۰۰ نویسه',
+
+  // Public Book Showcase (#/books)
+  'books.portal.badge': 'پرتال کتاب و مطالعه',
+  'books.portal.title': 'کتابخانه و ویترین کتاب‌های برگزیده',
+  'books.portal.subtitle':
+    'معرفی کتاب‌شناختی، بریده‌های کلیدی، منابع مستند و امکان دریافت فایل نمونه یا نسخه معرفی کتاب متناسب با رده‌ی سنی شما.',
+  'books.portal.loading': 'در حال بارگذاری آثار پرتال کتاب...',
+  'books.portal.featuredSectionTitle': 'کتاب‌های شاخص و پیشنهادی تحریریه',
+  'books.portal.featuredBadge': 'کتاب شاخص',
+  'books.portal.topicFilterLabel': 'فیلتر بر اساس موضوع',
+  'books.portal.topicFilterAll': 'همه‌ی موضوعات ({count})',
+  'books.portal.searchLabel': 'جستجو در عنوان، نویسنده یا ناشر کتاب‌ها',
+  'books.portal.searchPlaceholder': 'جستجوی عنوان کتاب، نام نویسنده، ناشر یا بریده...',
+  'books.portal.searchClear': 'پاک‌سازی فیلترها',
+  'books.portal.resultsCount': '{count} کتاب آماده مطالعه و بررسی',
+  'books.portal.shelf.topicPrefix': 'کتاب‌های موضوع {topic}',
+  'books.portal.shelf.countLabel': '{count} کتاب',
+  'books.portal.card.authorBy': 'اثر {author}',
+  'books.portal.card.authorUnset': 'پدیدآورنده درج‌نشده',
+  'books.portal.card.yearValue': 'چاپ {year}',
+  'books.portal.card.pagesValue': '{pages} صفحه',
+  'books.portal.viewBookAction': 'معرفی و دریافت',
+  'books.portal.emptyTitle': 'هنوز کتابی مطابق این جستجو یا فیلتر موضوعی منتشر نشده است.',
+  'books.portal.emptyBody':
+    'فیلتر موضوعی یا عبارت جستجو را تغییر دهید یا سایر منابع را در بانک محتوا مرور کنید.',
+  'books.portal.emptyCatalogButton': 'مرور کل بانک محتوا',
+
+  // Public Book Detail Page (#/books/:slug)
+  'bookDetail.breadcrumb.portal': 'کتاب‌ها',
+  'bookDetail.meta.authorLabel': 'نویسنده',
+  'bookDetail.meta.publisherLabel': 'ناشر',
+  'bookDetail.meta.publishYearLabel': 'سال انتشار',
+  'bookDetail.meta.pagesLabel': 'تعداد صفحات',
+  'bookDetail.meta.pagesValue': '{pages} صفحه',
+  'bookDetail.meta.authorUnknown': 'درج‌نشده',
+  'bookDetail.files.sectionTitle': 'فایل نمونه / نسخه‌ی معرفی و پیوست‌های کتاب',
+  'bookDetail.files.previewHeading': 'پیش‌نمایش برخط سند کتاب (PDF)',
+  'bookDetail.files.downloadSampleButton': 'دریافت فایل نمونه / کتاب (لینک امضاشده ۵ دقیقه‌ای)',
+  'bookDetail.files.noFiles': 'فایل نمونه‌ای برای این کتاب ثبت نشده است.',
+  'bookDetail.excerpts.title': 'بریده‌های کلیدی کتاب',
+  'bookDetail.studioNote.title': 'یادداشت تبیینی استودیو معراج اندیشه',
+  'bookDetail.related.title': 'کتاب‌های مرتبط در همین موضوع یا نویسنده',
+  'bookDetail.related.subtitle': 'سایر کتاب‌های منتشرشده و مجاز برای رده‌ی سنی فعال',
+  'bookDetail.backToPortal': 'بازگشت به پرتال کتاب',
+  'bookDetail.backToBank': 'مشاهده در بانک محتوا',
+
+  'contentDetail.book.portalLinkBannerTitle': 'نمایش اختصاصی در پرتال کتاب (شناسنامه و بریده‌های کلیدی)',
+  'contentDetail.book.portalLinkButton': 'باز کردن صفحه‌ی اختصاصی کتاب',
+  'contentDetail.book.authorSummary': 'نویسنده: {author}',
+  'contentDetail.book.publisherSummary': 'ناشر: {publisher}',
+  'contentDetail.book.publishYearSummary': 'انتشار: {year}',
+  'contentDetail.book.pagesSummary': '{pages} صفحه',
+
+  // Admin Portals Book Tab (#/admin/portals)
+  'admin.portals.books.flagLabel': 'وضعیت ماژول عمومی پرتال کتاب:',
+  'admin.portals.books.flagEnabled': 'فعال (نمایش در #/books)',
+  'admin.portals.books.flagDisabled': 'غیرفعال (مخفی با خطای ۴۰۴)',
+  'admin.portals.books.openShowcase': 'مشاهده ویترین کتاب‌ها',
+  'admin.portals.books.openSettings': 'تنظیم کلید ماژول',
+  'admin.portals.books.infoNote':
+    'تنها محتواهای با قالب «کتاب» در اینجا فهرست می‌شوند؛ انتشار نهایی همچنان به داشتن منبع (ContentSource) معتبر و تصویر جلد وابسته است.',
+  'admin.portals.books.searchLabel': 'جستجو در کتاب‌های ثبت‌شده',
+  'admin.portals.books.searchPlaceholder': 'عنوان کتاب، نویسنده، ناشر، سال انتشار یا اسلاگ...',
+  'admin.portals.books.addNewContentBook': 'ثبت کتاب جدید در مدیریت محتوا',
+  'admin.portals.books.loading': 'در حال بارگذاری فهرست کتاب‌ها...',
+  'admin.portals.books.emptyTitle': 'هنوز هیچ محتوایی با قالب «کتاب» ثبت نشده است.',
+  'admin.portals.books.emptyBody':
+    'از بخش «ثبت کتاب جدید در مدیریت محتوا» یک محتوا با قالب «کتاب» بسازید تا در این فهرست ظاهر شود.',
+  'admin.portals.books.col.title': 'عنوان و موضوع کتاب',
+  'admin.portals.books.col.authorAndPublisher': 'نویسنده و ناشر',
+  'admin.portals.books.col.yearAndPages': 'سال چاپ و صفحات',
+  'admin.portals.books.col.status': 'وضعیت انتشار',
+  'admin.portals.books.col.actions': 'عملیات',
+  'admin.portals.books.featuredBadge': 'کتاب شاخص',
+  'admin.portals.books.unsetValue': 'ثبت‌نشده',
+  'admin.portals.books.yearLabel': 'انتشار: {year}',
+  'admin.portals.books.pagesLabel': '{pages} صفحه',
+  'admin.portals.books.quickEditAction': 'ویرایش مشخصات کتاب',
+  'admin.portals.books.editFullContentAction': 'ویرایش محتوا',
+  'admin.portals.books.previewBookAction': 'مشاهده در پرتال',
+  'admin.portals.books.feedback.bookInfoSaved':
+    'مشخصات کتاب «{title}» با موفقیت ذخیره شد.',
+  'admin.portals.books.modal.title': 'ویرایش سریع مشخصات کتاب: {title}',
+  'admin.portals.books.modal.cancel': 'انصراف',
+  'admin.portals.books.modal.save': 'ذخیره مشخصات کتاب',
+  'admin.portals.books.modal.saving': 'در حال ذخیره...',
+
+  'admin.portals.book.error.contentNotFound': 'محتوای مورد نظر یافت نشد.',
+  'admin.portals.book.error.invalidContentFormat':
+    'تنها محتواهایی با قالب «کتاب» می‌توانند دارای شناسنامه BookInfo باشند.',
+  'admin.portals.book.error.authorRequired': 'نام نویسنده / پدیدآورنده کتاب الزامی است.',
+  'admin.portals.book.error.authorTooLong':
+    'نام نویسنده نباید بیشتر از ۲۰۰ نویسه باشد.',
+  'admin.portals.book.error.publisherTooLong':
+    'نام ناشر نباید بیشتر از ۱۵۰ نویسه باشد.',
+  'admin.portals.book.error.invalidPublishYear':
+    'سال انتشار کتاب باید یک عدد صحیح مثبت معتبر (مثلاً ۱۴۰۲ یا 2023) باشد.',
+  'admin.portals.book.error.invalidPages':
+    'تعداد صفحات باید یک عدد صحیح مثبت معتبر باشد.',
+  'admin.portals.book.error.keyExcerptsTooLong':
+    'متن بریده‌های کلیدی نباید بیشتر از ۴۰۰۰ نویسه باشد.',
+  'admin.portals.book.error.studioNoteTooLong':
+    'یادداشت تبیینی استودیو نباید بیشتر از ۳۰۰۰ نویسه باشد.',
+
+  // Stage 24 Unit Tests
+  'tests.stage24.featureFlagLifecycle.name':
+    'کلید ماژول Books: خطای ۴۰۴ هنگام خاموشی و نمایش ویترین کتاب‌ها هنگام روشنی',
+  'tests.stage24.featureFlagLifecycle.desc':
+    'با خاموشی FeatureFlag("Books") مسیرهای #/books و #/books/:slug نتیجه‌ی not_found/disabled می‌دهند و با روشن‌شدن، کتاب‌های منتشرشده با جستجوی نویسنده/ناشر/عنوان و قفسه موضوعی برگردانده می‌شوند.',
+  'tests.stage24.publishRequiresSourceAndBookInfo.name':
+    'الزام منبع (ContentSource) در انتشار کتاب و بازیابی کامل BookInfo و بریده‌ها',
+  'tests.stage24.publishRequiresSourceAndBookInfo.desc':
+    'کتاب بدون منبع هنگام انتشار مسدود می‌شود؛ پس از افزودن منبع، تصویر و فایل و ثبت BookInfo، تمامی فیلدهای شناسنامه و یادداشت تبیینی استودیو بدون نقص بازگردانده می‌شوند.',
+  'tests.stage24.samplePdfDownloadAuthAndSignedLink.name':
+    'دریافت فایل نمونه‌ی کتاب فقط برای عضو واردشده و صدور لینک امضاشده‌ی ۵ دقیقه‌ای',
+  'tests.stage24.samplePdfDownloadAuthAndSignedLink.desc':
+    'درخواست دانلود فایل نمونه‌ی کتاب برای کاربر مهمان با AUTH_REQUIRED و نشانی بازگشت #/books/:slug به ورود هدایت می‌شود و برای عضو واردشده لینک موقت امضاشده و باینری PDF معتبر صادر می‌گردد.',
+  'tests.stage24.childSafetyOnShowcaseAndDetail.name':
+    'ایمنی سخت رده‌ی سنی کودک در پرتال کتاب (#/books و #/books/:slug)',
+  'tests.stage24.childSafetyOnShowcaseAndDetail.desc':
+    'کتاب ویژه‌ی بزرگسال در پروفایل کودک از ویترین، قفسه‌ها و کتاب‌های مرتبط حذف شده و دسترسی مستقیم به #/books/:slug آن با not_found مسدود می‌شود.',
+  'tests.stage24.rbacAndIndexedDbV16.name':
+    'کنترل دسترسی portals.manage روی کتاب‌ها (۴۰۳ با WARN و ۴۰۴ عضو) و بررسی IndexedDB v16',
+  'tests.stage24.rbacAndIndexedDbV16.desc':
+    'همکار بدون مجوز کد ۴۰۳ با لاگ WARN و عضو ۴۰۴ می‌گیرند؛ ارقام فارسی سال و صفحات ذخیره و جدول bookInfos همراه با پشتیبان‌گیری کامل در IndexedDB نسخه ۱۶ تأیید می‌شود.',
 } as const;
 
 export type ResourceKey = keyof typeof faResources;

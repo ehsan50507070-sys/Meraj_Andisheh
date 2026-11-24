@@ -4,6 +4,7 @@ import { AuthProvider } from './web/auth/AuthContext';
 import { AgeGateModal } from './web/components/AgeGateModal';
 import { ErrorBoundary } from './web/components/ErrorBoundary';
 import { AgeProvider } from './web/context/AgeContext';
+import { BooksPortalPage } from './web/pages/BooksPortalPage';
 import { ComponentsLabPage } from './web/pages/ComponentsLabPage';
 import { ContentBankPage } from './web/pages/ContentBankPage';
 import { ContentRequestsPage } from './web/pages/ContentRequestsPage';
@@ -40,6 +41,10 @@ const routes: HashRouteConfig[] = [
   {
     path: '/films',
     render: (currentRoute) => <FilmsPortalPage currentRoute={currentRoute} />,
+  },
+  {
+    path: '/books',
+    render: (currentRoute) => <BooksPortalPage currentRoute={currentRoute} />,
   },
   {
     path: '/search',

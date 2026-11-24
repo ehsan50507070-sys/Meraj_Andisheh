@@ -51,6 +51,7 @@ export function MainLayout({
     siteSubtitle,
     isContentRequestsEnabled,
     isFilmsEnabled,
+    isBooksEnabled,
     logout,
     refreshAuthState,
   } = useAuth();
@@ -93,6 +94,8 @@ export function MainLayout({
     normalizedPath === '/content' || normalizedPath.startsWith('/content/');
   const isFilmsActive =
     normalizedPath === '/films' || normalizedPath.startsWith('/films/');
+  const isBooksActive =
+    normalizedPath === '/books' || normalizedPath.startsWith('/books/');
   const isRequestsActive = normalizedPath === '/requests';
 
   useEffect(() => {
@@ -448,6 +451,19 @@ export function MainLayout({
                   </a>
                 )}
 
+                {isBooksEnabled && (
+                  <a
+                    href="#/books"
+                    className={`whitespace-nowrap shrink-0 py-1 hover:underline underline-offset-4 transition-colors ${
+                      isBooksActive
+                        ? 'font-bold text-[var(--color-text)] underline'
+                        : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
+                    }`}
+                  >
+                    {t('layout.nav.books')}
+                  </a>
+                )}
+
                 {isContentRequestsEnabled && (
                   <a
                     href="#/requests"
@@ -539,6 +555,19 @@ export function MainLayout({
                       }`}
                     >
                       {t('layout.nav.films')}
+                    </a>
+                  )}
+                  {isBooksEnabled && (
+                    <a
+                      href="#/books"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`py-1 whitespace-nowrap ${
+                        isBooksActive
+                          ? 'font-bold text-[var(--color-text)] underline underline-offset-4'
+                          : 'text-[var(--color-muted)]'
+                      }`}
+                    >
+                      {t('layout.nav.books')}
                     </a>
                   )}
                   {isContentRequestsEnabled && (
@@ -706,6 +735,13 @@ export function MainLayout({
                   <li>
                     <a href="#/films" className="hover:text-[var(--color-text)] hover:underline underline-offset-4">
                       {t('layout.footer.linkFilms')}
+                    </a>
+                  </li>
+                )}
+                {isBooksEnabled && (
+                  <li>
+                    <a href="#/books" className="hover:text-[var(--color-text)] hover:underline underline-offset-4">
+                      {t('layout.footer.linkBooks')}
                     </a>
                   </li>
                 )}

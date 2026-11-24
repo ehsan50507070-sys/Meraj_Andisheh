@@ -1,6 +1,7 @@
 import { AnalyticsDashboardService } from '../../core/services/analyticsDashboardService';
 import { AuthService } from '../../core/services/authService';
 import { BackupService } from '../../core/services/backupService';
+import { BookPortalService } from '../../core/services/bookPortalService';
 import { CommentService } from '../../core/services/commentService';
 import { ContentCatalogService } from '../../core/services/contentCatalogService';
 import { ContentDetailService } from '../../core/services/contentDetailService';
@@ -36,6 +37,7 @@ import { IndexedDbAdminRepository } from '../../infrastructure/data/IndexedDbAdm
 import { IndexedDbAuthRepository } from '../../infrastructure/data/IndexedDbAuthRepository';
 import { IndexedDbBackupRepository } from '../../infrastructure/data/IndexedDbBackupRepository';
 import { IndexedDbBackupSnapshotProvider } from '../../infrastructure/data/IndexedDbBackupSnapshotProvider';
+import { IndexedDbBookRepository } from '../../infrastructure/data/IndexedDbBookRepository';
 import { IndexedDbCommentRepository } from '../../infrastructure/data/IndexedDbCommentRepository';
 import { IndexedDbContentRepository } from '../../infrastructure/data/IndexedDbContentRepository';
 import { IndexedDbContentRequestRepository } from '../../infrastructure/data/IndexedDbContentRequestRepository';
@@ -81,6 +83,7 @@ export interface AppContainer {
   layoutRepository: IndexedDbLayoutRepository;
   userTopicAffinityRepository: IndexedDbUserTopicAffinityRepository;
   filmRepository: IndexedDbFilmRepository;
+  bookRepository: IndexedDbBookRepository;
   accountCleanupRepository: IndexedDbAccountCleanupRepository;
   backupRepository: IndexedDbBackupRepository;
   backupSnapshotProvider: IndexedDbBackupSnapshotProvider;
@@ -114,6 +117,7 @@ export interface AppContainer {
   contentRequestService: ContentRequestService;
   personalizationService: PersonalizationService;
   filmPortalService: FilmPortalService;
+  bookPortalService: BookPortalService;
   homePageService: HomePageService;
   layoutManagementService: LayoutManagementService;
   analyticsDashboardService: AnalyticsDashboardService;
@@ -148,6 +152,7 @@ const contentRequestRepository = new IndexedDbContentRequestRepository(dataStore
 const layoutRepository = new IndexedDbLayoutRepository(dataStore);
 const userTopicAffinityRepository = new IndexedDbUserTopicAffinityRepository(dataStore);
 const filmRepository = new IndexedDbFilmRepository(dataStore);
+const bookRepository = new IndexedDbBookRepository(dataStore);
 const accountCleanupRepository = new IndexedDbAccountCleanupRepository(dataStore);
 const backupRepository = new IndexedDbBackupRepository(dataStore, clock);
 const backupSnapshotProvider = new IndexedDbBackupSnapshotProvider(dataStore);
@@ -321,6 +326,16 @@ const filmPortalService = new FilmPortalService({
   searchNormalizer,
   fileStorage,
 });
+const bookPortalService = new BookPortalService({
+  bookRepository,
+  contentRepository,
+  taxonomyRepository,
+  adminRepository,
+  policyService: permissionPolicyService,
+  logger,
+  searchNormalizer,
+  fileStorage,
+});
 const homePageService = new HomePageService({
   layoutRepository,
   contentRepository,
@@ -452,6 +467,26 @@ export async function ensureStage23FilmsDefaultFlagAsync(
   });
 }
 
+export const STAGE24_BOOKS_FLAG_META_KEY = 'stage24_books_default_enabled_v1';
+
+export async function ensureStage24BooksDefaultFlagAsync(
+  store: IndexedDbDataStore = dataStore,
+): Promise<void> {
+  const existingMeta = await store.getMeta(STAGE24_BOOKS_FLAG_META_KEY);
+  if (existingMeta) {
+    return;
+  }
+  await store.putRecord(STORE_NAMES.FEATURE_FLAGS, {
+    key: 'Books',
+    isEnabled: true,
+  });
+  await store.setMeta({
+    key: STAGE24_BOOKS_FLAG_META_KEY,
+    value: '1',
+    updatedAtUtc: clock.nowUtcIso(),
+  });
+}
+
 let startupRecordedInSession = false;
 let startupInitPromise: Promise<void> | null = null;
 
@@ -481,6 +516,7 @@ function ensureInitializedAtStartup(): Promise<void> {
         await ensureStage16CommentsDefaultFlagAsync(dataStore);
         await ensureStage17ContentRequestsDefaultFlagAsync(dataStore);
         await ensureStage23FilmsDefaultFlagAsync(dataStore);
+        await ensureStage24BooksDefaultFlagAsync(dataStore);
         await ensureStage18LayoutSeededAsync(dataStore);
         await initialSuperAdminService.bootstrapFromEnvIfConfigured(
           envConfig.initialSuperAdminEmail,
@@ -515,6 +551,7 @@ export const appContainer: AppContainer = {
   layoutRepository,
   userTopicAffinityRepository,
   filmRepository,
+  bookRepository,
   accountCleanupRepository,
   backupRepository,
   backupSnapshotProvider,
@@ -548,6 +585,7 @@ export const appContainer: AppContainer = {
   contentRequestService,
   personalizationService,
   filmPortalService,
+  bookPortalService,
   homePageService,
   layoutManagementService,
   analyticsDashboardService,

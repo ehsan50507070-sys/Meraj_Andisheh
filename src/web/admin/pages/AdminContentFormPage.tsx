@@ -37,6 +37,9 @@ import {
   type ContentFormat,
 } from '../../../core/domain/content';
 import {
+  BOOK_AUTHOR_MAX_LENGTH,
+  BOOK_KEY_EXCERPTS_MAX_LENGTH,
+  BOOK_STUDIO_NOTE_MAX_LENGTH,
   FILM_AGE_RATING_NOTE_MAX_LENGTH,
   FILM_KINDS,
   type FilmKind,
@@ -227,6 +230,14 @@ export function AdminContentFormPage({ currentRoute, contentId }: AdminContentFo
   const [filmAgeRatingNote, setFilmAgeRatingNote] = useState('');
   const [filmIsWeeklyPick, setFilmIsWeeklyPick] = useState(false);
 
+  // BookInfo fields (Stage 24, shown when format === 'Book')
+  const [bookAuthor, setBookAuthor] = useState('');
+  const [bookPublisher, setBookPublisher] = useState('');
+  const [bookPublishYear, setBookPublishYear] = useState('');
+  const [bookPages, setBookPages] = useState('');
+  const [bookKeyExcerpts, setBookKeyExcerpts] = useState('');
+  const [bookStudioNote, setBookStudioNote] = useState('');
+
   // Collections
   const [files, setFiles] = useState<SaveContentFileInput[]>([]);
   const [sources, setSources] = useState<SaveContentSourceInput[]>([]);
@@ -404,6 +415,38 @@ export function AdminContentFormPage({ currentRoute, contentId }: AdminContentFo
           setFilmAgeRatingNote('');
           setFilmIsWeeklyPick(false);
         }
+        if (agg.item.format === 'Book') {
+          const bookRes = await appContainer.bookPortalService.getBookInfoByContentIdForAdminAsync(
+            currentUser,
+            agg.item.id,
+          );
+          if (bookRes.ok && bookRes.data) {
+            setBookAuthor(bookRes.data.author);
+            setBookPublisher(bookRes.data.publisher ?? '');
+            setBookPublishYear(
+              bookRes.data.publishYear !== null ? String(bookRes.data.publishYear) : '',
+            );
+            setBookPages(
+              bookRes.data.pages !== null ? String(bookRes.data.pages) : '',
+            );
+            setBookKeyExcerpts(bookRes.data.keyExcerpts ?? '');
+            setBookStudioNote(bookRes.data.studioNote ?? '');
+          } else {
+            setBookAuthor('');
+            setBookPublisher('');
+            setBookPublishYear('');
+            setBookPages('');
+            setBookKeyExcerpts('');
+            setBookStudioNote('');
+          }
+        } else {
+          setBookAuthor('');
+          setBookPublisher('');
+          setBookPublishYear('');
+          setBookPages('');
+          setBookKeyExcerpts('');
+          setBookStudioNote('');
+        }
         setSmartImportPrefilled(false);
         setRemainingSuggestions(null);
       } else {
@@ -443,6 +486,12 @@ export function AdminContentFormPage({ currentRoute, contentId }: AdminContentFo
           setFilmRuntimeMinutes('');
           setFilmAgeRatingNote('');
           setFilmIsWeeklyPick(false);
+          setBookAuthor('');
+          setBookPublisher('');
+          setBookPublishYear('');
+          setBookPages('');
+          setBookKeyExcerpts('');
+          setBookStudioNote('');
           setSmartImportPrefilled(true);
           setRemainingSuggestions(suggestions);
         } else {
@@ -470,6 +519,12 @@ export function AdminContentFormPage({ currentRoute, contentId }: AdminContentFo
           setFilmRuntimeMinutes('');
           setFilmAgeRatingNote('');
           setFilmIsWeeklyPick(false);
+          setBookAuthor('');
+          setBookPublisher('');
+          setBookPublishYear('');
+          setBookPages('');
+          setBookKeyExcerpts('');
+          setBookStudioNote('');
           setSmartImportPrefilled(false);
           setRemainingSuggestions(null);
         }
@@ -886,6 +941,37 @@ export function AdminContentFormPage({ currentRoute, contentId }: AdminContentFo
           }
           return null;
         }
+      } else if (saved.item.format === 'Book') {
+        const bookInfoRes = await appContainer.bookPortalService.upsertBookInfoAsync(
+          currentUser,
+          {
+            contentId: saved.item.id,
+            author: bookAuthor,
+            publisher: bookPublisher,
+            publishYear: bookPublishYear,
+            pages: bookPages,
+            keyExcerpts: bookKeyExcerpts,
+            studioNote: bookStudioNote,
+          },
+          {
+            sourceContext: 'contentForm',
+            routePath: currentRoute,
+          },
+        );
+        if (!bookInfoRes.ok) {
+          setActiveTab('basic');
+          setFeedback({
+            variant: 'error',
+            message: bookInfoRes.messageKey
+              ? t(bookInfoRes.messageKey as ResourceKey)
+              : t('admin.portals.book.error.authorRequired'),
+          });
+          if (editingId === undefined) {
+            justCreatedIdRef.current = saved.item.id;
+            navigateToHash(`/admin/content/edit/${saved.item.id}`);
+          }
+          return null;
+        }
       }
 
       setFeedback({
@@ -955,6 +1041,37 @@ export function AdminContentFormPage({ currentRoute, contentId }: AdminContentFo
             message: filmInfoRes.messageKey
               ? t(filmInfoRes.messageKey as ResourceKey)
               : t('admin.portals.film.error.invalidReleaseYear'),
+          });
+          if (editingId === undefined) {
+            justCreatedIdRef.current = savedId;
+            navigateToHash(`/admin/content/edit/${savedId}`);
+          }
+          return;
+        }
+      } else if (saveRes.data.item.format === 'Book') {
+        const bookInfoRes = await appContainer.bookPortalService.upsertBookInfoAsync(
+          currentUser,
+          {
+            contentId: savedId,
+            author: bookAuthor,
+            publisher: bookPublisher,
+            publishYear: bookPublishYear,
+            pages: bookPages,
+            keyExcerpts: bookKeyExcerpts,
+            studioNote: bookStudioNote,
+          },
+          {
+            sourceContext: 'contentForm',
+            routePath: currentRoute,
+          },
+        );
+        if (!bookInfoRes.ok) {
+          setActiveTab('basic');
+          setFeedback({
+            variant: 'error',
+            message: bookInfoRes.messageKey
+              ? t(bookInfoRes.messageKey as ResourceKey)
+              : t('admin.portals.book.error.authorRequired'),
           });
           if (editingId === undefined) {
             justCreatedIdRef.current = savedId;
@@ -1356,7 +1473,112 @@ export function AdminContentFormPage({ currentRoute, contentId }: AdminContentFo
                 </div>
 
                 {format === 'Book' && (
-                  <Alert variant="info" message={t('admin.content.field.phase2FormatHint')} />
+                  <div className="p-4 sm:p-5 rounded-[var(--radius-control)] border border-[var(--color-border-strong)] bg-[var(--color-surface-alt)] space-y-4">
+                    <div className="space-y-1">
+                      <h2 className="text-sm sm:text-base font-bold text-[var(--color-text)]">
+                        {t('admin.content.book.sectionTitle')}
+                      </h2>
+                      <p className="text-xs text-[var(--color-muted)]">
+                        {t('admin.content.book.sectionSubtitle')}
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <FormField
+                          id="content-book-author"
+                          label={t('admin.content.book.authorLabel')}
+                          value={bookAuthor}
+                          onChange={setBookAuthor}
+                          placeholder={t('admin.content.book.authorPlaceholder')}
+                          required
+                        />
+                        <p
+                          className={`text-xs tabular-nums-strict ${
+                            bookAuthor.trim().length > BOOK_AUTHOR_MAX_LENGTH
+                              ? 'text-[var(--color-error-text)] font-semibold'
+                              : 'text-[var(--color-muted)]'
+                          }`}
+                        >
+                          {t('admin.content.book.authorCounter', {
+                            count: toPersianDigits(bookAuthor.trim().length),
+                          })}
+                        </p>
+                      </div>
+
+                      <FormField
+                        id="content-book-publisher"
+                        label={t('admin.content.book.publisherLabel')}
+                        value={bookPublisher}
+                        onChange={setBookPublisher}
+                        placeholder={t('admin.content.book.publisherPlaceholder')}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        id="content-book-publish-year"
+                        label={t('admin.content.book.publishYearLabel')}
+                        value={bookPublishYear}
+                        onChange={setBookPublishYear}
+                        placeholder={t('admin.content.book.publishYearPlaceholder')}
+                      />
+
+                      <FormField
+                        id="content-book-pages"
+                        label={t('admin.content.book.pagesLabel')}
+                        value={bookPages}
+                        onChange={setBookPages}
+                        placeholder={t('admin.content.book.pagesPlaceholder')}
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <FormField
+                        id="content-book-key-excerpts"
+                        label={t('admin.content.book.keyExcerptsLabel')}
+                        kind="textarea"
+                        rows={3}
+                        value={bookKeyExcerpts}
+                        onChange={setBookKeyExcerpts}
+                        placeholder={t('admin.content.book.keyExcerptsPlaceholder')}
+                      />
+                      <p
+                        className={`text-xs tabular-nums-strict ${
+                          bookKeyExcerpts.trim().length > BOOK_KEY_EXCERPTS_MAX_LENGTH
+                            ? 'text-[var(--color-error-text)] font-semibold'
+                            : 'text-[var(--color-muted)]'
+                        }`}
+                      >
+                        {t('admin.content.book.keyExcerptsCounter', {
+                          count: toPersianDigits(bookKeyExcerpts.trim().length),
+                        })}
+                      </p>
+                    </div>
+
+                    <div className="space-y-1">
+                      <FormField
+                        id="content-book-studio-note"
+                        label={t('admin.content.book.studioNoteLabel')}
+                        kind="textarea"
+                        rows={3}
+                        value={bookStudioNote}
+                        onChange={setBookStudioNote}
+                        placeholder={t('admin.content.book.studioNotePlaceholder')}
+                      />
+                      <p
+                        className={`text-xs tabular-nums-strict ${
+                          bookStudioNote.trim().length > BOOK_STUDIO_NOTE_MAX_LENGTH
+                            ? 'text-[var(--color-error-text)] font-semibold'
+                            : 'text-[var(--color-muted)]'
+                        }`}
+                      >
+                        {t('admin.content.book.studioNoteCounter', {
+                          count: toPersianDigits(bookStudioNote.trim().length),
+                        })}
+                      </p>
+                    </div>
+                  </div>
                 )}
 
                 {format === 'Film' && (

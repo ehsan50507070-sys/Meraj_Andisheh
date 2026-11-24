@@ -20,6 +20,7 @@ import { AdminTaxonomyPage } from '../admin/pages/AdminTaxonomyPage';
 import { canSeeAdminNavItem, findAdminRouteSpec } from '../admin/adminNavConfig';
 import { useAuth } from '../auth/AuthContext';
 import { MainLayout } from '../layouts/MainLayout';
+import { BookDetailPage } from '../pages/BookDetailPage';
 import { ContentDetailPage } from '../pages/ContentDetailPage';
 import { FilmDetailPage } from '../pages/FilmDetailPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
@@ -280,6 +281,26 @@ export function HashRouter({ routes, defaultRoute }: HashRouterProps) {
     }
     return (
       <FilmDetailPage
+        currentRoute={routeState.fullHash}
+        slug={decodedSlug}
+      />
+    );
+  }
+
+  // Public Book Detail Route (#/books/:slug)
+  if (normalizedRouteLower.startsWith('/books/')) {
+    const rawSlug = routeState.path.slice('/books/'.length);
+    let decodedSlug = rawSlug;
+    try {
+      decodedSlug = decodeURIComponent(rawSlug);
+    } catch {
+      decodedSlug = rawSlug;
+    }
+    if (!decodedSlug.trim()) {
+      return <NotFoundPage currentRoute={routeState.fullHash} />;
+    }
+    return (
+      <BookDetailPage
         currentRoute={routeState.fullHash}
         slug={decodedSlug}
       />

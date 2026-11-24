@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ContentFileKind, FileStorageType, type ContentFile } from '../../core/domain/content';
+import type { BookInfo } from '../../core/domain/portals';
 import type { ContentDetailData } from '../../core/services/contentDetailService';
 import { useAuth } from '../auth/AuthContext';
 import { ContentCommentsSection } from '../components/ContentCommentsSection';
@@ -63,10 +64,11 @@ function isPdfFile(file: ContentFile | null | undefined): boolean {
 }
 
 export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps) {
-  const { currentUser, siteTitle, isFilmsEnabled, isAuthReady } = useAuth();
+  const { currentUser, siteTitle, isFilmsEnabled, isBooksEnabled, isAuthReady } = useAuth();
   const { effectiveAgeGroup, isAgeReady } = useAge();
 
   const [detail, setDetail] = useState<ContentDetailData | null>(null);
+  const [bookMeta, setBookMeta] = useState<BookInfo | null>(null);
   const [isNotFound, setIsNotFound] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -121,6 +123,7 @@ export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps
         setIsLoading(true);
         setIsNotFound(false);
         setDetail(null);
+        setBookMeta(null);
         setShareFeedback(null);
         setDownloadFeedback(null);
       }
@@ -141,12 +144,27 @@ export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps
         if (res.status === 'not_found') {
           setIsNotFound(true);
           setDetail(null);
+          setBookMeta(null);
           return;
         }
 
         const isSameContentItem = detailRef.current?.item.id === res.data.item.id;
         setIsNotFound(false);
         setDetail(res.data);
+
+        if (res.data.item.format === 'Book' && isBooksEnabled) {
+          const bookRes = await appContainer.bookPortalService.getPublicBookDetailAsync(
+            slug,
+            effectiveAgeGroup,
+          );
+          if (active && bookRes.status === 'ok') {
+            setBookMeta(bookRes.data.bookInfo);
+          } else if (active) {
+            setBookMeta(null);
+          }
+        } else {
+          setBookMeta(null);
+        }
 
         if (!isSameContentItem) {
           setDisplayViewCount(res.data.item.viewCount);
@@ -189,7 +207,7 @@ export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps
     return () => {
       active = false;
     };
-  }, [slug, effectiveAgeGroup, isAgeReady, isAuthReady, currentUser?.id]);
+  }, [slug, effectiveAgeGroup, isAgeReady, isAuthReady, isBooksEnabled, currentUser?.id]);
 
   const primaryFile = useMemo<ContentFile | null>(() => {
     if (!detail || detail.files.length === 0) {
@@ -1046,6 +1064,64 @@ export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps
               onClick={() => navigateToHash(`/films/${encodeURIComponent(item.slug)}`)}
             >
               {t('contentDetail.film.portalLinkButton')}
+            </Button>
+          </div>
+        )}
+
+        {/* Dedicated Book Portal Banner when format === 'Book' */}
+        {item.format === 'Book' && isBooksEnabled && (
+          <div className="rounded-[var(--radius-card)] border border-[var(--color-border-strong)] bg-[var(--color-surface-alt)] px-4 py-3.5 sm:px-5 flex flex-wrap items-center justify-between gap-3">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2.5 text-xs sm:text-sm font-semibold text-[var(--color-text)]">
+                <BookOpen className="w-4 h-4 text-[var(--color-primary)] shrink-0" aria-hidden="true" />
+                <span>{t('contentDetail.book.portalLinkBannerTitle')}</span>
+              </div>
+              {bookMeta && (bookMeta.author || bookMeta.publisher || bookMeta.publishYear !== null || bookMeta.pages !== null) && (
+                <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-[var(--color-muted)] tabular-nums-strict">
+                  {bookMeta.author && (
+                    <span>
+                      {t('contentDetail.book.authorSummary', { author: bookMeta.author })}
+                    </span>
+                  )}
+                  {bookMeta.publisher && (
+                    <>
+                      <span aria-hidden="true">·</span>
+                      <span>
+                        {t('contentDetail.book.publisherSummary', {
+                          publisher: bookMeta.publisher,
+                        })}
+                      </span>
+                    </>
+                  )}
+                  {bookMeta.publishYear !== null && (
+                    <>
+                      <span aria-hidden="true">·</span>
+                      <span>
+                        {t('contentDetail.book.publishYearSummary', {
+                          year: toPersianDigits(bookMeta.publishYear),
+                        })}
+                      </span>
+                    </>
+                  )}
+                  {bookMeta.pages !== null && (
+                    <>
+                      <span aria-hidden="true">·</span>
+                      <span>
+                        {t('contentDetail.book.pagesSummary', {
+                          pages: toPersianDigits(bookMeta.pages),
+                        })}
+                      </span>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => navigateToHash(`/books/${encodeURIComponent(item.slug)}`)}
+            >
+              {t('contentDetail.book.portalLinkButton')}
             </Button>
           </div>
         )}
