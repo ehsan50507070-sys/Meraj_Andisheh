@@ -59,6 +59,7 @@ import { stage25Tests } from '../../tests/stage25.tests';
 import { stage26Tests } from '../../tests/stage26.tests';
 import { stage27Tests } from '../../tests/stage27.tests';
 import { stage28Tests } from '../../tests/stage28.tests';
+import { stage29Tests } from '../../tests/stage29.tests';
 import { runUnitTests } from '../../tests/testRunner';
 import { useAuth } from '../auth/AuthContext';
 import { useAge } from '../context/AgeContext';
@@ -76,6 +77,7 @@ import {
   ensureStage24BooksDefaultFlagAsync,
   ensureStage25StoryGeneratorDefaultFlagAsync,
   ensureStage26NewsTickerDefaultFlagAsync,
+  ensureStage29GamesDefaultFlagAsync,
 } from '../services/appContainer';
 
 interface HealthPageProps {
@@ -111,6 +113,7 @@ const ALL_UNIT_TESTS = [
   ...stage26Tests,
   ...stage27Tests,
   ...stage28Tests,
+  ...stage29Tests,
 ];
 
 const ARCHITECTURE_LAYERS: ReadonlyArray<{
@@ -440,6 +443,7 @@ export function HealthPage({ currentRoute }: HealthPageProps) {
       await ensureStage24BooksDefaultFlagAsync(appContainer.dataStore);
       await ensureStage25StoryGeneratorDefaultFlagAsync(appContainer.dataStore);
       await ensureStage26NewsTickerDefaultFlagAsync(appContainer.dataStore);
+      await ensureStage29GamesDefaultFlagAsync(appContainer.dataStore);
       await appContainer.initialSuperAdminService.bootstrapFromEnvIfConfigured(
         envConfig.initialSuperAdminEmail,
         envConfig.initialSuperAdminTempPassword,

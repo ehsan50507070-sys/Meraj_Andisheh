@@ -10,3 +10,4 @@ export * from './permissions';
 export * from './storage';
 export * from './layout';
 export * from './story';
+export * from './games';

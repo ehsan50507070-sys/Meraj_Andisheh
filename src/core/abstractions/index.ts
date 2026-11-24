@@ -14,3 +14,4 @@ export * from './contentRepository';
 export * from './announcementDismissStorage';
 export * from './announcementRepository';
 export * from './dailyStatRepository';
+export * from './gameRepository';

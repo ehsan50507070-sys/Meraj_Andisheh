@@ -9,6 +9,7 @@ import { ComponentsLabPage } from './web/pages/ComponentsLabPage';
 import { ContentBankPage } from './web/pages/ContentBankPage';
 import { ContentRequestsPage } from './web/pages/ContentRequestsPage';
 import { FilmsPortalPage } from './web/pages/FilmsPortalPage';
+import { GamesPortalPage } from './web/pages/GamesPortalPage';
 import { HealthPage } from './web/pages/HealthPage';
 import { HomePage } from './web/pages/HomePage';
 import { InitialAdminSetupPage } from './web/pages/InitialAdminSetupPage';
@@ -45,6 +46,10 @@ const routes: HashRouteConfig[] = [
   {
     path: '/books',
     render: (currentRoute) => <BooksPortalPage currentRoute={currentRoute} />,
+  },
+  {
+    path: '/games',
+    render: (currentRoute) => <GamesPortalPage currentRoute={currentRoute} />,
   },
   {
     path: '/search',

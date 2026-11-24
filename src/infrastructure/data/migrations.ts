@@ -39,6 +39,10 @@ export const STORE_NAMES = {
   ANNOUNCEMENTS: 'announcements',
   DAILY_STATS: 'dailyStats',
   S3_BUCKET_OBJECTS: 's3BucketObjects',
+  GAMES: 'games',
+  GAME_AGE_GROUPS: 'gameAgeGroups',
+  GAME_SCORES: 'gameScores',
+  GAME_PACKAGES: 'gamePackages',
 } as const;
 
 export const STAGE3_OBJECT_STORES: readonly string[] = [
@@ -132,6 +136,13 @@ export const STAGE27_OBJECT_STORES: readonly string[] = [
 
 export const STAGE28_OBJECT_STORES: readonly string[] = [
   STORE_NAMES.S3_BUCKET_OBJECTS,
+] as const;
+
+export const STAGE29_OBJECT_STORES: readonly string[] = [
+  STORE_NAMES.GAMES,
+  STORE_NAMES.GAME_AGE_GROUPS,
+  STORE_NAMES.GAME_SCORES,
+  STORE_NAMES.GAME_PACKAGES,
 ] as const;
 
 interface IndexSpec {
@@ -576,6 +587,43 @@ const STAGE28_STORE_SPECS: readonly StoreSpec[] = [
   },
 ];
 
+const STAGE29_STORE_SPECS: readonly StoreSpec[] = [
+  {
+    name: STORE_NAMES.GAMES,
+    keyPath: 'id',
+    autoIncrement: true,
+    indexes: [
+      { name: 'by_slug', keyPath: 'slug', unique: true },
+      { name: 'by_topicId', keyPath: 'topicId' },
+      { name: 'by_isPublished', keyPath: 'isPublished' },
+    ],
+  },
+  {
+    name: STORE_NAMES.GAME_AGE_GROUPS,
+    keyPath: ['gameId', 'ageGroupId'],
+    indexes: [
+      { name: 'by_gameId', keyPath: 'gameId' },
+      { name: 'by_ageGroupId', keyPath: 'ageGroupId' },
+    ],
+  },
+  {
+    name: STORE_NAMES.GAME_SCORES,
+    keyPath: 'id',
+    autoIncrement: true,
+    indexes: [
+      { name: 'by_gameId', keyPath: 'gameId' },
+      { name: 'by_userId', keyPath: 'userId' },
+      { name: 'by_score', keyPath: 'score' },
+      { name: 'by_createdAt', keyPath: 'createdAt' },
+    ],
+  },
+  {
+    name: STORE_NAMES.GAME_PACKAGES,
+    keyPath: 'packageFolder',
+    indexes: [{ name: 'by_createdAt', keyPath: 'createdAt' }],
+  },
+];
+
 export const DATABASE_MIGRATIONS: readonly MigrationStep[] = [
   {
     version: 1,
@@ -828,6 +876,30 @@ export const DATABASE_MIGRATIONS: readonly MigrationStep[] = [
     up: (db, transaction) => {
       for (const spec of STAGE28_STORE_SPECS) {
         ensureStore(db, transaction, spec);
+      }
+    },
+  },
+  {
+    version: 21,
+    up: (db, transaction, oldVersion) => {
+      for (const spec of STAGE29_STORE_SPECS) {
+        ensureStore(db, transaction, spec);
+      }
+      if (
+        oldVersion > 0 &&
+        transaction &&
+        db.objectStoreNames.contains(STORE_NAMES.FEATURE_FLAGS)
+      ) {
+        transaction
+          .objectStore(STORE_NAMES.FEATURE_FLAGS)
+          .put({ key: 'Games', isEnabled: true });
+      }
+      if (oldVersion > 0 && transaction && db.objectStoreNames.contains(STORE_NAMES.META)) {
+        transaction.objectStore(STORE_NAMES.META).put({
+          key: 'stage29_games_default_enabled_v1',
+          value: '1',
+          updatedAtUtc: new Date().toISOString(),
+        });
       }
     },
   },

@@ -20,6 +20,7 @@ export interface AuthContextValue {
   isContentRequestsEnabled: boolean;
   isFilmsEnabled: boolean;
   isBooksEnabled: boolean;
+  isGamesEnabled: boolean;
   isStoryGeneratorEnabled: boolean;
   isNewsTickerEnabled: boolean;
   hasSuperAdmin: boolean;
@@ -43,6 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     useState<boolean>(false);
   const [isFilmsEnabled, setIsFilmsEnabled] = useState<boolean>(false);
   const [isBooksEnabled, setIsBooksEnabled] = useState<boolean>(false);
+  const [isGamesEnabled, setIsGamesEnabled] = useState<boolean>(false);
   const [isStoryGeneratorEnabled, setIsStoryGeneratorEnabled] =
     useState<boolean>(false);
   const [isNewsTickerEnabled, setIsNewsTickerEnabled] =
@@ -68,6 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       contentRequestsEnabled,
       filmsEnabled,
       booksEnabled,
+      gamesEnabled,
       storyGeneratorEnabled,
       newsTickerEnabled,
     ] = await Promise.all([
@@ -77,6 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       ),
       appContainer.settingsManagementService.getPublicFeatureFlagState('Films'),
       appContainer.settingsManagementService.getPublicFeatureFlagState('Books'),
+      appContainer.settingsManagementService.getPublicFeatureFlagState('Games'),
       appContainer.settingsManagementService.getPublicFeatureFlagState(
         'StoryGenerator',
       ),
@@ -86,6 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsContentRequestsEnabled(contentRequestsEnabled);
     setIsFilmsEnabled(filmsEnabled);
     setIsBooksEnabled(booksEnabled);
+    setIsGamesEnabled(gamesEnabled);
     setIsStoryGeneratorEnabled(storyGeneratorEnabled);
     setIsNewsTickerEnabled(newsTickerEnabled);
   }, []);
@@ -102,6 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       contentRequestsEnabled,
       filmsEnabled,
       booksEnabled,
+      gamesEnabled,
       storyGeneratorEnabled,
       newsTickerEnabled,
     ] = await Promise.all([
@@ -116,6 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       ),
       appContainer.settingsManagementService.getPublicFeatureFlagState('Films'),
       appContainer.settingsManagementService.getPublicFeatureFlagState('Books'),
+      appContainer.settingsManagementService.getPublicFeatureFlagState('Games'),
       appContainer.settingsManagementService.getPublicFeatureFlagState(
         'StoryGenerator',
       ),
@@ -132,6 +139,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsContentRequestsEnabled(contentRequestsEnabled);
     setIsFilmsEnabled(filmsEnabled);
     setIsBooksEnabled(booksEnabled);
+    setIsGamesEnabled(gamesEnabled);
     setIsStoryGeneratorEnabled(storyGeneratorEnabled);
     setIsNewsTickerEnabled(newsTickerEnabled);
     setIsAuthReady(true);
@@ -157,6 +165,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isContentRequestsEnabled,
         isFilmsEnabled,
         isBooksEnabled,
+        isGamesEnabled,
         isStoryGeneratorEnabled,
         isNewsTickerEnabled,
         hasSuperAdmin,

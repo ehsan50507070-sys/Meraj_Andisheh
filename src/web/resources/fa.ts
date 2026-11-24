@@ -4,7 +4,7 @@ export const faResources = {
   'app.subtitle': 'پلتفرم بانک محتوای فارسی',
   'app.stageLabel': 'مرحله {stage} از {total}',
   'app.stageName':
-    'ذخیره‌سازی S3 (تنظیمات آروان‌کلود/MinIO، لینک امضاشده ۵ دقیقه‌ای، ابزار انتقال بدون حذف خودکار و راهنما)',
+    'پرتال بازی و ظرف اجرای امن HTML5 (بسته‌ی ZIP، اجرای Sandbox بدون دسترسی به کوکی، امتیاز و ۱۰ برتر)',
   'app.footerNote': 'پلتفرم معراج اندیشه · بانک محتوای فارسی متناسب با هر رده سنی',
 
   // Themes
@@ -43,6 +43,7 @@ export const faResources = {
   'layout.nav.contentBank': 'بانک محتوا',
   'layout.nav.films': 'فیلم و مستند',
   'layout.nav.books': 'کتاب‌ها',
+  'layout.nav.games': 'بازی‌های آموزشی',
   'layout.nav.requests': 'درخواست محتوا',
   'layout.nav.health': 'وضعیت سلامت',
   'layout.nav.devComponents': 'آزمایشگاه کامپوننت‌ها',
@@ -65,6 +66,7 @@ export const faResources = {
   'layout.footer.linkContentBank': 'بانک محتوا',
   'layout.footer.linkFilms': 'فیلم و مستند',
   'layout.footer.linkBooks': 'کتاب‌ها',
+  'layout.footer.linkGames': 'بازی‌های آموزشی',
   'layout.footer.linkRequests': 'درخواست محتوا',
   'layout.footer.linkAccount': 'حساب کاربری / ورود',
   'layout.footer.linkProfile': 'پروفایل کاربری',
@@ -3707,6 +3709,192 @@ export const faResources = {
     'پاک‌سازی تأییدشده‌ی محلی، پایداری دانلود S3، بازگشت فوری به محلی و IndexedDB v20',
   'tests.stage28.verifiedCleanupAndDisconnectFallback.desc':
     'پس از حذف تأییدشده‌ی فایل‌های محلی، دانلود از S3 موفق است؛ با قطع S3 و بازگشت به محلی خطای کنترل‌شده بدون کرش و افشای Secret رخ می‌دهد و پایگاه‌داده نسخه‌ی ۲۰ با Stage 3 سازگار است.',
+
+  // Stage 29: Games Portal (#/games), Sandboxed HTML5 Runner (#/games/:slug) & Admin Games (#/admin/portals)
+  'games.portal.badge': 'پرتال بازی‌های آموزشی HTML5',
+  'games.portal.title': 'بازی‌های علمی و آموزشی معراج اندیشه',
+  'games.portal.subtitle':
+    'مجموعه‌ی بازی‌های کوتاه، امن و متناسب با رده‌ی سنی شما؛ برای یادگیری تعاملی و ثبت رکورد در جدول برترین‌ها.',
+  'games.portal.loading': 'در حال بارگذاری بازی‌ها...',
+  'games.portal.openAction': 'شروع و اجرای بازی',
+  'games.portal.allTopicsFilter': 'همه‌ی موضوعات',
+  'games.portal.allAgeGroupsFilter': 'همه‌ی رده‌های سنی',
+  'games.portal.topicFilterLabel': 'موضوع بازی',
+  'games.portal.ageFilterLabel': 'فیلتر رده‌ی سنی',
+  'games.portal.searchLabel': 'جستجو در بازی‌ها',
+  'games.portal.searchPlaceholder': 'جستجوی عنوان یا توضیح بازی...',
+  'games.portal.searchClear': 'پاک کردن فیلترها',
+  'games.portal.resultsCount': '{count} بازی قابل اجرا نمایش داده می‌شود',
+  'games.portal.playersCountLabel': '{count} بازیکن',
+  'games.portal.maxScoreBadge': 'حداکثر امتیاز: {score}',
+  'games.portal.topScoreLabel': 'رکورد فعلی: {score}',
+  'games.portal.noRecordYet': 'بدون رکورد ثبت‌شده',
+  'games.portal.allAgesBadge': 'مناسب برای همه‌ی سنین',
+  'games.portal.emptyTitle': 'در حال حاضر بازی متناسبی یافت نشد.',
+  'games.portal.emptyBody':
+    'فیلترها را تغییر دهید یا از منوی ناوبری سایر بخش‌های بانک محتوا را ببینید.',
+  'games.portal.emptyCatalogButton': 'مرور بانک محتوا',
+
+  'games.play.backToPortal': 'بازگشت به پرتال بازی‌ها',
+  'games.play.loading': 'در حال آماده‌سازی ظرف اجرای امن بازی...',
+  'games.play.sandboxNotice':
+    'محیط اجرای ایزوله‌ی امن: بازی داخل ظرف Sandbox بدون دسترسی به نشست کاربری یا حافظه‌ی مرورگر اجرا می‌شود.',
+  'games.play.restartAction': 'شروع مجدد بازی',
+  'games.play.fullscreenAction': 'تمام‌صفحه',
+  'games.play.exitFullscreenAction': 'خروج از تمام‌صفحه',
+  'games.play.maxScoreInfo': 'سقف مجاز امتیاز این بازی: {score}',
+  'games.play.targetAgesHeading': 'رده‌های سنی هدف',
+  'games.play.iframeTitle': 'پنجره‌ی اجرای امن بازی: {title}',
+  'games.play.endBannerTitle': 'پیام آموزشی پایان بازی',
+  'games.play.endScoreLine': 'امتیاز به‌دست‌آمده در این نوبت: {score} از {max}',
+  'games.play.relatedHeading': 'سایر بازی‌های پیشنهادی',
+  'games.play.guestScoreNotice':
+    'برای ذخیره شدن امتیازتان در جدول ۱۰ نفر برتر و تاریخچه‌ی رکوردها وارد حساب کاربری شوید.',
+  'games.play.guestLoginAction': 'ورود و بازگشت به همین بازی',
+  'games.play.scoreSavedSuccess':
+    'امتیاز {score} با موفقیت ثبت شد! بهترین رکورد شما: {best}',
+  'games.play.yourBestScoreBadge': 'بهترین امتیاز شما: {score}',
+  'games.play.yourRankBadge': 'رتبه‌ی شما: {rank}',
+
+  'games.leaderboard.title': 'جدول ۱۰ امتیاز برتر',
+  'games.leaderboard.subtitle': 'بهترین رکورد یکتای هر کاربر بر اساس بالاترین امتیاز و زمان دستیابی',
+  'games.leaderboard.emptyTitle': 'هنوز امتیازی برای این بازی ثبت نشده است.',
+  'games.leaderboard.emptyBody': 'نخستین نفری باشید که بازی را به پایان می‌رساند و رکورد می‌گذارد.',
+  'games.leaderboard.col.rank': 'رتبه',
+  'games.leaderboard.col.player': 'بازیکن',
+  'games.leaderboard.col.score': 'بهترین امتیاز',
+  'games.leaderboard.col.achievedAt': 'زمان ثبت (شمسی)',
+  'games.leaderboard.youBadge': 'شما',
+
+  'games.error.featureDisabled': 'بخش بازی‌های آموزشی در حال حاضر غیرفعال است.',
+  'games.score.error.authRequired': 'برای ثبت امتیاز باید وارد حساب کاربری شوید.',
+  'games.score.error.invalidScore':
+    'امتیاز ارسالی نامعتبر یا خارج از بازه‌ی مجاز (۰ تا حداکثر امتیاز بازی) است.',
+
+  // Admin Portals - Games Tab (#/admin/portals)
+  'admin.portals.tab.games': 'پرتال بازی‌ها',
+  'admin.portals.games.openShowcase': 'مشاهده‌ی ویترین بازی‌ها',
+  'admin.portals.games.flagLabel': 'وضعیت کلید ماژول بازی‌ها (Games)',
+  'admin.portals.games.flagEnabled': 'فعال (نمایش در ناوبری و اجرا)',
+  'admin.portals.games.flagDisabled': 'غیرفعال (مخفی برای عموم)',
+  'admin.portals.games.openSettings': 'تنظیمات کلید ماژول‌ها',
+  'admin.portals.games.infoNote':
+    'بازی‌ها با آپلود بسته‌ی ZIP استاندارد HTML5 (دارای فایل index.html در ریشه) مدیریت و داخل iframe sandbox="allow-scripts" بدون دسترسی به کوکی اجرا می‌شوند.',
+  'admin.portals.games.installSampleButton': 'نصب بازی آموزشی نمونه (معمای دانش)',
+  'admin.portals.games.installingSampleButton': 'در حال ساخت و نصب بازی نمونه...',
+  'admin.portals.games.downloadSampleZipButton': 'دانلود بسته‌ی نمونه‌ی استاندارد (.zip)',
+  'admin.portals.games.addNewGameButton': 'آپلود و افزودن بازی جدید',
+  'admin.portals.games.searchLabel': 'جستجو در بازی‌ها',
+  'admin.portals.games.searchPlaceholder': 'جستجو بر اساس عنوان، نشانی یا موضوع بازی...',
+  'admin.portals.games.loading': 'در حال بارگذاری فهرست بازی‌ها...',
+  'admin.portals.games.emptyTitle': 'هنوز هیچ بازی HTML5 ثبت نشده است.',
+  'admin.portals.games.emptyBody':
+    'می‌توانید بسته‌ی ZIP بازی خود را آپلود کنید یا با یک کلیک بازی آموزشی نمونه را نصب نمایید.',
+
+  'admin.portals.games.sample.title': 'معمای دانش و اندیشه‌ی معراج',
+  'admin.portals.games.sample.description':
+    'مسابقه‌ی تعاملی ۵ پرسشی درباره‌ی نجوم، تاریخ علم و اخلاق برای سنجش اطلاعات و ثبت امتیاز.',
+  'admin.portals.games.sample.endMessage':
+    'آفرین بر شما! رصدخانه‌ی مراغه، کارهای ابوریحان بیرونی و آثار خوارزمی نشان می‌دهند که پرسشگری و امانت‌داری علمی ستون‌های پیشرفت تمدن بوده‌اند.',
+
+  'admin.portals.games.col.title': 'عنوان و موضوع بازی',
+  'admin.portals.games.col.package': 'بسته‌ی HTML5 و سقف امتیاز',
+  'admin.portals.games.col.ages': 'رده‌های سنی مجاز',
+  'admin.portals.games.col.status': 'وضعیت انتشار',
+  'admin.portals.games.col.actions': 'عملیات',
+  'admin.portals.games.status.published': 'منتشرشده',
+  'admin.portals.games.status.draft': 'پیش‌نویس',
+  'admin.portals.games.allAgesLabel': 'همه‌ی رده‌های سنی',
+  'admin.portals.games.packageStats': '{files} فایل · {size}',
+  'admin.portals.games.maxScoreColLabel': 'سقف امتیاز: {score}',
+  'admin.portals.games.scoresCountLabel': '{count} امتیاز ثبت‌شده',
+
+  'admin.portals.games.action.edit': 'ویرایش',
+  'admin.portals.games.action.publish': 'انتشار',
+  'admin.portals.games.action.unpublish': 'پیش‌نویس',
+  'admin.portals.games.action.preview': 'اجرا',
+  'admin.portals.games.action.delete': 'حذف',
+
+  'admin.portals.games.modal.createTitle': 'آپلود و ثبت بازی HTML5 جدید',
+  'admin.portals.games.modal.editTitle': 'ویرایش بازی «{title}»',
+  'admin.portals.games.modal.titleLabel': 'عنوان بازی',
+  'admin.portals.games.modal.titlePlaceholder': 'مثلاً: چالش نجوم و کهکشان‌ها',
+  'admin.portals.games.modal.descriptionLabel': 'توضیح کوتاه و راهنمای بازی',
+  'admin.portals.games.modal.descriptionPlaceholder': 'هدف آموزشی و نحوه‌ی بازی در چند سطر...',
+  'admin.portals.games.modal.endMessageLabel': 'پیام آموزشی پایان بازی',
+  'admin.portals.games.modal.endMessagePlaceholder':
+    'نکته‌ی تربیتی یا علمی که پس از پایان بازی برای کاربر نمایش داده می‌شود...',
+  'admin.portals.games.modal.topicLabel': 'موضوع مرتبط (اختیاری)',
+  'admin.portals.games.modal.noTopicOption': 'بدون دسته‌بندی موضوعی',
+  'admin.portals.games.modal.maxScoreLabel': 'سقف امتیاز منطقی بازی (MaxScore)',
+  'admin.portals.games.modal.maxScoreHint':
+    'امتیازهای ارسال‌شده از درون بازی بالاتر از این عدد یا اعداد منفی/اعشاری مسدود می‌شوند (ارقام فارسی مجاز است).',
+  'admin.portals.games.modal.ageGroupsLabel': 'رده‌های سنی مجاز (خالی = همه‌ی رده‌های سنی)',
+  'admin.portals.games.modal.ageGroupsEmptyHint':
+    'اگر هیچ رده‌ی سنی انتخاب نشود، بازی برای همه‌ی رده‌های سنی (از جمله کودک) نمایش داده می‌شود.',
+  'admin.portals.games.modal.zipLabelCreate': 'فایل بسته‌ی ZIP بازی (الزامی، دارای index.html)',
+  'admin.portals.games.modal.zipLabelEdit': 'جایگزینی بسته‌ی ZIP بازی (اختیاری)',
+  'admin.portals.games.modal.zipHint':
+    'فقط فایل‌های استاندارد وب (HTML/CSS/JS/JSON/تصویر/صوت/فونت) مجاز هستند و وجود index.html در ریشه الزامی است.',
+  'admin.portals.games.modal.zipSelectedFile': 'فایل انتخاب‌شده: {name} ({size})',
+  'admin.portals.games.modal.thumbnailLabel': 'تصویر کاور بازی (اختیاری)',
+  'admin.portals.games.modal.thumbnailClear': 'حذف تصویر کاور',
+  'admin.portals.games.modal.isPublishedLabel': 'بازی بلافاصله پس از ذخیره منتشر شود',
+  'admin.portals.games.modal.save': 'ذخیره بازی',
+  'admin.portals.games.modal.saving': 'در حال بررسی و ذخیره...',
+  'admin.portals.games.modal.cancel': 'انصراف',
+
+  'admin.portals.games.confirmDelete':
+    'آیا از حذف بازی «{title}» و تمام امتیازها و فایل‌های بسته‌ی آن اطمینان دارید؟',
+  'admin.portals.games.feedback.created': 'بازی «{title}» با موفقیت اعتبارسنجی و ثبت شد.',
+  'admin.portals.games.feedback.updated': 'مشخصات بازی «{title}» با موفقیت به‌روزرسانی شد.',
+  'admin.portals.games.feedback.deleted': 'بازی و بسته‌ی مرتبط با موفقیت حذف شد.',
+  'admin.portals.games.feedback.published': 'بازی منتشر شد و در پرتال عمومی قابل دسترسی است.',
+  'admin.portals.games.feedback.unpublished': 'بازی به وضعیت پیش‌نویس منتقل شد.',
+  'admin.portals.games.feedback.sampleInstalled':
+    'بازی آموزشی نمونه («{title}») با موفقیت نصب و منتشر شد.',
+
+  'admin.portals.games.error.invalidTitle': 'عنوان بازی الزامی است و حداکثر ۱۵۰ نویسه می‌تواند باشد.',
+  'admin.portals.games.error.descriptionTooLong': 'توضیح بازی نباید بیش از ۲۰۰۰ نویسه باشد.',
+  'admin.portals.games.error.endMessageTooLong': 'پیام پایان بازی نباید بیش از ۱۰۰۰ نویسه باشد.',
+  'admin.portals.games.error.invalidMaxScore':
+    'سقف امتیاز باید یک عدد صحیح مثبت بین ۱ تا ۱٬۰۰۰٬۰۰۰ باشد.',
+  'admin.portals.games.error.invalidTopic': 'موضوع انتخاب‌شده معتبر نیست.',
+  'admin.portals.games.error.invalidAgeGroups': 'رده‌ی سنی انتخاب‌شده معتبر یا فعال نیست.',
+  'admin.portals.games.error.notFound': 'بازی مورد نظر یافت نشد.',
+  'admin.portals.games.error.zipRequired': 'انتخاب فایل بسته‌ی ZIP بازی الزامی است.',
+  'admin.portals.games.error.zipInvalidFormat':
+    'فایل آپلودشده یک بسته‌ی ZIP معتبر و قابل استخراج نیست.',
+  'admin.portals.games.error.zipMissingIndexHtml':
+    'بسته‌ی ZIP معتبر نیست: فایل index.html در ریشه‌ی بسته یافت نشد.',
+  'admin.portals.games.error.zipForbiddenFileType':
+    'فایل با پسوند غیرمجاز یا اجرایی در بسته‌ی ZIP تشخیص داده شد؛ آپلود مسدود گردید.',
+  'admin.portals.games.error.zipPathTraversal':
+    'مسیر ناامن (Path Traversal) در ساختار بسته‌ی ZIP شناسایی شد؛ آپلود مسدود گردید.',
+  'admin.portals.games.error.zipTooLarge':
+    'حجم بسته‌ی بازی از حداکثر اندازه‌ی مجاز تنظیم‌شده در سایت بیشتر است.',
+
+  // Stage 29 Unit Tests
+  'tests.stage29.zipValidationRules.name':
+    'اعتبارسنجی بسته‌ی ZIP بازی: رد نبود index.html و پسوندهای .exe/.php و پذیرش بسته‌ی معتبر',
+  'tests.stage29.zipValidationRules.desc':
+    'آرشیو بدون index.html با ZIP_MISSING_INDEX_HTML و فایل‌های اجرایی/سروری مثل .exe و .php با ZIP_FORBIDDEN_FILE_TYPE و مسیرهای .. با ZIP_PATH_TRAVERSAL رد و بسته‌ی استاندارد با موفقیت ذخیره می‌شوند.',
+  'tests.stage29.sandboxIframeIsolation.name':
+    'ظرف اجرای امن iframe sandbox="allow-scripts" بدون دسترسی به کوکی و DOM والد',
+  'tests.stage29.sandboxIframeIsolation.desc':
+    'ویژگی sandbox دقیقاً برابر "allow-scripts" (بدون allow-same-origin) است، اسکریپت‌های داخل بازی اجرا می‌شوند و خواندن document.cookie یا parent.document در محیط سندباکس مسدود است.',
+  'tests.stage29.scoreValidationAndTop10Leaderboard.name':
+    'کنترل سقف امتیاز (رد ۹۹۹۹۹۹، منفی و اعشاری با WARN) و جدول ۱۰ امتیاز برتر',
+  'tests.stage29.scoreValidationAndTop10Leaderboard.desc':
+    'امتیازهای ۹۹۹۹۹۹، -۱۰ و ۱۲.۵ با INVALID_GAME_SCORE و لاگ WARN رد می‌شوند؛ با ۱۲ کاربر مختلف تنها ۱۰ امتیاز برتر یکتای هر کاربر به ترتیب نزولی (و تساوی بر اساس زمان زودتر) برمی‌گردد.',
+  'tests.stage29.childSafetyAndGamesFeatureFlag.name':
+    'ایمنی رده‌ی سنی کودک روی #/games و #/games/:slug و کلید FeatureFlag("Games")',
+  'tests.stage29.childSafetyAndGamesFeatureFlag.desc':
+    'بازی ویژه‌ی بزرگسال در پروفایل کودک از فهرست حذف و دسترسی مستقیم با not_found مسدود می‌شود؛ با خاموشی FeatureFlag("Games") همه‌ی مسیرهای پرتال غیرفعال می‌شوند.',
+  'tests.stage29.rbacPermissionsAndIdbV21.name':
+    'کنترل دسترسی portals.manage (۴۰۳+WARN و ۴۰۴ عضو) و مهاجرت IndexedDB v21',
+  'tests.stage29.rbacPermissionsAndIdbV21.desc':
+    'همکار بدون مجوز ۴۰۳ با لاگ WARN و عضو ۴۰۴ می‌گیرند؛ جدول‌های games، gameAgeGroups، gameScores و gamePackages در نسخه‌ی ۲۱ و سازگاری بذر مرحله ۳ تأیید می‌شوند.',
 } as const;
 
 export type ResourceKey = keyof typeof faResources;

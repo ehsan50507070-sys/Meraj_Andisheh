@@ -23,6 +23,7 @@ import { MainLayout } from '../layouts/MainLayout';
 import { BookDetailPage } from '../pages/BookDetailPage';
 import { ContentDetailPage } from '../pages/ContentDetailPage';
 import { FilmDetailPage } from '../pages/FilmDetailPage';
+import { GamePlayPage } from '../pages/GamePlayPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 import { PublicMediaPage } from '../pages/PublicMediaPage';
 import { ServerErrorPage } from '../pages/ServerErrorPage';
@@ -301,6 +302,26 @@ export function HashRouter({ routes, defaultRoute }: HashRouterProps) {
     }
     return (
       <BookDetailPage
+        currentRoute={routeState.fullHash}
+        slug={decodedSlug}
+      />
+    );
+  }
+
+  // Public Game Play Route (#/games/:slug)
+  if (normalizedRouteLower.startsWith('/games/')) {
+    const rawSlug = routeState.path.slice('/games/'.length);
+    let decodedSlug = rawSlug;
+    try {
+      decodedSlug = decodeURIComponent(rawSlug);
+    } catch {
+      decodedSlug = rawSlug;
+    }
+    if (!decodedSlug.trim()) {
+      return <NotFoundPage currentRoute={routeState.fullHash} />;
+    }
+    return (
+      <GamePlayPage
         currentRoute={routeState.fullHash}
         slug={decodedSlug}
       />

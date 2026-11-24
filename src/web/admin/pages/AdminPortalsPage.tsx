@@ -1,15 +1,20 @@
 import {
   BookOpen,
+  Download,
   Edit3,
   ExternalLink,
   Film as FilmIcon,
+  Gamepad2,
   Plus,
   Search,
   Settings,
   Sparkles,
+  Trash2,
+  Upload,
 } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import { ContentStatus } from '../../../core/domain/content';
+import type { AdminGameListItem } from '../../../core/domain/games';
 import {
   BOOK_AUTHOR_MAX_LENGTH,
   BOOK_KEY_EXCERPTS_MAX_LENGTH,
@@ -20,6 +25,7 @@ import {
   type AdminFilmListItem,
   type FilmKind,
 } from '../../../core/domain/portals';
+import type { AgeGroup, Topic } from '../../../core/domain/taxonomy';
 import { useAuth } from '../../auth/AuthContext';
 import {
   Alert,
@@ -32,7 +38,10 @@ import {
   type TableColumn,
 } from '../../components/ui';
 import type { ResourceKey } from '../../resources/fa';
-import { toPersianDigits } from '../../resources/formatters';
+import {
+  formatFileSizeParts,
+  toPersianDigits,
+} from '../../resources/formatters';
 import { t } from '../../resources/i18n';
 import { navigateToHash } from '../../router/HashRouter';
 import { appContainer } from '../../services/appContainer';
@@ -42,7 +51,7 @@ interface AdminPortalsPageProps {
   currentRoute: string;
 }
 
-type PortalsTabKey = 'films' | 'books';
+type PortalsTabKey = 'films' | 'books' | 'games';
 
 function getStatusVariant(status: ContentStatus): 'success' | 'warning' | 'neutral' {
   switch (status) {
@@ -69,7 +78,7 @@ function getKindLabelKey(kind: FilmKind): ResourceKey {
 }
 
 export function AdminPortalsPage({ currentRoute }: AdminPortalsPageProps) {
-  const { currentUser, isFilmsEnabled, isBooksEnabled } = useAuth();
+  const { currentUser, isFilmsEnabled, isBooksEnabled, isGamesEnabled } = useAuth();
 
   const [activeTab, setActiveTab] = useState<PortalsTabKey>('films');
   const [feedback, setFeedback] = useState<{
@@ -108,6 +117,36 @@ export function AdminPortalsPage({ currentRoute }: AdminPortalsPageProps) {
   const [modalBookStudioNote, setModalBookStudioNote] = useState('');
   const [bookModalError, setBookModalError] = useState<string | null>(null);
   const [isSavingBookModal, setIsSavingBookModal] = useState(false);
+
+  // Games Tab State (Stage 29)
+  const [gameSearchQuery, setGameSearchQuery] = useState('');
+  const [games, setGames] = useState<AdminGameListItem[]>([]);
+  const [isLoadingGames, setIsLoadingGames] = useState(true);
+  const [allTopics, setAllTopics] = useState<Topic[]>([]);
+  const [allAgeGroups, setAllAgeGroups] = useState<AgeGroup[]>([]);
+  const [isInstallingSampleGame, setIsInstallingSampleGame] = useState(false);
+  const [busyGameId, setBusyGameId] = useState<number | null>(null);
+
+  // Game Create/Edit Modal State
+  const [gameModalOpen, setGameModalOpen] = useState(false);
+  const [editingGameRow, setEditingGameRow] = useState<AdminGameListItem | null>(null);
+  const [gameTitle, setGameTitle] = useState('');
+  const [gameDescription, setGameDescription] = useState('');
+  const [gameEndMessage, setGameEndMessage] = useState('');
+  const [gameTopicId, setGameTopicId] = useState<string>('');
+  const [gameMaxScore, setGameMaxScore] = useState('100');
+  const [gameAgeGroupIds, setGameAgeGroupIds] = useState<number[]>([]);
+  const [gameIsPublished, setGameIsPublished] = useState(true);
+  const [gameThumbnailKey, setGameThumbnailKey] = useState<string | null>(null);
+  const [gameZipFileName, setGameZipFileName] = useState('');
+  const [gameZipBytes, setGameZipBytes] = useState<Uint8Array | null>(null);
+  const [gameModalError, setGameModalError] = useState<string | null>(null);
+  const [isSavingGameModal, setIsSavingGameModal] = useState(false);
+  const [isUploadingThumb, setIsUploadingThumb] = useState(false);
+
+  // Game Delete Confirm Modal
+  const [deletingGameRow, setDeletingGameRow] = useState<AdminGameListItem | null>(null);
+  const [isDeletingGame, setIsDeletingGame] = useState(false);
 
   const loadFilms = useCallback(async () => {
     setIsLoadingFilms(true);
@@ -155,6 +194,35 @@ export function AdminPortalsPage({ currentRoute }: AdminPortalsPageProps) {
     }
   }, [currentUser, bookSearchQuery]);
 
+  const loadGames = useCallback(async () => {
+    setIsLoadingGames(true);
+    try {
+      const [res, topicsList, agesList] = await Promise.all([
+        appContainer.gamePortalService.listAdminGamesAsync(
+          currentUser,
+          gameSearchQuery,
+        ),
+        appContainer.taxonomyRepository.getAllTopics(),
+        appContainer.adminRepository.getActiveAgeGroups(),
+      ]);
+      setAllTopics(topicsList);
+      setAllAgeGroups(agesList);
+      if (res.ok && res.data) {
+        setGames(res.data);
+      } else {
+        setGames([]);
+        if (res.messageKey) {
+          setFeedback({
+            variant: 'error',
+            message: t(res.messageKey as ResourceKey),
+          });
+        }
+      }
+    } finally {
+      setIsLoadingGames(false);
+    }
+  }, [currentUser, gameSearchQuery]);
+
   useEffect(() => {
     void loadFilms();
   }, [loadFilms]);
@@ -162,6 +230,10 @@ export function AdminPortalsPage({ currentRoute }: AdminPortalsPageProps) {
   useEffect(() => {
     void loadBooks();
   }, [loadBooks]);
+
+  useEffect(() => {
+    void loadGames();
+  }, [loadGames]);
 
   const currentWeeklyPick = useMemo(
     () => films.find((row) => row.filmInfo.isWeeklyPick) ?? null,
@@ -316,6 +388,294 @@ export function AdminPortalsPage({ currentRoute }: AdminPortalsPageProps) {
     } finally {
       setIsSavingBookModal(false);
     }
+  };
+
+  // Games Tab Handlers
+  const ageGroupNameById = useMemo(
+    () => new Map(allAgeGroups.map((ag) => [ag.id, ag.name])),
+    [allAgeGroups],
+  );
+
+  const gameTopicOptions: SelectOption[] = useMemo(() => {
+    const base: SelectOption[] = [
+      { value: '', label: t('admin.portals.games.modal.noTopicOption') },
+    ];
+    for (const topic of allTopics) {
+      base.push({ value: String(topic.id), label: topic.name });
+    }
+    return base;
+  }, [allTopics]);
+
+  const openCreateGameModal = () => {
+    setEditingGameRow(null);
+    setGameTitle('');
+    setGameDescription('');
+    setGameEndMessage('');
+    setGameTopicId('');
+    setGameMaxScore('100');
+    setGameAgeGroupIds([]);
+    setGameIsPublished(true);
+    setGameThumbnailKey(null);
+    setGameZipFileName('');
+    setGameZipBytes(null);
+    setGameModalError(null);
+    setGameModalOpen(true);
+  };
+
+  const openEditGameModal = (row: AdminGameListItem) => {
+    setEditingGameRow(row);
+    setGameTitle(row.game.title);
+    setGameDescription(row.game.description);
+    setGameEndMessage(row.game.endMessage ?? '');
+    setGameTopicId(row.game.topicId !== null ? String(row.game.topicId) : '');
+    setGameMaxScore(String(row.game.maxScore));
+    setGameAgeGroupIds([...row.ageGroupIds]);
+    setGameIsPublished(row.game.isPublished);
+    setGameThumbnailKey(row.game.thumbnailKey);
+    setGameZipFileName('');
+    setGameZipBytes(null);
+    setGameModalError(null);
+    setGameModalOpen(true);
+  };
+
+  const handleGameZipFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      setGameZipFileName('');
+      setGameZipBytes(null);
+      return;
+    }
+    const buf = await file.arrayBuffer();
+    setGameZipFileName(file.name);
+    setGameZipBytes(new Uint8Array(buf));
+    setGameModalError(null);
+  };
+
+  const handleGameThumbnailChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploadingThumb(true);
+    setGameModalError(null);
+    try {
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const uploadRes = await appContainer.fileUploadService.uploadFileAsync(
+        currentUser,
+        {
+          originalFileName: file.name,
+          bytes,
+          visibility: 'public',
+        },
+        {
+          allowedPermissions: ['portals.manage', 'content.manage'],
+          routePath: currentRoute,
+        },
+      );
+      if (!uploadRes.ok || !uploadRes.metadata) {
+        setGameModalError(
+          uploadRes.messageKey
+            ? t(uploadRes.messageKey as ResourceKey)
+            : t('upload.error.unknown'),
+        );
+        return;
+      }
+      setGameThumbnailKey(uploadRes.metadata.storageKey);
+    } finally {
+      setIsUploadingThumb(false);
+    }
+  };
+
+  const handleToggleGameAgeGroup = (ageGroupId: number) => {
+    setGameAgeGroupIds((prev) =>
+      prev.includes(ageGroupId)
+        ? prev.filter((id) => id !== ageGroupId)
+        : [...prev, ageGroupId],
+    );
+  };
+
+  const handleSaveGameModal = async () => {
+    setIsSavingGameModal(true);
+    setGameModalError(null);
+    try {
+      const topicIdNum = gameTopicId ? Number.parseInt(gameTopicId, 10) : null;
+
+      if (editingGameRow) {
+        const res = await appContainer.gamePortalService.updateGameAsync(currentUser, {
+          id: editingGameRow.game.id,
+          title: gameTitle,
+          description: gameDescription,
+          endMessage: gameEndMessage,
+          topicId: topicIdNum,
+          maxScore: gameMaxScore,
+          ageGroupIds: gameAgeGroupIds,
+          isPublished: gameIsPublished,
+          thumbnailKey: gameThumbnailKey,
+          zipFileName: gameZipBytes ? gameZipFileName : undefined,
+          zipBytes: gameZipBytes ?? undefined,
+        });
+        if (!res.ok || !res.data) {
+          setGameModalError(
+            res.messageKey
+              ? t(res.messageKey as ResourceKey)
+              : t('admin.portals.games.error.zipInvalidFormat'),
+          );
+          return;
+        }
+        setGameModalOpen(false);
+        await loadGames();
+        setFeedback({
+          variant: 'success',
+          message: t('admin.portals.games.feedback.updated', {
+            title: res.data.title,
+          }),
+        });
+      } else {
+        if (!gameZipBytes || gameZipBytes.byteLength === 0) {
+          setGameModalError(t('admin.portals.games.error.zipRequired'));
+          return;
+        }
+        const res = await appContainer.gamePortalService.createGameFromZipAsync(
+          currentUser,
+          {
+            title: gameTitle,
+            description: gameDescription,
+            endMessage: gameEndMessage,
+            topicId: topicIdNum,
+            maxScore: gameMaxScore,
+            ageGroupIds: gameAgeGroupIds,
+            isPublished: gameIsPublished,
+            thumbnailKey: gameThumbnailKey,
+            zipFileName: gameZipFileName || 'game.zip',
+            zipBytes: gameZipBytes,
+          },
+        );
+        if (!res.ok || !res.data) {
+          setGameModalError(
+            res.messageKey
+              ? t(res.messageKey as ResourceKey)
+              : t('admin.portals.games.error.zipInvalidFormat'),
+          );
+          return;
+        }
+        setGameModalOpen(false);
+        await loadGames();
+        setFeedback({
+          variant: 'success',
+          message: t('admin.portals.games.feedback.created', {
+            title: res.data.title,
+          }),
+        });
+      }
+    } finally {
+      setIsSavingGameModal(false);
+    }
+  };
+
+  const handleToggleGamePublish = async (row: AdminGameListItem) => {
+    setBusyGameId(row.game.id);
+    setFeedback(null);
+    try {
+      const nextPublished = !row.game.isPublished;
+      const res = await appContainer.gamePortalService.toggleGamePublishedAsync(
+        currentUser,
+        row.game.id,
+        nextPublished,
+      );
+      if (!res.ok) {
+        setFeedback({
+          variant: 'error',
+          message: res.messageKey
+            ? t(res.messageKey as ResourceKey)
+            : t('admin.portals.games.error.notFound'),
+        });
+        return;
+      }
+      await loadGames();
+      setFeedback({
+        variant: 'success',
+        message: nextPublished
+          ? t('admin.portals.games.feedback.published')
+          : t('admin.portals.games.feedback.unpublished'),
+      });
+    } finally {
+      setBusyGameId(null);
+    }
+  };
+
+  const handleConfirmDeleteGame = async () => {
+    if (!deletingGameRow) return;
+    setIsDeletingGame(true);
+    setFeedback(null);
+    try {
+      const res = await appContainer.gamePortalService.deleteGameAsync(
+        currentUser,
+        deletingGameRow.game.id,
+      );
+      if (!res.ok) {
+        setFeedback({
+          variant: 'error',
+          message: res.messageKey
+            ? t(res.messageKey as ResourceKey)
+            : t('admin.portals.games.error.notFound'),
+        });
+        return;
+      }
+      setDeletingGameRow(null);
+      await loadGames();
+      setFeedback({
+        variant: 'success',
+        message: t('admin.portals.games.feedback.deleted'),
+      });
+    } finally {
+      setIsDeletingGame(false);
+    }
+  };
+
+  const handleInstallSampleGame = async () => {
+    setIsInstallingSampleGame(true);
+    setFeedback(null);
+    try {
+      const res = await appContainer.gamePortalService.installSampleEducationalGameAsync(
+        currentUser,
+        {
+          title: t('admin.portals.games.sample.title'),
+          description: t('admin.portals.games.sample.description'),
+          endMessage: t('admin.portals.games.sample.endMessage'),
+        },
+      );
+      if (!res.ok || !res.data) {
+        setFeedback({
+          variant: 'error',
+          message: res.messageKey
+            ? t(res.messageKey as ResourceKey)
+            : t('admin.portals.games.error.zipInvalidFormat'),
+        });
+        return;
+      }
+      await loadGames();
+      setFeedback({
+        variant: 'success',
+        message: t('admin.portals.games.feedback.sampleInstalled', {
+          title: res.data.title,
+        }),
+      });
+    } finally {
+      setIsInstallingSampleGame(false);
+    }
+  };
+
+  const handleDownloadSampleZip = async () => {
+    const asset = await appContainer.gamePortalService.generateSampleZipAssetAsync();
+    const copy = new Uint8Array(asset.bytes.byteLength);
+    copy.set(asset.bytes);
+    const blob = new Blob([copy.buffer], { type: 'application/zip' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = asset.fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const filmColumns: TableColumn<AdminFilmListItem>[] = [
@@ -538,6 +898,126 @@ export function AdminPortalsPage({ currentRoute }: AdminPortalsPageProps) {
     },
   ];
 
+  const gameColumns: TableColumn<AdminGameListItem>[] = [
+    {
+      key: 'title',
+      header: t('admin.portals.games.col.title'),
+      render: (row) => (
+        <div className="space-y-1 min-w-[200px]">
+          <p className="font-semibold text-[var(--color-text)]">{row.game.title}</p>
+          <p className="text-xs text-[var(--color-muted)]">
+            {row.topicName ?? t('catalog.generalTopic')} · <span dir="ltr">{row.game.slug}</span>
+          </p>
+        </div>
+      ),
+    },
+    {
+      key: 'package',
+      header: t('admin.portals.games.col.package'),
+      render: (row) => {
+        const sizeParts = formatFileSizeParts(row.packageTotalBytes);
+        const sizeText = sizeParts
+          ? t(`contentDetail.sizeUnit.${sizeParts.unit}` as ResourceKey, {
+              value: sizeParts.value,
+            })
+          : toPersianDigits(0);
+        return (
+          <div className="space-y-1 text-xs tabular-nums-strict">
+            <p className="font-semibold text-[var(--color-text)]">
+              {t('admin.portals.games.maxScoreColLabel', {
+                score: toPersianDigits(row.game.maxScore),
+              })}
+            </p>
+            <p className="text-[var(--color-muted)]">
+              {t('admin.portals.games.packageStats', {
+                files: toPersianDigits(row.packageFilesCount),
+                size: sizeText,
+              })}{' '}
+              ·{' '}
+              {t('admin.portals.games.scoresCountLabel', {
+                count: toPersianDigits(row.scoresCount),
+              })}
+            </p>
+          </div>
+        );
+      },
+    },
+    {
+      key: 'ages',
+      header: t('admin.portals.games.col.ages'),
+      render: (row) => (
+        <span className="text-xs text-[var(--color-text)]">
+          {row.ageGroupIds.length === 0
+            ? t('admin.portals.games.allAgesLabel')
+            : row.ageGroupIds
+                .map((id) => ageGroupNameById.get(id))
+                .filter((name): name is string => Boolean(name))
+                .join(t('homePreview.targetListSeparator'))}
+        </span>
+      ),
+    },
+    {
+      key: 'status',
+      header: t('admin.portals.games.col.status'),
+      render: (row) => (
+        <Tag
+          label={
+            row.game.isPublished
+              ? t('admin.portals.games.status.published')
+              : t('admin.portals.games.status.draft')
+          }
+          variant={row.game.isPublished ? 'success' : 'neutral'}
+        />
+      ),
+    },
+    {
+      key: 'actions',
+      header: t('admin.portals.games.col.actions'),
+      render: (row) => (
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => openEditGameModal(row)}
+            startIcon={<Edit3 className="w-3.5 h-3.5" />}
+          >
+            {t('admin.portals.games.action.edit')}
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={busyGameId === row.game.id}
+            onClick={() => void handleToggleGamePublish(row)}
+          >
+            {row.game.isPublished
+              ? t('admin.portals.games.action.unpublish')
+              : t('admin.portals.games.action.publish')}
+          </Button>
+          {row.game.isPublished && isGamesEnabled && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() =>
+                navigateToHash(`/games/${encodeURIComponent(row.game.slug)}`)
+              }
+              startIcon={<ExternalLink className="w-3.5 h-3.5" />}
+            >
+              {t('admin.portals.games.action.preview')}
+            </Button>
+          )}
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setDeletingGameRow(row)}
+            startIcon={<Trash2 className="w-3.5 h-3.5 text-[var(--color-error-text)]" />}
+          >
+            {t('admin.portals.games.action.delete')}
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <AdminLayout currentRoute={currentRoute}>
       <div className="space-y-6">
@@ -573,7 +1053,7 @@ export function AdminPortalsPage({ currentRoute }: AdminPortalsPageProps) {
                   {t('admin.portals.films.addNewContentFilm')}
                 </Button>
               </>
-            ) : (
+            ) : activeTab === 'books' ? (
               <>
                 {isBooksEnabled && (
                   <Button
@@ -592,6 +1072,27 @@ export function AdminPortalsPage({ currentRoute }: AdminPortalsPageProps) {
                   startIcon={<Plus className="w-4 h-4" />}
                 >
                   {t('admin.portals.books.addNewContentBook')}
+                </Button>
+              </>
+            ) : (
+              <>
+                {isGamesEnabled && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigateToHash('/games')}
+                    startIcon={<ExternalLink className="w-4 h-4" />}
+                  >
+                    {t('admin.portals.games.openShowcase')}
+                  </Button>
+                )}
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={openCreateGameModal}
+                  startIcon={<Plus className="w-4 h-4" />}
+                >
+                  {t('admin.portals.games.addNewGameButton')}
                 </Button>
               </>
             )}
@@ -638,6 +1139,24 @@ export function AdminPortalsPage({ currentRoute }: AdminPortalsPageProps) {
           >
             <BookOpen className="w-4 h-4 shrink-0" aria-hidden="true" />
             <span>{t('admin.portals.tab.books')}</span>
+          </button>
+
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'games'}
+            onClick={() => {
+              setActiveTab('games');
+              setFeedback(null);
+            }}
+            className={`inline-flex items-center gap-2 min-h-[40px] px-4 py-2 text-xs sm:text-sm font-semibold rounded-[var(--radius-control)] border transition-colors whitespace-nowrap ${
+              activeTab === 'games'
+                ? 'bg-[var(--color-primary-button)] text-[var(--color-on-primary)] border-transparent'
+                : 'bg-[var(--color-surface)] text-[var(--color-text)] border-[var(--color-border)] hover:bg-[var(--color-surface-alt)]'
+            }`}
+          >
+            <Gamepad2 className="w-4 h-4 shrink-0" aria-hidden="true" />
+            <span>{t('admin.portals.tab.games')}</span>
           </button>
         </div>
 
@@ -764,7 +1283,7 @@ export function AdminPortalsPage({ currentRoute }: AdminPortalsPageProps) {
               />
             )}
           </div>
-        ) : (
+        ) : activeTab === 'books' ? (
           <div className="space-y-5">
             {/* Book Feature Flag Card */}
             <section className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-3">
@@ -845,6 +1364,125 @@ export function AdminPortalsPage({ currentRoute }: AdminPortalsPageProps) {
                 columns={bookColumns}
                 rows={books}
                 getRowKey={(row) => String(row.item.id)}
+              />
+            )}
+          </div>
+        ) : (
+          <div className="space-y-5">
+            {/* Games Feature Flag + Sample Game Installer */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <section className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-xs sm:text-sm font-semibold text-[var(--color-muted)]">
+                    {t('admin.portals.games.flagLabel')}
+                  </span>
+                  <Tag
+                    label={
+                      isGamesEnabled
+                        ? t('admin.portals.games.flagEnabled')
+                        : t('admin.portals.games.flagDisabled')
+                    }
+                    variant={isGamesEnabled ? 'success' : 'warning'}
+                  />
+                </div>
+                <p className="text-xs text-[var(--color-muted)] leading-relaxed">
+                  {t('admin.portals.games.infoNote')}
+                </p>
+                <div className="pt-1 flex flex-wrap items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigateToHash('/admin/settings')}
+                    startIcon={<Settings className="w-3.5 h-3.5" />}
+                  >
+                    {t('admin.portals.games.openSettings')}
+                  </Button>
+                </div>
+              </section>
+
+              <section className="rounded-[var(--radius-card)] border border-[var(--color-border-strong)] bg-[var(--color-surface-alt)] p-5 space-y-3">
+                <div className="flex items-center gap-2 text-sm font-bold text-[var(--color-primary)]">
+                  <Gamepad2 className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  <span>{t('admin.portals.games.sample.title')}</span>
+                </div>
+                <p className="text-xs text-[var(--color-muted)] leading-relaxed">
+                  {t('admin.portals.games.sample.description')}
+                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    disabled={isInstallingSampleGame}
+                    onClick={() => void handleInstallSampleGame()}
+                    startIcon={<Sparkles className="w-3.5 h-3.5" />}
+                  >
+                    {isInstallingSampleGame
+                      ? t('admin.portals.games.installingSampleButton')
+                      : t('admin.portals.games.installSampleButton')}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => void handleDownloadSampleZip()}
+                    startIcon={<Download className="w-3.5 h-3.5" />}
+                  >
+                    {t('admin.portals.games.downloadSampleZipButton')}
+                  </Button>
+                </div>
+              </section>
+            </div>
+
+            {/* Game Search */}
+            <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+              <label htmlFor="admin-portals-games-search" className="sr-only">
+                {t('admin.portals.games.searchLabel')}
+              </label>
+              <div className="relative max-w-md">
+                <Search
+                  className="w-4 h-4 text-[var(--color-muted)] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                  aria-hidden="true"
+                />
+                <input
+                  id="admin-portals-games-search"
+                  type="search"
+                  value={gameSearchQuery}
+                  onChange={(e) => setGameSearchQuery(e.target.value)}
+                  placeholder={t('admin.portals.games.searchPlaceholder')}
+                  className="w-full min-h-[42px] pr-9 pl-3 py-2 text-xs sm:text-sm rounded-[var(--radius-control)] border border-[var(--color-border)] bg-[var(--color-surface-alt)] text-[var(--color-text)] focus:outline-2 focus:outline-[var(--color-primary)]"
+                />
+              </div>
+            </div>
+
+            {/* Games Table */}
+            {isLoadingGames ? (
+              <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-8 text-center text-sm text-[var(--color-muted)]">
+                {t('admin.portals.games.loading')}
+              </div>
+            ) : games.length === 0 ? (
+              <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-8 text-center space-y-3">
+                <Gamepad2 className="w-10 h-10 text-[var(--color-muted)] mx-auto" aria-hidden="true" />
+                <h2 className="text-base font-bold text-[var(--color-text)]">
+                  {t('admin.portals.games.emptyTitle')}
+                </h2>
+                <p className="text-xs sm:text-sm text-[var(--color-muted)] max-w-md mx-auto">
+                  {t('admin.portals.games.emptyBody')}
+                </p>
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={openCreateGameModal}
+                    startIcon={<Upload className="w-4 h-4" />}
+                  >
+                    {t('admin.portals.games.addNewGameButton')}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <Table
+                columns={gameColumns}
+                rows={games}
+                getRowKey={(row) => String(row.game.id)}
               />
             )}
           </div>
@@ -1077,6 +1715,228 @@ export function AdminPortalsPage({ currentRoute }: AdminPortalsPageProps) {
             </p>
           </div>
         </div>
+      </Modal>
+
+      {/* Create/Edit HTML5 Game Modal */}
+      <Modal
+        open={gameModalOpen}
+        onClose={() => {
+          if (!isSavingGameModal) setGameModalOpen(false);
+        }}
+        title={
+          editingGameRow
+            ? t('admin.portals.games.modal.editTitle', {
+                title: editingGameRow.game.title,
+              })
+            : t('admin.portals.games.modal.createTitle')
+        }
+        footer={
+          <>
+            <Button
+              variant="ghost"
+              disabled={isSavingGameModal}
+              onClick={() => setGameModalOpen(false)}
+            >
+              {t('admin.portals.games.modal.cancel')}
+            </Button>
+            <Button
+              variant="primary"
+              disabled={isSavingGameModal || isUploadingThumb}
+              onClick={() => void handleSaveGameModal()}
+            >
+              {isSavingGameModal
+                ? t('admin.portals.games.modal.saving')
+                : t('admin.portals.games.modal.save')}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          {gameModalError && <Alert variant="error" message={gameModalError} />}
+
+          <FormField
+            id="modal-game-title"
+            label={t('admin.portals.games.modal.titleLabel')}
+            value={gameTitle}
+            onChange={setGameTitle}
+            placeholder={t('admin.portals.games.modal.titlePlaceholder')}
+            required
+          />
+
+          <FormField
+            id="modal-game-desc"
+            label={t('admin.portals.games.modal.descriptionLabel')}
+            kind="textarea"
+            rows={2}
+            value={gameDescription}
+            onChange={setGameDescription}
+            placeholder={t('admin.portals.games.modal.descriptionPlaceholder')}
+          />
+
+          <FormField
+            id="modal-game-end-message"
+            label={t('admin.portals.games.modal.endMessageLabel')}
+            kind="textarea"
+            rows={2}
+            value={gameEndMessage}
+            onChange={setGameEndMessage}
+            placeholder={t('admin.portals.games.modal.endMessagePlaceholder')}
+          />
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormField
+              id="modal-game-topic"
+              label={t('admin.portals.games.modal.topicLabel')}
+              kind="select"
+              value={gameTopicId}
+              onChange={setGameTopicId}
+              options={gameTopicOptions}
+            />
+
+            <FormField
+              id="modal-game-max-score"
+              label={t('admin.portals.games.modal.maxScoreLabel')}
+              value={gameMaxScore}
+              onChange={setGameMaxScore}
+              hint={t('admin.portals.games.modal.maxScoreHint')}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-xs sm:text-sm font-medium text-[var(--color-text)]">
+              {t('admin.portals.games.modal.ageGroupsLabel')}
+            </p>
+            <div className="flex flex-wrap gap-3">
+              {allAgeGroups.map((ag) => (
+                <label
+                  key={ag.id}
+                  className="inline-flex items-center gap-2 text-xs sm:text-sm text-[var(--color-text)] cursor-pointer select-none"
+                >
+                  <input
+                    type="checkbox"
+                    checked={gameAgeGroupIds.includes(ag.id)}
+                    onChange={() => handleToggleGameAgeGroup(ag.id)}
+                    className="w-4 h-4 accent-[var(--color-primary)]"
+                  />
+                  <span>{ag.name}</span>
+                </label>
+              ))}
+            </div>
+            <p className="text-xs text-[var(--color-muted)]">
+              {t('admin.portals.games.modal.ageGroupsEmptyHint')}
+            </p>
+          </div>
+
+          <div className="space-y-1.5">
+            <label
+              htmlFor="modal-game-zip-input"
+              className="block text-xs sm:text-sm font-medium text-[var(--color-text)]"
+            >
+              {editingGameRow
+                ? t('admin.portals.games.modal.zipLabelEdit')
+                : t('admin.portals.games.modal.zipLabelCreate')}
+            </label>
+            <input
+              id="modal-game-zip-input"
+              type="file"
+              accept=".zip,application/zip"
+              onChange={(e) => void handleGameZipFileChange(e)}
+              className="block w-full text-xs text-[var(--color-text)] file:ml-3 file:py-2 file:px-3 file:rounded-[var(--radius-control)] file:border file:border-[var(--color-border)] file:bg-[var(--color-surface-alt)] file:text-xs file:font-semibold file:text-[var(--color-text)] hover:file:bg-[var(--color-surface)]"
+            />
+            <p className="text-xs text-[var(--color-muted)]">
+              {t('admin.portals.games.modal.zipHint')}
+            </p>
+            {gameZipBytes && (
+              <p className="text-xs font-medium text-[var(--color-primary)] tabular-nums-strict">
+                {(() => {
+                  const parts = formatFileSizeParts(gameZipBytes.byteLength);
+                  const sizeLabel = parts
+                    ? t(`contentDetail.sizeUnit.${parts.unit}` as ResourceKey, {
+                        value: parts.value,
+                      })
+                    : toPersianDigits(gameZipBytes.byteLength);
+                  return t('admin.portals.games.modal.zipSelectedFile', {
+                    name: gameZipFileName,
+                    size: sizeLabel,
+                  });
+                })()}
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-1.5">
+            <label
+              htmlFor="modal-game-thumb-input"
+              className="block text-xs sm:text-sm font-medium text-[var(--color-text)]"
+            >
+              {t('admin.portals.games.modal.thumbnailLabel')}
+            </label>
+            <div className="flex flex-wrap items-center gap-2">
+              <input
+                id="modal-game-thumb-input"
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                onChange={(e) => void handleGameThumbnailChange(e)}
+                className="block text-xs text-[var(--color-text)] file:ml-3 file:py-1.5 file:px-3 file:rounded-[var(--radius-control)] file:border file:border-[var(--color-border)] file:bg-[var(--color-surface-alt)] file:text-xs file:font-semibold file:text-[var(--color-text)]"
+              />
+              {gameThumbnailKey && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setGameThumbnailKey(null)}
+                >
+                  {t('admin.portals.games.modal.thumbnailClear')}
+                </Button>
+              )}
+            </div>
+          </div>
+
+          <label className="inline-flex items-center gap-2.5 text-sm font-medium text-[var(--color-text)] cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={gameIsPublished}
+              onChange={(e) => setGameIsPublished(e.target.checked)}
+              className="w-4 h-4 accent-[var(--color-primary)]"
+            />
+            <span>{t('admin.portals.games.modal.isPublishedLabel')}</span>
+          </label>
+        </div>
+      </Modal>
+
+      {/* Confirm Delete Game Modal */}
+      <Modal
+        open={Boolean(deletingGameRow)}
+        onClose={() => {
+          if (!isDeletingGame) setDeletingGameRow(null);
+        }}
+        title={t('admin.portals.games.action.delete')}
+        footer={
+          <>
+            <Button
+              variant="ghost"
+              disabled={isDeletingGame}
+              onClick={() => setDeletingGameRow(null)}
+            >
+              {t('admin.portals.games.modal.cancel')}
+            </Button>
+            <Button
+              variant="primary"
+              disabled={isDeletingGame}
+              onClick={() => void handleConfirmDeleteGame()}
+            >
+              {t('admin.portals.games.action.delete')}
+            </Button>
+          </>
+        }
+      >
+        <p className="text-sm text-[var(--color-text)] leading-relaxed">
+          {deletingGameRow
+            ? t('admin.portals.games.confirmDelete', {
+                title: deletingGameRow.game.title,
+              })
+            : ''}
+        </p>
       </Modal>
     </AdminLayout>
   );

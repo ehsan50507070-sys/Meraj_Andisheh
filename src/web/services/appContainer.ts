@@ -15,6 +15,7 @@ import { DailyStatAggregationService } from '../../core/services/dailyStatAggreg
 import { DownloadService } from '../../core/services/downloadService';
 import { FileUploadService } from '../../core/services/fileUploadService';
 import { FilmPortalService } from '../../core/services/filmPortalService';
+import { GamePortalService } from '../../core/services/gamePortalService';
 import { HealthCheckService } from '../../core/services/HealthCheckService';
 import { HomePageService } from '../../core/services/homePageService';
 import { InitialSuperAdminService } from '../../core/services/initialSuperAdminService';
@@ -53,6 +54,7 @@ import { IndexedDbDailyStatRepository } from '../../infrastructure/data/IndexedD
 import { IndexedDbDataStore } from '../../infrastructure/data/IndexedDbDataStore';
 import { IndexedDbDownloadEventRepository } from '../../infrastructure/data/IndexedDbDownloadEventRepository';
 import { IndexedDbFilmRepository } from '../../infrastructure/data/IndexedDbFilmRepository';
+import { IndexedDbGameRepository } from '../../infrastructure/data/IndexedDbGameRepository';
 import { IndexedDbInteractionRepository } from '../../infrastructure/data/IndexedDbInteractionRepository';
 import { IndexedDbLayoutRepository } from '../../infrastructure/data/IndexedDbLayoutRepository';
 import { IndexedDbTaxonomyRepository } from '../../infrastructure/data/IndexedDbTaxonomyRepository';
@@ -77,6 +79,7 @@ import { IndexedDbS3StorageConfigStore } from '../../infrastructure/storage/Inde
 import { LocalIndexedDbFileStorage } from '../../infrastructure/storage/LocalIndexedDbFileStorage';
 import { RoutingFileStorage } from '../../infrastructure/storage/RoutingFileStorage';
 import { S3FileStorage } from '../../infrastructure/storage/S3FileStorage';
+import { Html5GamePackageService } from '../../infrastructure/storage/html5GamePackageService';
 import { t } from '../resources/i18n';
 
 export interface AppContainer {
@@ -100,6 +103,8 @@ export interface AppContainer {
   userTopicAffinityRepository: IndexedDbUserTopicAffinityRepository;
   filmRepository: IndexedDbFilmRepository;
   bookRepository: IndexedDbBookRepository;
+  gameRepository: IndexedDbGameRepository;
+  gamePackageStorage: Html5GamePackageService;
   accountCleanupRepository: IndexedDbAccountCleanupRepository;
   backupRepository: IndexedDbBackupRepository;
   backupSnapshotProvider: IndexedDbBackupSnapshotProvider;
@@ -138,6 +143,7 @@ export interface AppContainer {
   personalizationService: PersonalizationService;
   filmPortalService: FilmPortalService;
   bookPortalService: BookPortalService;
+  gamePortalService: GamePortalService;
   homePageService: HomePageService;
   layoutManagementService: LayoutManagementService;
   announcementService: AnnouncementService;
@@ -182,6 +188,8 @@ const dailyStatRepository = new IndexedDbDailyStatRepository(dataStore);
 const userTopicAffinityRepository = new IndexedDbUserTopicAffinityRepository(dataStore);
 const filmRepository = new IndexedDbFilmRepository(dataStore);
 const bookRepository = new IndexedDbBookRepository(dataStore);
+const gameRepository = new IndexedDbGameRepository(dataStore);
+const gamePackageStorage = new Html5GamePackageService(dataStore);
 const accountCleanupRepository = new IndexedDbAccountCleanupRepository(dataStore);
 const backupRepository = new IndexedDbBackupRepository(dataStore, clock);
 const backupSnapshotProvider = new IndexedDbBackupSnapshotProvider(dataStore);
@@ -377,6 +385,17 @@ const bookPortalService = new BookPortalService({
   logger,
   searchNormalizer,
   fileStorage,
+});
+const gamePortalService = new GamePortalService({
+  gameRepository,
+  packageStorage: gamePackageStorage,
+  taxonomyRepository,
+  adminRepository,
+  policyService: permissionPolicyService,
+  clock,
+  logger,
+  deletedDisplayName: t('user.deletedDisplayName'),
+  searchNormalizer,
 });
 const homePageService = new HomePageService({
   layoutRepository,
@@ -614,6 +633,27 @@ export async function ensureStage26NewsTickerDefaultFlagAsync(
   });
 }
 
+export const STAGE29_GAMES_FLAG_META_KEY =
+  'stage29_games_default_enabled_v1';
+
+export async function ensureStage29GamesDefaultFlagAsync(
+  store: IndexedDbDataStore = dataStore,
+): Promise<void> {
+  const existingMeta = await store.getMeta(STAGE29_GAMES_FLAG_META_KEY);
+  if (existingMeta) {
+    return;
+  }
+  await store.putRecord(STORE_NAMES.FEATURE_FLAGS, {
+    key: 'Games',
+    isEnabled: true,
+  });
+  await store.setMeta({
+    key: STAGE29_GAMES_FLAG_META_KEY,
+    value: '1',
+    updatedAtUtc: clock.nowUtcIso(),
+  });
+}
+
 let startupRecordedInSession = false;
 let startupInitPromise: Promise<void> | null = null;
 
@@ -646,6 +686,7 @@ function ensureInitializedAtStartup(): Promise<void> {
         await ensureStage24BooksDefaultFlagAsync(dataStore);
         await ensureStage25StoryGeneratorDefaultFlagAsync(dataStore);
         await ensureStage26NewsTickerDefaultFlagAsync(dataStore);
+        await ensureStage29GamesDefaultFlagAsync(dataStore);
         await ensureStage18LayoutSeededAsync(dataStore);
         await initialSuperAdminService.bootstrapFromEnvIfConfigured(
           envConfig.initialSuperAdminEmail,
@@ -683,6 +724,8 @@ export const appContainer: AppContainer = {
   userTopicAffinityRepository,
   filmRepository,
   bookRepository,
+  gameRepository,
+  gamePackageStorage,
   accountCleanupRepository,
   backupRepository,
   backupSnapshotProvider,
@@ -721,6 +764,7 @@ export const appContainer: AppContainer = {
   personalizationService,
   filmPortalService,
   bookPortalService,
+  gamePortalService,
   homePageService,
   layoutManagementService,
   announcementService,
