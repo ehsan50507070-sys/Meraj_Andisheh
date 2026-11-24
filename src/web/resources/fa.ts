@@ -4,7 +4,7 @@ export const faResources = {
   'app.subtitle': 'پلتفرم بانک محتوای فارسی',
   'app.stageLabel': 'مرحله {stage} از {total}',
   'app.stageName':
-    'پرتال کتاب (BookInfo، ویترین کتاب‌ها، صفحه معرفی و دانلود کتاب و مدیریت پرتال‌ها)',
+    'تولید استوری (خروجی ۱۰۸۰×۱۹۲۰ PNG در ۳ قالب بومی، کنترل دسترسی اعضا و ثبت رویداد استوری)',
   'app.footerNote': 'پلتفرم معراج اندیشه · بانک محتوای فارسی متناسب با هر رده سنی',
 
   // Themes
@@ -823,8 +823,9 @@ export const faResources = {
   'admin.settings.flag.Books.desc': 'فعال‌سازی بخش معرفی، مطالعه و دانلود کتاب‌ها',
   'admin.settings.flag.Games.name': 'بخش بازی و سرگرمی',
   'admin.settings.flag.Games.desc': 'فعال‌سازی بخش بازی‌ها و محتوای تعاملی آموزشی',
-  'admin.settings.flag.StoryGenerator.name': 'داستان‌ساز تعاملی',
-  'admin.settings.flag.StoryGenerator.desc': 'ماژول تولید و روایت داستان‌های تعاملی رده‌های سنی',
+  'admin.settings.flag.StoryGenerator.name': 'تولید استوری شبکه‌های اجتماعی',
+  'admin.settings.flag.StoryGenerator.desc':
+    'امکان ساخت و دانلود تصویر عمودی استوری (۱۰۸۰×۱۹۲۰ PNG) توسط اعضا در صفحات محتوا، فیلم و کتاب',
   'admin.settings.flag.NewsTicker.name': 'نوار خبر و اطلاعیه‌ها',
   'admin.settings.flag.NewsTicker.desc': 'نمایش نوار خبر فوری یا اطلاعیه‌های بالای صفحات عمومی',
 
@@ -2027,6 +2028,7 @@ export const faResources = {
   'profile.downloads.kind.story': 'خروجی استوری',
   'profile.downloads.unavailableContent': 'محتوای بایگانی‌شده یا حذف‌شده',
   'profile.downloads.unknownFile': 'فایل پیوست',
+  'profile.downloads.storyFileLabel': 'تصویر استوری (۱۰۸۰×۱۹۲۰ PNG)',
 
   // Tab 4: My Requests (Stage 17)
   'profile.requests.title': 'درخواست‌های محتوای من',
@@ -3352,6 +3354,61 @@ export const faResources = {
     'کنترل دسترسی portals.manage روی کتاب‌ها (۴۰۳ با WARN و ۴۰۴ عضو) و بررسی IndexedDB v16',
   'tests.stage24.rbacAndIndexedDbV16.desc':
     'همکار بدون مجوز کد ۴۰۳ با لاگ WARN و عضو ۴۰۴ می‌گیرند؛ ارقام فارسی سال و صفحات ذخیره و جدول bookInfos همراه با پشتیبان‌گیری کامل در IndexedDB نسخه ۱۶ تأیید می‌شود.',
+
+  // Stage 25: Story Generator (1080x1920 PNG)
+  'story.action.createButton': 'ساخت استوری',
+  'story.modal.title': 'ساخت تصویر استوری (۱۰۸۰×۱۹۲۰)',
+  'story.modal.dimensionsBadge': '{width} × {height} پیکسل · PNG',
+  'story.modal.templateLabel': 'انتخاب قالب استوری',
+  'story.template.cinematic-dark.name': 'تیره‌ی سینمایی',
+  'story.template.cinematic-dark.desc': 'پس‌زمینه‌ی شبانه‌ی باکنتراست و قاب تصویر شاخص',
+  'story.template.light-minimal.name': 'روشن مینیمال',
+  'story.template.light-minimal.desc': 'کاغذ روشن رسمی با تایپوگرافی پاکیزه و حاشیه‌ی ظریف',
+  'story.template.quote-focus.name': 'تمرکز بر نقل‌قول',
+  'story.template.quote-focus.desc': 'متن درشت وسط‌چین روی پس‌زمینه‌ی تمام‌صفحه‌ی تیره',
+  'story.modal.showTitleLabel': 'نمایش عنوان در تصویر استوری',
+  'story.modal.titleInputLabel': 'عنوان استوری (اختیاری)',
+  'story.modal.titleInputPlaceholder': 'عنوان کوتاه برای نمایش بالای متن استوری...',
+  'story.modal.quoteInputLabel': 'متن نقل‌قول یا خلاصه',
+  'story.modal.quoteInputPlaceholder': 'بریده‌ی کوتاه و خوانا برای اشتراک‌گذاری در استوری...',
+  'story.modal.charCounter': '{current} / {max} نویسه',
+  'story.modal.previewHeading': 'پیش‌نمایش زنده‌ی استوری',
+  'story.modal.previewHint': 'خروجی نهایی با وضوح کامل {width} × {height} پیکسل ذخیره می‌شود.',
+  'story.modal.downloadButton': 'دانلود تصویر استوری (PNG)',
+  'story.modal.generatingButton': 'در حال تولید تصویر PNG...',
+  'story.modal.closeButton': 'بستن',
+  'story.modal.successMessage':
+    'تصویر استوری با ابعاد {width}×{height} پیکسل تولید شد و در تاریخچه‌ی دانلودهای شما ثبت گردید.',
+  'story.modal.error.FEATURE_DISABLED':
+    'ماژول تولید استوری در حال حاضر توسط مدیریت غیرفعال است.',
+  'story.modal.error.AUTH_REQUIRED':
+    'برای تولید و دریافت تصویر استوری باید وارد حساب کاربری خود شوید.',
+  'story.modal.error.CONTENT_NOT_AVAILABLE':
+    'امکان ساخت استوری برای این محتوا در رده‌ی سنی فعال یا وضعیت فعلی وجود ندارد.',
+  'story.modal.error.renderFailed':
+    'در تولید تصویر استوری در مرورگر خطایی رخ داد؛ لطفاً دوباره تلاش کنید.',
+
+  // Stage 25 Unit Tests
+  'tests.stage25.guestAndFeatureFlagGate.name':
+    'کنترل دسترسی عضو و کلید ماژول StoryGenerator روی دکمه و سرویس ثبت استوری',
+  'tests.stage25.guestAndFeatureFlagGate.desc':
+    'کاربر مهمان و حالت خاموش بودن FeatureFlag("StoryGenerator") اجازه‌ی نمایش دکمه یا ثبت رویداد ندارند و خطای AUTH_REQUIRED / FEATURE_DISABLED برمی‌گردانند.',
+  'tests.stage25.downloadEventStoryRecord.name':
+    'ثبت رویداد DownloadEvent با Kind = Story و fileId = null برای عضو واردشده',
+  'tests.stage25.downloadEventStoryRecord.desc':
+    'با ثبت خروجی استوری، دقیقاً یک رکورد DownloadEvent با نوع Story (۲)، userId معتبر و fileId برابر null ثبت شده و شمارنده‌ی فایل اصلی تغییر نمی‌کند.',
+  'tests.stage25.childSafetyGuard.name':
+    'الزام ایمنی رده‌ی سنی کودک در تولید استوری (مسدودسازی محتوای بزرگسال)',
+  'tests.stage25.childSafetyGuard.desc':
+    'درخواست ثبت استوری روی محتوای ویژه‌ی بزرگسال هنگام فعال‌بودن رده‌ی سنی کودک با خطای CONTENT_NOT_AVAILABLE رد شده و هیچ رویدادی ثبت نمی‌شود.',
+  'tests.stage25.canvasRenderThreeTemplates.name':
+    'تولید بومی تصویر PNG ۱۰۸۰×۱۹۲۰ با Canvas و فونت فارسی در هر ۳ قالب',
+  'tests.stage25.canvasRenderThreeTemplates.desc':
+    'هر سه قالب cinematic-dark، light-minimal و quote-focus تصویر معتبر image/png با ابعاد دقیق ۱۰۸۰×۱۹۲۰ پیکسل و حجم غیرصفر تولید می‌کنند.',
+  'tests.stage25.migrationV17DefaultFlag.name':
+    'ارتقای IndexedDB به نسخه‌ی ۱۷ و روشن‌شدن خودکار کلید StoryGenerator',
+  'tests.stage25.migrationV17DefaultFlag.desc':
+    'مهاجرت نسخه ۱۶ به ۱۷ در IndexedDB و راه‌اندازی سامانه کلید StoryGenerator را بدون شکستن تست‌های بذر اولیه روشن می‌کند.',
 } as const;
 
 export type ResourceKey = keyof typeof faResources;

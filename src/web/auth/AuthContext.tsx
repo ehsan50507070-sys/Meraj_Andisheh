@@ -20,6 +20,7 @@ export interface AuthContextValue {
   isContentRequestsEnabled: boolean;
   isFilmsEnabled: boolean;
   isBooksEnabled: boolean;
+  isStoryGeneratorEnabled: boolean;
   hasSuperAdmin: boolean;
   hasStaffUser: boolean;
   isAuthReady: boolean;
@@ -41,6 +42,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     useState<boolean>(false);
   const [isFilmsEnabled, setIsFilmsEnabled] = useState<boolean>(false);
   const [isBooksEnabled, setIsBooksEnabled] = useState<boolean>(false);
+  const [isStoryGeneratorEnabled, setIsStoryGeneratorEnabled] =
+    useState<boolean>(false);
   const [hasSuperAdmin, setHasSuperAdmin] = useState<boolean>(true);
   const [hasStaffUser, setHasStaffUser] = useState<boolean>(true);
   const [isAuthReady, setIsAuthReady] = useState<boolean>(false);
@@ -57,19 +60,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshFeatureFlags = useCallback(async () => {
     await appContainer.ensureInitializedAtStartup();
-    const [commentsEnabled, contentRequestsEnabled, filmsEnabled, booksEnabled] =
-      await Promise.all([
-        appContainer.settingsManagementService.getPublicFeatureFlagState('Comments'),
-        appContainer.settingsManagementService.getPublicFeatureFlagState(
-          'ContentRequests',
-        ),
-        appContainer.settingsManagementService.getPublicFeatureFlagState('Films'),
-        appContainer.settingsManagementService.getPublicFeatureFlagState('Books'),
-      ]);
+    const [
+      commentsEnabled,
+      contentRequestsEnabled,
+      filmsEnabled,
+      booksEnabled,
+      storyGeneratorEnabled,
+    ] = await Promise.all([
+      appContainer.settingsManagementService.getPublicFeatureFlagState('Comments'),
+      appContainer.settingsManagementService.getPublicFeatureFlagState(
+        'ContentRequests',
+      ),
+      appContainer.settingsManagementService.getPublicFeatureFlagState('Films'),
+      appContainer.settingsManagementService.getPublicFeatureFlagState('Books'),
+      appContainer.settingsManagementService.getPublicFeatureFlagState(
+        'StoryGenerator',
+      ),
+    ]);
     setIsCommentsEnabled(commentsEnabled);
     setIsContentRequestsEnabled(contentRequestsEnabled);
     setIsFilmsEnabled(filmsEnabled);
     setIsBooksEnabled(booksEnabled);
+    setIsStoryGeneratorEnabled(storyGeneratorEnabled);
   }, []);
 
   const refreshAuthState = useCallback(async () => {
@@ -84,6 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       contentRequestsEnabled,
       filmsEnabled,
       booksEnabled,
+      storyGeneratorEnabled,
     ] = await Promise.all([
       appContainer.authService.getCurrentUser(),
       appContainer.initialSuperAdminService.hasSuperAdmin(),
@@ -96,6 +109,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       ),
       appContainer.settingsManagementService.getPublicFeatureFlagState('Films'),
       appContainer.settingsManagementService.getPublicFeatureFlagState('Books'),
+      appContainer.settingsManagementService.getPublicFeatureFlagState(
+        'StoryGenerator',
+      ),
     ]);
     const permissions = await appContainer.permissionPolicyService.getUserPermissions(user);
     setCurrentUser(user);
@@ -108,6 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsContentRequestsEnabled(contentRequestsEnabled);
     setIsFilmsEnabled(filmsEnabled);
     setIsBooksEnabled(booksEnabled);
+    setIsStoryGeneratorEnabled(storyGeneratorEnabled);
     setIsAuthReady(true);
   }, []);
 
@@ -131,6 +148,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isContentRequestsEnabled,
         isFilmsEnabled,
         isBooksEnabled,
+        isStoryGeneratorEnabled,
         hasSuperAdmin,
         hasStaffUser,
         isAuthReady,

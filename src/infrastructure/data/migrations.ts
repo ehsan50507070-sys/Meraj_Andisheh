@@ -716,6 +716,27 @@ export const DATABASE_MIGRATIONS: readonly MigrationStep[] = [
       }
     },
   },
+  {
+    version: 17,
+    up: (db, transaction, oldVersion) => {
+      if (
+        oldVersion > 0 &&
+        transaction &&
+        db.objectStoreNames.contains(STORE_NAMES.FEATURE_FLAGS)
+      ) {
+        transaction
+          .objectStore(STORE_NAMES.FEATURE_FLAGS)
+          .put({ key: 'StoryGenerator', isEnabled: true });
+      }
+      if (oldVersion > 0 && transaction && db.objectStoreNames.contains(STORE_NAMES.META)) {
+        transaction.objectStore(STORE_NAMES.META).put({
+          key: 'stage25_story_generator_default_enabled_v1',
+          value: '1',
+          updatedAtUtc: new Date().toISOString(),
+        });
+      }
+    },
+  },
 ];
 
 export function applyMigrations(

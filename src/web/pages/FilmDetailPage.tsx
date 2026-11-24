@@ -10,6 +10,7 @@ import {
   Eye,
   Film as FilmIcon,
   Heart,
+  Image as ImageIcon,
   Lock,
   Share2,
   ShieldAlert,
@@ -20,6 +21,7 @@ import { ContentFileKind, FileStorageType, type ContentFile } from '../../core/d
 import type { FilmKind, PublicFilmDetailData } from '../../core/domain/portals';
 import { useAuth } from '../auth/AuthContext';
 import { ContentCommentsSection } from '../components/ContentCommentsSection';
+import { StoryGeneratorModal } from '../components/StoryGeneratorModal';
 import { DocumentAttachmentCard } from '../components/players/DocumentAttachmentCard';
 import { SanitizedArticleBody } from '../components/players/SanitizedArticleBody';
 import { VideoPlayerBox } from '../components/players/VideoPlayerBox';
@@ -57,7 +59,8 @@ function getKindLabelKey(kind: FilmKind): ResourceKey {
 }
 
 export function FilmDetailPage({ currentRoute, slug }: FilmDetailPageProps) {
-  const { currentUser, siteTitle, isFilmsEnabled, isAuthReady } = useAuth();
+  const { currentUser, siteTitle, isFilmsEnabled, isStoryGeneratorEnabled, isAuthReady } =
+    useAuth();
   const { effectiveAgeGroup, isAgeReady } = useAge();
 
   const [detail, setDetail] = useState<PublicFilmDetailData | null>(null);
@@ -92,6 +95,7 @@ export function FilmDetailPage({ currentRoute, slug }: FilmDetailPageProps) {
     type: 'success' | 'error';
     text: string;
   } | null>(null);
+  const [isStoryModalOpen, setIsStoryModalOpen] = useState(false);
 
   const trackedKeyRef = useRef<string | null>(null);
   const loadedSlugRef = useRef<string | null>(null);
@@ -121,6 +125,7 @@ export function FilmDetailPage({ currentRoute, slug }: FilmDetailPageProps) {
         setDetail(null);
         setShareFeedback(null);
         setDownloadFeedback(null);
+        setIsStoryModalOpen(false);
       }
 
       try {
@@ -553,6 +558,14 @@ export function FilmDetailPage({ currentRoute, slug }: FilmDetailPageProps) {
       : t('contentDetail.meta.allAges');
 
   const isMemberLoggedIn = Boolean(currentUser && currentUser.isActive);
+  const canCreateStory = appContainer.storyService.canUserGenerateStory(
+    currentUser,
+    isStoryGeneratorEnabled,
+  );
+  const storyTopicName =
+    detail.topics[0]?.name ??
+    detail.topicBreadcrumbChain[detail.topicBreadcrumbChain.length - 1]?.name ??
+    null;
 
   return (
     <MainLayout currentRoute={currentRoute}>
@@ -730,6 +743,16 @@ export function FilmDetailPage({ currentRoute, slug }: FilmDetailPageProps) {
                 >
                   {t('contentDetail.share.copyButton')}
                 </Button>
+                {canCreateStory && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsStoryModalOpen(true)}
+                    startIcon={<ImageIcon className="w-4 h-4" />}
+                  >
+                    {t('story.action.createButton')}
+                  </Button>
+                )}
               </div>
 
               {shareFeedback && (
@@ -1054,6 +1077,18 @@ export function FilmDetailPage({ currentRoute, slug }: FilmDetailPageProps) {
           </Button>
         </div>
       </div>
+
+      {canCreateStory && (
+        <StoryGeneratorModal
+          open={isStoryModalOpen}
+          onClose={() => setIsStoryModalOpen(false)}
+          content={item}
+          topicName={storyTopicName}
+          currentUser={currentUser}
+          activeAgeGroup={effectiveAgeGroup}
+          siteTitle={siteTitle}
+        />
+      )}
     </MainLayout>
   );
 }

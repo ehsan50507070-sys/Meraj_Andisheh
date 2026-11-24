@@ -9,6 +9,7 @@ import {
   ExternalLink,
   Eye,
   Heart,
+  Image as ImageIcon,
   Lock,
   Quote,
   Share2,
@@ -22,6 +23,7 @@ import {
 import type { PublicBookDetailData } from '../../core/domain/portals';
 import { useAuth } from '../auth/AuthContext';
 import { ContentCommentsSection } from '../components/ContentCommentsSection';
+import { StoryGeneratorModal } from '../components/StoryGeneratorModal';
 import { DocumentAttachmentCard } from '../components/players/DocumentAttachmentCard';
 import { PdfLocalViewer } from '../components/players/PdfLocalViewer';
 import { SanitizedArticleBody } from '../components/players/SanitizedArticleBody';
@@ -62,7 +64,8 @@ function isPdfFile(file: ContentFile | null | undefined): boolean {
 }
 
 export function BookDetailPage({ currentRoute, slug }: BookDetailPageProps) {
-  const { currentUser, siteTitle, isBooksEnabled, isAuthReady } = useAuth();
+  const { currentUser, siteTitle, isBooksEnabled, isStoryGeneratorEnabled, isAuthReady } =
+    useAuth();
   const { effectiveAgeGroup, isAgeReady } = useAge();
 
   const [detail, setDetail] = useState<PublicBookDetailData | null>(null);
@@ -99,6 +102,7 @@ export function BookDetailPage({ currentRoute, slug }: BookDetailPageProps) {
     type: 'success' | 'error';
     text: string;
   } | null>(null);
+  const [isStoryModalOpen, setIsStoryModalOpen] = useState(false);
 
   const trackedKeyRef = useRef<string | null>(null);
   const loadedSlugRef = useRef<string | null>(null);
@@ -129,6 +133,7 @@ export function BookDetailPage({ currentRoute, slug }: BookDetailPageProps) {
         setShareFeedback(null);
         setDownloadFeedback(null);
         setCoverImgError(false);
+        setIsStoryModalOpen(false);
       }
 
       try {
@@ -595,6 +600,14 @@ export function BookDetailPage({ currentRoute, slug }: BookDetailPageProps) {
 
   const isMemberLoggedIn = Boolean(currentUser && currentUser.isActive);
   const showCoverFallback = !coverUrl || coverImgError;
+  const canCreateStory = appContainer.storyService.canUserGenerateStory(
+    currentUser,
+    isStoryGeneratorEnabled,
+  );
+  const storyTopicName =
+    detail.topics[0]?.name ??
+    detail.topicBreadcrumbChain[detail.topicBreadcrumbChain.length - 1]?.name ??
+    null;
 
   return (
     <MainLayout currentRoute={currentRoute}>
@@ -808,6 +821,16 @@ export function BookDetailPage({ currentRoute, slug }: BookDetailPageProps) {
                 >
                   {t('contentDetail.share.copyButton')}
                 </Button>
+                {canCreateStory && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsStoryModalOpen(true)}
+                    startIcon={<ImageIcon className="w-4 h-4" />}
+                  >
+                    {t('story.action.createButton')}
+                  </Button>
+                )}
               </div>
 
               {shareFeedback && (
@@ -1190,6 +1213,19 @@ export function BookDetailPage({ currentRoute, slug }: BookDetailPageProps) {
           </Button>
         </div>
       </div>
+
+      {canCreateStory && (
+        <StoryGeneratorModal
+          open={isStoryModalOpen}
+          onClose={() => setIsStoryModalOpen(false)}
+          content={item}
+          topicName={storyTopicName}
+          keyExcerpts={bookInfo.keyExcerpts}
+          currentUser={currentUser}
+          activeAgeGroup={effectiveAgeGroup}
+          siteTitle={siteTitle}
+        />
+      )}
     </MainLayout>
   );
 }

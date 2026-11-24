@@ -973,7 +973,10 @@ export function ProfilePage({ currentRoute }: ProfilePageProps) {
                             <td className="py-3 px-4">
                               <div className="space-y-0.5">
                                 <p dir="ltr" className="font-mono text-xs text-[var(--color-text)] break-all text-right">
-                                  {row.fileName ?? t('profile.downloads.unknownFile')}
+                                  {row.fileName ??
+                                    (row.event.kind === DownloadKind.Story
+                                      ? t('profile.downloads.storyFileLabel')
+                                      : t('profile.downloads.unknownFile'))}
                                 </p>
                                 {sizeParts && (
                                   <p className="text-xs text-[var(--color-muted)] tabular-nums-strict">
@@ -1033,7 +1036,10 @@ export function ProfilePage({ currentRoute }: ProfilePageProps) {
 
                         <div className="text-xs text-[var(--color-muted)] space-y-1">
                           <p dir="ltr" className="font-mono text-[var(--color-text)] break-all text-right">
-                            {row.fileName ?? t('profile.downloads.unknownFile')}
+                            {row.fileName ??
+                              (row.event.kind === DownloadKind.Story
+                                ? t('profile.downloads.storyFileLabel')
+                                : t('profile.downloads.unknownFile'))}
                           </p>
                           <div className="flex flex-wrap items-center justify-between gap-2 tabular-nums-strict pt-1">
                             <span>

@@ -11,6 +11,7 @@ import {
   ExternalLink,
   Film,
   Heart,
+  Image as ImageIcon,
   Lock,
   Share2,
 } from 'lucide-react';
@@ -20,6 +21,7 @@ import type { BookInfo } from '../../core/domain/portals';
 import type { ContentDetailData } from '../../core/services/contentDetailService';
 import { useAuth } from '../auth/AuthContext';
 import { ContentCommentsSection } from '../components/ContentCommentsSection';
+import { StoryGeneratorModal } from '../components/StoryGeneratorModal';
 import { AudioPlayerBox } from '../components/players/AudioPlayerBox';
 import { DocumentAttachmentCard } from '../components/players/DocumentAttachmentCard';
 import { ImageZoomViewer } from '../components/players/ImageZoomViewer';
@@ -64,7 +66,14 @@ function isPdfFile(file: ContentFile | null | undefined): boolean {
 }
 
 export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps) {
-  const { currentUser, siteTitle, isFilmsEnabled, isBooksEnabled, isAuthReady } = useAuth();
+  const {
+    currentUser,
+    siteTitle,
+    isFilmsEnabled,
+    isBooksEnabled,
+    isStoryGeneratorEnabled,
+    isAuthReady,
+  } = useAuth();
   const { effectiveAgeGroup, isAgeReady } = useAge();
 
   const [detail, setDetail] = useState<ContentDetailData | null>(null);
@@ -101,6 +110,7 @@ export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps
     type: 'success' | 'error';
     text: string;
   } | null>(null);
+  const [isStoryModalOpen, setIsStoryModalOpen] = useState<boolean>(false);
 
   // StrictMode & age-switch guards: ensures view tracking and primary media loading do not repeat unnecessarily on age switch
   const trackedKeyRef = useRef<string | null>(null);
@@ -126,6 +136,7 @@ export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps
         setBookMeta(null);
         setShareFeedback(null);
         setDownloadFeedback(null);
+        setIsStoryModalOpen(false);
       }
 
       try {
@@ -864,6 +875,15 @@ export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps
           .join(t('homePreview.targetListSeparator'))
       : t('contentDetail.meta.allAges');
 
+  const canCreateStory = appContainer.storyService.canUserGenerateStory(
+    currentUser,
+    isStoryGeneratorEnabled,
+  );
+  const storyTopicName =
+    detail.topics[0]?.name ??
+    detail.topicBreadcrumbChain[detail.topicBreadcrumbChain.length - 1]?.name ??
+    null;
+
   return (
     <MainLayout currentRoute={currentRoute}>
       <div className="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-6 sm:space-y-8">
@@ -1011,6 +1031,16 @@ export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps
                 >
                   {t('contentDetail.share.copyButton')}
                 </Button>
+                {canCreateStory && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsStoryModalOpen(true)}
+                    startIcon={<ImageIcon className="w-4 h-4" />}
+                  >
+                    {t('story.action.createButton')}
+                  </Button>
+                )}
               </div>
 
               {shareFeedback && (
@@ -1339,6 +1369,19 @@ export function ContentDetailPage({ currentRoute, slug }: ContentDetailPageProps
           </Button>
         </div>
       </div>
+
+      {canCreateStory && (
+        <StoryGeneratorModal
+          open={isStoryModalOpen}
+          onClose={() => setIsStoryModalOpen(false)}
+          content={item}
+          topicName={storyTopicName}
+          keyExcerpts={bookMeta?.keyExcerpts ?? null}
+          currentUser={currentUser}
+          activeAgeGroup={effectiveAgeGroup}
+          siteTitle={siteTitle}
+        />
+      )}
     </MainLayout>
   );
 }

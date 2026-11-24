@@ -27,6 +27,7 @@ import { SettingsManagementService } from '../../core/services/settingsManagemen
 import { SitemapService } from '../../core/services/sitemapService';
 import { SmartImportService } from '../../core/services/smartImportService';
 import { StaffManagementService } from '../../core/services/staffManagementService';
+import { StoryService } from '../../core/services/storyService';
 import { TaxonomyService } from '../../core/services/taxonomyService';
 import { UserManagementService } from '../../core/services/userManagementService';
 import { ViewTrackerService } from '../../core/services/viewTrackerService';
@@ -127,6 +128,7 @@ export interface AppContainer {
   searchSuggestionService: SearchSuggestionService;
   sitemapService: SitemapService;
   smartImportService: SmartImportService;
+  storyService: StoryService;
   recordStartupLogOnce: () => void;
   ensureInitializedAtStartup: () => Promise<void>;
 }
@@ -403,6 +405,13 @@ const smartImportService = new SmartImportService(
   searchNormalizer,
   logger,
 );
+const storyService = new StoryService({
+  contentRepository,
+  adminRepository,
+  downloadEventRepository,
+  clock,
+  logger,
+});
 
 export const STAGE16_COMMENTS_FLAG_META_KEY = 'stage16_comments_default_enabled_v1';
 
@@ -487,6 +496,27 @@ export async function ensureStage24BooksDefaultFlagAsync(
   });
 }
 
+export const STAGE25_STORY_GENERATOR_FLAG_META_KEY =
+  'stage25_story_generator_default_enabled_v1';
+
+export async function ensureStage25StoryGeneratorDefaultFlagAsync(
+  store: IndexedDbDataStore = dataStore,
+): Promise<void> {
+  const existingMeta = await store.getMeta(STAGE25_STORY_GENERATOR_FLAG_META_KEY);
+  if (existingMeta) {
+    return;
+  }
+  await store.putRecord(STORE_NAMES.FEATURE_FLAGS, {
+    key: 'StoryGenerator',
+    isEnabled: true,
+  });
+  await store.setMeta({
+    key: STAGE25_STORY_GENERATOR_FLAG_META_KEY,
+    value: '1',
+    updatedAtUtc: clock.nowUtcIso(),
+  });
+}
+
 let startupRecordedInSession = false;
 let startupInitPromise: Promise<void> | null = null;
 
@@ -517,6 +547,7 @@ function ensureInitializedAtStartup(): Promise<void> {
         await ensureStage17ContentRequestsDefaultFlagAsync(dataStore);
         await ensureStage23FilmsDefaultFlagAsync(dataStore);
         await ensureStage24BooksDefaultFlagAsync(dataStore);
+        await ensureStage25StoryGeneratorDefaultFlagAsync(dataStore);
         await ensureStage18LayoutSeededAsync(dataStore);
         await initialSuperAdminService.bootstrapFromEnvIfConfigured(
           envConfig.initialSuperAdminEmail,
@@ -595,6 +626,7 @@ export const appContainer: AppContainer = {
   searchSuggestionService,
   sitemapService,
   smartImportService,
+  storyService,
   recordStartupLogOnce,
   ensureInitializedAtStartup,
 };
