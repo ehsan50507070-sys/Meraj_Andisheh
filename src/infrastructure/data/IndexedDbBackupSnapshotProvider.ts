@@ -18,6 +18,7 @@ interface StoredFileRecord extends StoredFileMetadata {
 
 const EXCLUDED_SNAPSHOT_STORES = new Set<string>([
   STORE_NAMES.STORED_FILES,
+  STORE_NAMES.S3_BUCKET_OBJECTS,
   STORE_NAMES.BACKUP_LOGS,
   STORE_NAMES.BACKUP_ARCHIVES,
 ]);

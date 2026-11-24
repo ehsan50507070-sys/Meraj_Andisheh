@@ -11,9 +11,18 @@ import {
 } from '../domain/analytics';
 import type { AppUser } from '../domain/auth';
 import { ContentStatus, FileStorageType } from '../domain/content';
+import {
+  isS3ConfigComplete,
+  type S3StorageConfig,
+  type StorageProviderMode,
+} from '../domain/storage';
 import type { AgeGroup } from '../domain/taxonomy';
 import { isContentAllowedForAgeGroup } from './ageRuleService';
 import { sanitizeReturnHash } from './navigationGuardService';
+import {
+  DEFAULT_S3_PRESIGNED_EXPIRES_SECONDS,
+  type S3PresignedUrlService,
+} from './s3PresignedUrlService';
 
 export const DOWNLOAD_TOKEN_TTL_MS = 5 * 60 * 1000;
 
@@ -25,7 +34,9 @@ export type DownloadErrorCode =
   | 'FILE_NOT_DOWNLOADABLE'
   | 'TOKEN_INVALID'
   | 'TOKEN_USER_MISMATCH'
-  | 'TOKEN_EXPIRED';
+  | 'TOKEN_EXPIRED'
+  | 'PRESIGNED_URL_EXPIRED'
+  | 'INVALID_SIGNATURE';
 
 export type CreateSignedDownloadLinkResult =
   | {
@@ -34,6 +45,9 @@ export type CreateSignedDownloadLinkResult =
       downloadUrl: string;
       expiresAt: string;
       expiresAtEpochMs: number;
+      storageProvider: StorageProviderMode;
+      presignedS3Url?: string;
+      s3SignedExpiresInSeconds?: number;
     }
   | {
       ok: false;
@@ -59,6 +73,8 @@ export type ExecuteSignedDownloadResult =
       contentTitle: string;
       expiresAtEpochMs: number;
       event: DownloadEvent;
+      storageProvider: StorageProviderMode;
+      presignedS3Url?: string;
       rangeMeta?: DownloadRangeMeta;
     }
   | {
@@ -68,6 +84,11 @@ export type ExecuteSignedDownloadResult =
       redirectUrl?: string;
     };
 
+export interface DownloadServiceS3Options {
+  getStorageConfigAsync: () => Promise<S3StorageConfig>;
+  presignedUrlService: S3PresignedUrlService;
+}
+
 export class DownloadService {
   private readonly contentRepository: IContentRepository;
   private readonly downloadEventRepository: IDownloadEventRepository;
@@ -75,6 +96,7 @@ export class DownloadService {
   private readonly tokenProtector: IDownloadTokenProtector;
   private readonly clock: IClock;
   private readonly logger?: ILogger;
+  private readonly s3Options?: DownloadServiceS3Options;
 
   constructor(
     contentRepository: IContentRepository,
@@ -83,6 +105,7 @@ export class DownloadService {
     tokenProtector: IDownloadTokenProtector,
     clock: IClock,
     logger?: ILogger,
+    s3Options?: DownloadServiceS3Options,
   ) {
     this.contentRepository = contentRepository;
     this.downloadEventRepository = downloadEventRepository;
@@ -90,6 +113,18 @@ export class DownloadService {
     this.tokenProtector = tokenProtector;
     this.clock = clock;
     this.logger = logger;
+    this.s3Options = s3Options;
+  }
+
+  private async resolveActiveS3ConfigAsync(): Promise<S3StorageConfig | null> {
+    if (!this.s3Options) {
+      return null;
+    }
+    const cfg = await this.s3Options.getStorageConfigAsync();
+    if (cfg.provider === 's3' && isS3ConfigComplete(cfg)) {
+      return cfg;
+    }
+    return null;
   }
 
   public async createSignedDownloadLinkAsync(input: {
@@ -160,7 +195,29 @@ export class DownloadService {
     }
 
     const nowMs = this.clock.now().getTime();
-    const expiresAtEpochMs = nowMs + DOWNLOAD_TOKEN_TTL_MS;
+    let expiresAtEpochMs = nowMs + DOWNLOAD_TOKEN_TTL_MS;
+    let storageProvider: StorageProviderMode = 'local';
+    let presignedS3Url: string | undefined;
+    let s3SignedExpiresInSeconds: number | undefined;
+
+    const activeS3Config = await this.resolveActiveS3ConfigAsync();
+    if (activeS3Config && this.s3Options) {
+      const signed =
+        await this.s3Options.presignedUrlService.createS3PresignedDownloadUrlAsync({
+          config: activeS3Config,
+          storageKey: file.storageKey,
+          contentId: content.id,
+          fileId: file.id,
+          userId: input.currentUser.id,
+          originalFileName: file.originalFileName,
+          expiresInSeconds: DEFAULT_S3_PRESIGNED_EXPIRES_SECONDS,
+        });
+      storageProvider = 's3';
+      presignedS3Url = signed.url;
+      expiresAtEpochMs = signed.expiresAtEpochMs;
+      s3SignedExpiresInSeconds = signed.expiresInSeconds;
+    }
+
     const payload: DownloadTokenPayload = {
       userId: input.currentUser.id,
       contentId: content.id,
@@ -177,6 +234,9 @@ export class DownloadService {
       downloadUrl: `#/download/${token}`,
       expiresAt: new Date(expiresAtEpochMs).toISOString(),
       expiresAtEpochMs,
+      storageProvider,
+      presignedS3Url,
+      s3SignedExpiresInSeconds,
     };
   }
 
@@ -249,6 +309,104 @@ export class DownloadService {
       };
     }
 
+    return this.streamVerifiedFileDownloadAsync({
+      contentId: payload.contentId,
+      fileId: payload.fileId,
+      currentUser: input.currentUser,
+      activeAgeGroup: input.activeAgeGroup,
+      expiresAtEpochMs: payload.expiresAtEpochMs,
+      range: input.range,
+      forceProvider: null,
+    });
+  }
+
+  public async executeS3PresignedDownloadAsync(input: {
+    presignedUrl: string;
+    currentUser: AppUser | null;
+    activeAgeGroup: AgeGroup | null;
+    range?: { startByte: number; endByte: number };
+  }): Promise<ExecuteSignedDownloadResult> {
+    if (!input.currentUser || !input.currentUser.isActive) {
+      return {
+        ok: false,
+        errorCode: 'AUTH_REQUIRED',
+      };
+    }
+
+    if (!this.s3Options) {
+      return {
+        ok: false,
+        errorCode: 'INVALID_SIGNATURE',
+      };
+    }
+
+    const config = await this.s3Options.getStorageConfigAsync();
+    const verification =
+      await this.s3Options.presignedUrlService.verifyS3PresignedUrlAsync(
+        input.presignedUrl,
+        config,
+      );
+
+    if (!verification.ok) {
+      if (verification.errorCode === 'PRESIGNED_URL_EXPIRED') {
+        this.logger?.info('S3_PRESIGNED_URL_EXPIRED', {
+          userId: input.currentUser.id,
+        });
+        return {
+          ok: false,
+          errorCode: 'PRESIGNED_URL_EXPIRED',
+        };
+      }
+      this.logger?.warn('S3_PRESIGNED_URL_INVALID_SIGNATURE', {
+        userId: input.currentUser.id,
+        reason: verification.errorCode,
+      });
+      return {
+        ok: false,
+        errorCode: 'INVALID_SIGNATURE',
+      };
+    }
+
+    if (verification.meta.userId !== input.currentUser.id) {
+      this.logger?.warn('S3_PRESIGNED_USER_MISMATCH', {
+        tokenUserId: verification.meta.userId,
+        actorUserId: input.currentUser.id,
+        contentId: verification.meta.contentId,
+        fileId: verification.meta.fileId,
+      });
+      return {
+        ok: false,
+        errorCode: 'TOKEN_USER_MISMATCH',
+      };
+    }
+
+    return this.streamVerifiedFileDownloadAsync({
+      contentId: verification.meta.contentId,
+      fileId: verification.meta.fileId,
+      currentUser: input.currentUser,
+      activeAgeGroup: input.activeAgeGroup,
+      expiresAtEpochMs: verification.expiresAtEpochMs,
+      range: input.range,
+      forceProvider: 's3',
+      presignedS3Url: input.presignedUrl,
+    });
+  }
+
+  private async streamVerifiedFileDownloadAsync(input: {
+    contentId: number;
+    fileId: number;
+    currentUser: AppUser;
+    activeAgeGroup: AgeGroup | null;
+    expiresAtEpochMs: number;
+    range?: { startByte: number; endByte: number };
+    forceProvider: StorageProviderMode | null;
+    presignedS3Url?: string;
+  }): Promise<ExecuteSignedDownloadResult> {
+    const content = await this.contentRepository.getContentItemById(input.contentId);
+    const contentAgeIds = content
+      ? await this.contentRepository.getAgeGroupIdsByContentId(content.id)
+      : [];
+
     if (
       !content ||
       content.status !== ContentStatus.Published ||
@@ -261,7 +419,7 @@ export class DownloadService {
     }
 
     const files = await this.contentRepository.getFilesByContentId(content.id);
-    const file = files.find((f) => f.id === payload.fileId);
+    const file = files.find((f) => f.id === input.fileId);
     if (!file) {
       return {
         ok: false,
@@ -334,6 +492,26 @@ export class DownloadService {
       totalBytes = opened.metadata.sizeBytes;
     }
 
+    const activeS3Config =
+      input.forceProvider === null ? await this.resolveActiveS3ConfigAsync() : null;
+    const storageProvider: StorageProviderMode =
+      input.forceProvider ?? (activeS3Config ? 's3' : 'local');
+
+    let resolvedPresignedUrl = input.presignedS3Url;
+    if (!resolvedPresignedUrl && activeS3Config && this.s3Options) {
+      const signed =
+        await this.s3Options.presignedUrlService.createS3PresignedDownloadUrlAsync({
+          config: activeS3Config,
+          storageKey: file.storageKey,
+          contentId: content.id,
+          fileId: file.id,
+          userId: input.currentUser.id,
+          originalFileName: file.originalFileName,
+          expiresInSeconds: DEFAULT_S3_PRESIGNED_EXPIRES_SECONDS,
+        });
+      resolvedPresignedUrl = signed.url;
+    }
+
     const recordedEvent = await this.downloadEventRepository.createDownloadEvent({
       kind: DownloadKind.File,
       contentId: content.id,
@@ -352,6 +530,7 @@ export class DownloadService {
       contentId: content.id,
       fileId: file.id,
       userId: input.currentUser.id,
+      storageProvider,
       isRange: Boolean(input.range),
     });
 
@@ -364,8 +543,10 @@ export class DownloadService {
       contentId: content.id,
       contentSlug: content.slug,
       contentTitle: content.title,
-      expiresAtEpochMs: payload.expiresAtEpochMs,
+      expiresAtEpochMs: input.expiresAtEpochMs,
       event: recordedEvent,
+      storageProvider,
+      presignedS3Url: resolvedPresignedUrl,
       rangeMeta,
     };
   }

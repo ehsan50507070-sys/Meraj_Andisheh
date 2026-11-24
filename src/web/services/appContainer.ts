@@ -1,3 +1,4 @@
+import type { IFileStorage } from '../../core/abstractions/fileStorage';
 import { AdvancedAnalyticsService } from '../../core/services/advancedAnalyticsService';
 import { AnalyticsDashboardService } from '../../core/services/analyticsDashboardService';
 import { AnnouncementService } from '../../core/services/announcementService';
@@ -24,12 +25,14 @@ import { PermissionPolicyService } from '../../core/services/permissionPolicySer
 import { PersonalizationService } from '../../core/services/personalizationService';
 import { ProfileService } from '../../core/services/profileService';
 import { RateLimiter } from '../../core/services/rateLimiter';
+import { S3PresignedUrlService } from '../../core/services/s3PresignedUrlService';
 import { SearchNormalizer } from '../../core/services/searchNormalizer';
 import { SearchSuggestionService } from '../../core/services/searchSuggestionService';
 import { SettingsManagementService } from '../../core/services/settingsManagementService';
 import { SitemapService } from '../../core/services/sitemapService';
 import { SmartImportService } from '../../core/services/smartImportService';
 import { StaffManagementService } from '../../core/services/staffManagementService';
+import { StorageMigrationService } from '../../core/services/storageMigrationService';
 import { StoryService } from '../../core/services/storyService';
 import { TaxonomyService } from '../../core/services/taxonomyService';
 import { UserManagementService } from '../../core/services/userManagementService';
@@ -70,7 +73,10 @@ import { BrowserAffinityCookieStorage } from '../../infrastructure/storage/Brows
 import { BrowserAgeCookieStorage } from '../../infrastructure/storage/BrowserAgeCookieStorage';
 import { BrowserSessionAnnouncementDismissStorage } from '../../infrastructure/storage/BrowserSessionAnnouncementDismissStorage';
 import { BrowserVisitorIdStorage } from '../../infrastructure/storage/BrowserVisitorIdStorage';
+import { IndexedDbS3StorageConfigStore } from '../../infrastructure/storage/IndexedDbS3StorageConfigStore';
 import { LocalIndexedDbFileStorage } from '../../infrastructure/storage/LocalIndexedDbFileStorage';
+import { RoutingFileStorage } from '../../infrastructure/storage/RoutingFileStorage';
+import { S3FileStorage } from '../../infrastructure/storage/S3FileStorage';
 import { t } from '../resources/i18n';
 
 export interface AppContainer {
@@ -98,7 +104,10 @@ export interface AppContainer {
   backupRepository: IndexedDbBackupRepository;
   backupSnapshotProvider: IndexedDbBackupSnapshotProvider;
   downloadTokenProtector: HmacDownloadTokenProtector;
-  fileStorage: LocalIndexedDbFileStorage;
+  s3StorageConfigStore: IndexedDbS3StorageConfigStore;
+  localFileStorage: LocalIndexedDbFileStorage;
+  s3FileStorage: S3FileStorage;
+  fileStorage: IFileStorage;
   agePreferenceStorage: BrowserAgeCookieStorage;
   guestAffinityStorage: BrowserAffinityCookieStorage;
   visitorIdStorage: BrowserVisitorIdStorage;
@@ -143,6 +152,8 @@ export interface AppContainer {
   sitemapService: SitemapService;
   smartImportService: SmartImportService;
   storyService: StoryService;
+  s3PresignedUrlService: S3PresignedUrlService;
+  storageMigrationService: StorageMigrationService;
   recordStartupLogOnce: () => void;
   ensureInitializedAtStartup: () => Promise<void>;
 }
@@ -175,7 +186,15 @@ const accountCleanupRepository = new IndexedDbAccountCleanupRepository(dataStore
 const backupRepository = new IndexedDbBackupRepository(dataStore, clock);
 const backupSnapshotProvider = new IndexedDbBackupSnapshotProvider(dataStore);
 const downloadTokenProtector = new HmacDownloadTokenProtector();
-const fileStorage = new LocalIndexedDbFileStorage(dataStore, clock);
+const s3StorageConfigStore = new IndexedDbS3StorageConfigStore(dataStore);
+const localFileStorage = new LocalIndexedDbFileStorage(dataStore, clock);
+const s3FileStorage = new S3FileStorage(dataStore, s3StorageConfigStore, clock);
+const fileStorage: IFileStorage = new RoutingFileStorage({
+  localStorage: localFileStorage,
+  s3Storage: s3FileStorage,
+  configStore: s3StorageConfigStore,
+});
+const s3PresignedUrlService = new S3PresignedUrlService(clock);
 const agePreferenceStorage = new BrowserAgeCookieStorage();
 const guestAffinityStorage = new BrowserAffinityCookieStorage();
 const visitorIdStorage = new BrowserVisitorIdStorage();
@@ -305,6 +324,10 @@ const downloadService = new DownloadService(
   downloadTokenProtector,
   clock,
   logger,
+  {
+    getStorageConfigAsync: () => s3StorageConfigStore.getConfigAsync(),
+    presignedUrlService: s3PresignedUrlService,
+  },
 );
 const interactionService = new InteractionService(
   interactionRepository,
@@ -453,6 +476,15 @@ const storyService = new StoryService({
   contentRepository,
   adminRepository,
   downloadEventRepository,
+  clock,
+  logger,
+});
+const storageMigrationService = new StorageMigrationService({
+  configStore: s3StorageConfigStore,
+  localStorage: localFileStorage,
+  s3Storage: s3FileStorage,
+  contentRepository,
+  policyService: permissionPolicyService,
   clock,
   logger,
 });
@@ -655,6 +687,9 @@ export const appContainer: AppContainer = {
   backupRepository,
   backupSnapshotProvider,
   downloadTokenProtector,
+  s3StorageConfigStore,
+  localFileStorage,
+  s3FileStorage,
   fileStorage,
   agePreferenceStorage,
   guestAffinityStorage,
@@ -700,6 +735,8 @@ export const appContainer: AppContainer = {
   sitemapService,
   smartImportService,
   storyService,
+  s3PresignedUrlService,
+  storageMigrationService,
   recordStartupLogOnce,
   ensureInitializedAtStartup,
 };

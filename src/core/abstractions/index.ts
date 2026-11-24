@@ -7,6 +7,7 @@ export * from './authRepository';
 export * from './smsSender';
 export * from './adminRepository';
 export * from './fileStorage';
+export * from './s3Storage';
 export * from './taxonomyRepository';
 export * from './searchNormalizer';
 export * from './contentRepository';

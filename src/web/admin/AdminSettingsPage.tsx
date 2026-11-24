@@ -10,6 +10,7 @@ import type { ResourceKey } from '../resources/fa';
 import { t } from '../resources/i18n';
 import { appContainer } from '../services/appContainer';
 import { AdminLayout } from './AdminLayout';
+import { AdminS3StoragePanel } from './components/AdminS3StoragePanel';
 
 interface AdminSettingsPageProps {
   currentRoute: string;
@@ -360,7 +361,10 @@ export function AdminSettingsPage({ currentRoute }: AdminSettingsPageProps) {
           </form>
         </section>
 
-        {/* Section 3: SEO & Sitemap Generator */}
+        {/* Section 3: S3 Cloud Storage & One-Time Migration */}
+        <AdminS3StoragePanel />
+
+        {/* Section 4: SEO & Sitemap Generator */}
         <section className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-card)] shadow-[var(--shadow-card)] p-5 sm:p-6 space-y-4">
           <div className="flex flex-wrap items-start justify-between gap-3 pb-4 border-b border-[var(--color-border)]">
             <div className="space-y-1 min-w-0">

@@ -53,6 +53,7 @@ export function SignedDownloadPage({ currentRoute, token }: SignedDownloadPagePr
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [outcome, setOutcome] = useState<ExecuteSignedDownloadResult | null>(null);
   const [copiedUrl, setCopiedUrl] = useState<boolean>(false);
+  const [copiedS3Url, setCopiedS3Url] = useState<boolean>(false);
   const [isRedownloading, setIsRedownloading] = useState<boolean>(false);
 
   // StrictMode & age-switch guard: executes initial auto-download at most once per (token, user)
@@ -92,6 +93,7 @@ export function SignedDownloadPage({ currentRoute, token }: SignedDownloadPagePr
     let active = true;
     setIsLoading(true);
     setCopiedUrl(false);
+    setCopiedS3Url(false);
 
     void (async () => {
       try {
@@ -145,6 +147,32 @@ export function SignedDownloadPage({ currentRoute, token }: SignedDownloadPagePr
         document.body.removeChild(textarea);
         if (ok) {
           setCopiedUrl(true);
+        }
+      }
+    } catch {
+      // Ignore clipboard failure
+    }
+  };
+
+  const handleCopyS3PresignedUrl = async (s3Url: string) => {
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(s3Url);
+        setCopiedS3Url(true);
+        return;
+      }
+      if (typeof document !== 'undefined') {
+        const textarea = document.createElement('textarea');
+        textarea.value = s3Url;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        const ok = document.execCommand('copy');
+        document.body.removeChild(textarea);
+        if (ok) {
+          setCopiedS3Url(true);
         }
       }
     } catch {
@@ -245,6 +273,51 @@ export function SignedDownloadPage({ currentRoute, token }: SignedDownloadPagePr
                       {t('signedDownload.meta.validityValue')}
                     </dd>
                   </div>
+
+                  <div className="space-y-0.5 sm:col-span-2">
+                    <dt className="text-[11px] text-[var(--color-muted)]">
+                      {t('signedDownload.meta.providerLabel')}
+                    </dt>
+                    <dd className="font-medium text-[var(--color-text)]">
+                      {outcome.storageProvider === 's3'
+                        ? t('signedDownload.meta.providerS3')
+                        : t('signedDownload.meta.providerLocal')}
+                    </dd>
+                  </div>
+
+                  {outcome.presignedS3Url ? (
+                    <div className="space-y-1 sm:col-span-2 pt-1">
+                      <dt className="text-[11px] text-[var(--color-muted)]">
+                        {t('signedDownload.meta.presignedS3Label')}
+                      </dt>
+                      <dd className="flex items-center gap-2">
+                        <code
+                          dir="ltr"
+                          className="flex-1 text-left text-[11px] font-mono bg-[var(--color-surface)] border border-[var(--color-border)] rounded px-2 py-1 truncate text-[var(--color-text)]"
+                        >
+                          {outcome.presignedS3Url}
+                        </code>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            void handleCopyS3PresignedUrl(outcome.presignedS3Url!)
+                          }
+                          startIcon={
+                            copiedS3Url ? (
+                              <Check className="w-3.5 h-3.5" />
+                            ) : (
+                              <Copy className="w-3.5 h-3.5" />
+                            )
+                          }
+                        >
+                          {copiedS3Url
+                            ? t('signedDownload.actions.copiedS3Url')
+                            : t('signedDownload.actions.copyS3Url')}
+                        </Button>
+                      </dd>
+                    </div>
+                  ) : null}
                 </dl>
               </div>
 

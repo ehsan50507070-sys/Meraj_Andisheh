@@ -38,6 +38,7 @@ export const STORE_NAMES = {
   BOOK_INFOS: 'bookInfos',
   ANNOUNCEMENTS: 'announcements',
   DAILY_STATS: 'dailyStats',
+  S3_BUCKET_OBJECTS: 's3BucketObjects',
 } as const;
 
 export const STAGE3_OBJECT_STORES: readonly string[] = [
@@ -127,6 +128,10 @@ export const STAGE26_OBJECT_STORES: readonly string[] = [
 
 export const STAGE27_OBJECT_STORES: readonly string[] = [
   STORE_NAMES.DAILY_STATS,
+] as const;
+
+export const STAGE28_OBJECT_STORES: readonly string[] = [
+  STORE_NAMES.S3_BUCKET_OBJECTS,
 ] as const;
 
 interface IndexSpec {
@@ -558,6 +563,19 @@ const STAGE27_STORE_SPECS: readonly StoreSpec[] = [
   },
 ];
 
+const STAGE28_STORE_SPECS: readonly StoreSpec[] = [
+  {
+    name: STORE_NAMES.S3_BUCKET_OBJECTS,
+    keyPath: 'storageKey',
+    indexes: [
+      { name: 'by_bucketName', keyPath: 'bucketName' },
+      { name: 'by_visibility', keyPath: 'visibility' },
+      { name: 'by_category', keyPath: 'category' },
+      { name: 'by_migratedAt', keyPath: 'migratedAt' },
+    ],
+  },
+];
+
 export const DATABASE_MIGRATIONS: readonly MigrationStep[] = [
   {
     version: 1,
@@ -801,6 +819,14 @@ export const DATABASE_MIGRATIONS: readonly MigrationStep[] = [
     version: 19,
     up: (db, transaction) => {
       for (const spec of STAGE27_STORE_SPECS) {
+        ensureStore(db, transaction, spec);
+      }
+    },
+  },
+  {
+    version: 20,
+    up: (db, transaction) => {
+      for (const spec of STAGE28_STORE_SPECS) {
         ensureStore(db, transaction, spec);
       }
     },

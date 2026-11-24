@@ -37,6 +37,7 @@ export interface IContentRepository {
     contentId: number,
     files: Omit<ContentFile, 'id'>[],
   ): Promise<ContentFile[]>;
+  updateFile?(file: ContentFile): Promise<void>;
 
   getTopicIdsByContentId(contentId: number): Promise<number[]>;
   getAllContentTopics(): Promise<ContentTopic[]>;

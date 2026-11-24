@@ -4,7 +4,7 @@ export const faResources = {
   'app.subtitle': 'پلتفرم بانک محتوای فارسی',
   'app.stageLabel': 'مرحله {stage} از {total}',
   'app.stageName':
-    'آمار پیشرفته (تجمیع شبانه‌ی غیرتکراری، نمودارهای روند، رده‌ی سنی و موضوع ریشه، خروجی CSV اکسل فارسی)',
+    'ذخیره‌سازی S3 (تنظیمات آروان‌کلود/MinIO، لینک امضاشده ۵ دقیقه‌ای، ابزار انتقال بدون حذف خودکار و راهنما)',
   'app.footerNote': 'پلتفرم معراج اندیشه · بانک محتوای فارسی متناسب با هر رده سنی',
 
   // Themes
@@ -1894,6 +1894,12 @@ export const faResources = {
   'signedDownload.meta.validityLabel': 'مدت اعتبار لینک',
   'signedDownload.meta.validityValue': '۵ دقیقه (مختص حساب شما)',
   'signedDownload.meta.tempUrlLabel': 'نشانی موقت دانلود',
+  'signedDownload.meta.providerLabel': 'مخزن سرویس‌دهنده',
+  'signedDownload.meta.providerLocal': 'دیسک محلی مرورگر (IndexedDB)',
+  'signedDownload.meta.providerS3': 'فضای ابری S3 (لینک امضاشده ۵ دقیقه‌ای)',
+  'signedDownload.meta.presignedS3Label': 'نشانی امضاشده‌ی S3 (معتبر برای ۵ دقیقه)',
+  'signedDownload.actions.copyS3Url': 'کپی نشانی S3',
+  'signedDownload.actions.copiedS3Url': 'نشانی امضاشده‌ی S3 کپی شد.',
   'signedDownload.actions.downloadAgain': 'دانلود مجدد با همین لینک (تا پیش از انقضا)',
   'signedDownload.actions.copyLink': 'کپی لینک موقت ۵ دقیقه‌ای',
   'signedDownload.actions.copied': 'لینک موقت کپی شد.',
@@ -1901,6 +1907,10 @@ export const faResources = {
   'signedDownload.actions.backToBank': 'بازگشت به بانک محتوا',
   'signedDownload.error.TOKEN_EXPIRED':
     'لینک دانلود منقضی شده است (اعتبار لینک ۵ دقیقه است).',
+  'signedDownload.error.PRESIGNED_URL_EXPIRED':
+    'اعتبار لینک امضاشده‌ی S3 به پایان رسیده است (حداکثر ۵ دقیقه). لطفاً لینک تازه‌ای بسازید.',
+  'signedDownload.error.INVALID_SIGNATURE':
+    'امضای دیجیتال لینک S3 نامعتبر است یا نشانی دستکاری شده است.',
   'signedDownload.error.TOKEN_USER_MISMATCH':
     'این لینک دانلود متعلق به حساب کاربری شما نیست.',
   'signedDownload.error.TOKEN_INVALID':
@@ -3570,6 +3580,133 @@ export const faResources = {
     'کنترل دسترسی dashboard.view روی آمار پیشرفته و مهاجرت IndexedDB v19 (جدول dailyStats)',
   'tests.stage27.rbacDashboardViewAndIdbV19.desc':
     'همکار بدون مجوز کد ۴۰۳ با لاگ WARN و عضو/مهمان ۴۰۴ می‌گیرند؛ جدول dailyStats با کلید ترکیبی [date, ageGroupId, rootTopicId] و ایندکس‌ها در نسخه‌ی ۱۹ ایجاد می‌شود.',
+
+  // Stage 28: S3 Storage Configuration, 5-min Presigned URLs, Migration & Guide
+  'admin.settings.storage.title': 'ذخیره‌سازی فایل (دیسک محلی / فضای ابری S3) و ابزار انتقال',
+  'admin.settings.storage.subtitle':
+    'تنظیم ذخیره‌سازی سازگار با S3 (مانند آروان‌کلود یا MinIO)، بررسی سلامت اتصال و انتقال یک‌باره‌ی فایل‌های محلی بدون حذف خودکار.',
+  'admin.settings.storage.activeProviderBadge.local': 'فعال: دیسک محلی (IndexedDB)',
+  'admin.settings.storage.activeProviderBadge.s3': 'فعال: فضای ابری S3',
+  'admin.settings.storage.providerLabel': 'مخزن پیش‌فرض آپلود و سرویس‌دهی فایل‌ها',
+  'admin.settings.storage.provider.localTitle': 'دیسک محلی مرورگر (پیش‌فرض)',
+  'admin.settings.storage.provider.localDesc':
+    'فایل‌ها درون مخزن امن مرورگر ذخیره و بازیابی می‌شوند؛ مناسب راه‌اندازی سریع و محیط آفلاین.',
+  'admin.settings.storage.provider.s3Title': 'فضای ابری سازگار با S3',
+  'admin.settings.storage.provider.s3Desc':
+    'پشتیبانی از آروان‌کلود، MinIO و شبیه‌ساز بومی S3 همراه با لینک دانلود امضاشده‌ی ۵ دقیقه‌ای.',
+  'admin.settings.storage.s3FormTitle': 'پیکربندی سرویس S3',
+  'admin.settings.storage.fillArvanSampleButton': 'درج نمونه‌ی پیش‌فرض آروان‌کلود / شبیه‌ساز',
+  'admin.settings.storage.endpointLabel': 'نشانی سرور (Endpoint)',
+  'admin.settings.storage.endpointPlaceholder': 'https://s3.ir-thr-at1.arvanstorage.ir',
+  'admin.settings.storage.endpointHint':
+    'نشانی https یا http سرویس S3 (مانند آروان‌کلود یا MinIO) یا نشانی شبیه‌ساز محلی local-s3://meraj-bucket.',
+  'admin.settings.storage.bucketNameLabel': 'نام سطل (Bucket Name)',
+  'admin.settings.storage.bucketNamePlaceholder': 'meraj-media',
+  'admin.settings.storage.regionLabel': 'منطقه (Region)',
+  'admin.settings.storage.regionPlaceholder': 'ir-thr-at1',
+  'admin.settings.storage.accessKeyLabel': 'کلید دسترسی (Access Key ID)',
+  'admin.settings.storage.accessKeyPlaceholder': 'ACCESS_KEY_ID',
+  'admin.settings.storage.secretKeyLabel': 'کلید محرمانه (Secret Access Key)',
+  'admin.settings.storage.secretKeyPlaceholder': '••••••••••••••••',
+  'admin.settings.storage.secretKeyHint':
+    'مقدار محرمانه به صورت پوشانده نگهداری می‌شود و هرگز در گزارش وقایع (Logs) ثبت نمی‌گردد.',
+  'admin.settings.storage.showSecretButton': 'نمایش کلید محرمانه',
+  'admin.settings.storage.hideSecretButton': 'مخفی‌سازی کلید محرمانه',
+  'admin.settings.storage.forcePathStyleLabel': 'استفاده از مسیر Path-Style (ForcePathStyle)',
+  'admin.settings.storage.forcePathStyleHint':
+    'برای اکثر سرویس‌های MinIO و بسیاری از سرورهای S3 سازگار فعال بودن این گزینه پیشنهاد می‌شود.',
+  'admin.settings.storage.publicBaseUrlLabel': 'نشانی عمومی دلخواه / CDN (اختیاری)',
+  'admin.settings.storage.publicBaseUrlPlaceholder': 'https://cdn.example.com/meraj-media',
+  'admin.settings.storage.testConnectionButton': 'آزمایش اتصال S3',
+  'admin.settings.storage.testingConnectionButton': 'در حال آزمایش اتصال...',
+  'admin.settings.storage.saveStorageButton': 'ذخیره‌ی تنظیمات ذخیره‌سازی',
+  'admin.settings.storage.savingStorageButton': 'در حال ذخیره...',
+  'admin.settings.storage.disconnectS3Button': 'قطع اتصال S3 و بازگشت فوری به دیسک محلی',
+  'admin.settings.storage.testConnectionSuccess':
+    'اتصال به سطل «{bucket}» با موفقیت تأیید شد (زمان پاسخ: {ms} میلی‌ثانیه · {mode}).',
+  'admin.settings.storage.mode.simulated': 'شبیه‌ساز امن داخلی مرورگر',
+  'admin.settings.storage.mode.remote': 'سرور S3 راه دور',
+  'admin.settings.storage.saveSuccess': 'تنظیمات ذخیره‌سازی با موفقیت ذخیره شد.',
+  'admin.settings.storage.disconnectSuccess':
+    'اتصال S3 غیرفعال شد و سامانه با حفظ تنظیمات به دیسک محلی بازگشت.',
+
+  'admin.settings.storage.migrationTitle': 'وضعیت موجودی فایل‌ها و ابزار انتقال یک‌باره به S3',
+  'admin.settings.storage.migrationSubtitle':
+    'در زمان انتقال، هیچ فایل محلی به‌صورت خودکار حذف نمی‌شود تا پیش از پاک‌سازی دستی، لینک‌ها و فایل‌های سایت با اطمینان بررسی شوند.',
+  'admin.settings.storage.stat.localCount': 'تعداد فایل‌های محلی',
+  'admin.settings.storage.stat.localSize': 'حجم کل محلی',
+  'admin.settings.storage.stat.s3Count': 'تعداد فایل‌های S3',
+  'admin.settings.storage.stat.s3Size': 'حجم کل در S3',
+  'admin.settings.storage.stat.pendingMigration': 'در انتظار انتقال به S3',
+  'admin.settings.storage.stat.filesCountValue': '{count} فایل',
+  'admin.settings.storage.migrateButton': 'انتقال فایل‌های موجود به S3',
+  'admin.settings.storage.migratingButton': 'در حال انتقال فایل‌ها...',
+  'admin.settings.storage.refreshInventoryButton': 'به‌روزرسانی آمار مخزن',
+  'admin.settings.storage.preservedNotice':
+    'اطمینان خاطر: فایل‌های محلی پس از انتقال دست‌نخورده در دیسک باقی می‌مانند تا در صورت نیاز بتوانید بلافاصله به حالت محلی برگردید.',
+  'admin.settings.storage.migrationSuccess':
+    'انتقال با موفقیت انجام شد: {migrated} فایل منتقل شد، {skipped} فایل از قبل در S3 موجود بود ({updatedFiles} پرونده‌ی محتوا به‌روزرسانی شد) و همه‌ی فایل‌های محلی حفظ گردیدند.',
+  'admin.settings.storage.report.colFile': 'فایل / کلید ذخیره‌سازی',
+  'admin.settings.storage.report.colSize': 'حجم',
+  'admin.settings.storage.report.colStatus': 'وضعیت انتقال',
+  'admin.settings.storage.report.status.migrated': 'منتقل شد',
+  'admin.settings.storage.report.status.already_in_s3': 'از قبل در S3 موجود بود',
+  'admin.settings.storage.report.status.error': 'خطا در انتقال',
+
+  'admin.settings.storage.cleanupSectionTitle': 'پاک‌سازی دستی فایل‌های محلی پس از تأیید نهایی',
+  'admin.settings.storage.cleanupSectionDesc':
+    'این عملیات تنها فایل‌های محلی‌ای را حذف می‌کند که وجود آن‌ها با اندازه‌ی دقیق در سطل فعال S3 مجدداً تأیید شده باشد.',
+  'admin.settings.storage.openCleanupModalButton': 'پاک‌سازی انتخابی فایل‌های محلی تأییدشده',
+  'admin.settings.storage.cleanupModalTitle': 'تأیید نهایی حذف فایل‌های محلی منتقل‌شده',
+  'admin.settings.storage.cleanupModalWarning':
+    'آیا مطمئن هستید که فایل‌ها و ویدیوهای منتقل‌شده روی S3 را بررسی کرده‌اید؟ پس از تأیید، فقط فایل‌هایی که هم‌اکنون در سطل «{bucket}» وجود دارند از حافظه‌ی محلی حذف می‌شوند.',
+  'admin.settings.storage.cleanupModalCheckboxLabel':
+    'تأیید می‌کنم دانلودها و پخش‌های روی S3 بررسی شده است و فایل‌های محلیِ تطبیق‌داده‌شده حذف شوند.',
+  'admin.settings.storage.cleanupConfirmButton': 'بله، حذف فایل‌های محلیِ تأییدشده',
+  'admin.settings.storage.cleanupCancelButton': 'انصراف',
+  'admin.settings.storage.cleanupSuccess':
+    '{cleaned} فایل محلی پس از راستی‌آزمایی وجود در S3 حذف شد؛ {skipped} فایل تاییدنشده حفظ گردید.',
+  'admin.settings.storage.guideHint':
+    'راهنمای گام‌به‌گام برای مدیران غیرفنی در فایل S3_MIGRATION_GUIDE.md در ریشه‌ی پروژه قرار دارد.',
+
+  'admin.settings.storage.error.validationFailed':
+    'لطفاً خطاهای فرم پیکربندی S3 را برطرف نمایید.',
+  'admin.settings.storage.error.S3_NOT_CONFIGURED':
+    'پیکربندی S3 کامل نیست؛ لطفاً ابتدا نشانی Endpoint، نام سطل، منطقه و کلیدهای دسترسی را وارد و ذخیره کنید.',
+  'admin.settings.storage.error.invalidEndpoint':
+    'نشانی Endpoint باید با https://، http:// یا local-s3:// آغاز شود.',
+  'admin.settings.storage.error.bucketRequired': 'نام سطل (Bucket Name) الزامی است.',
+  'admin.settings.storage.error.regionRequired': 'نام منطقه (Region) الزامی است.',
+  'admin.settings.storage.error.accessKeyRequired': 'کلید دسترسی (Access Key ID) الزامی است.',
+  'admin.settings.storage.error.secretKeyRequired': 'کلید محرمانه (Secret Access Key) الزامی است.',
+  'admin.settings.storage.error.invalidPublicBaseUrl':
+    'نشانی عمومی دلخواه معتبر نیست (باید با https:// یا http:// آغاز شود).',
+  'admin.settings.storage.error.connectionProbeFailed':
+    'آزمایش خواندن و نوشتن روی سطل S3 ناموفق بود؛ لطفاً تنظیمات را بررسی کنید.',
+  'admin.settings.storage.error.cleanupConfirmationRequired':
+    'برای حذف فایل‌های محلی ابتدا باید تیک تأیید نهایی را فعال کنید.',
+
+  // Stage 28 Unit Tests
+  'tests.stage28.routingSaveReadAndRange.name':
+    'تغییر پیاده‌سازی IFileStorage به S3، ذخیره، خواندن و پشتیبانی Range روی S3FileStorage',
+  'tests.stage28.routingSaveReadAndRange.desc':
+    'با انتخاب provider=s3 در تنظیمات، آپلودها در مخزن S3 (s3BucketObjects) ذخیره می‌شوند، کلید اصلی دست‌نخورده می‌ماند و openReadRangeAsync دقیقاً بازه‌ی میانی بایت‌ها را برمی‌گرداند.',
+  'tests.stage28.presignedUrlFiveMinAndTamper.name':
+    'لینک امضاشده‌ی ۵ دقیقه‌ای S3، تشخیص دستکاری امضا و انقضا با FakeClock (۱۰:۰۵:۰۱)',
+  'tests.stage28.presignedUrlFiveMinAndTamper.desc':
+    'امضای AWS4-HMAC-SHA256 در دقیقه‌ی ۳ معتبر است، تغییر ۱ کاراکتر با INVALID_SIGNATURE رد می‌شود و در ثانیه‌ی ۱۰:۰۵:۰۱ خطای PRESIGNED_URL_EXPIRED برمی‌گرداند.',
+  'tests.stage28.migrationPreservesLocalAndIdempotent.name':
+    'ابزار انتقال به S3: کپی سالم، به‌روزرسانی ContentFile، اجرای غیرتکراری و حفظ فایل محلی',
+  'tests.stage28.migrationPreservesLocalAndIdempotent.desc':
+    'فایل‌های محلی با حفظ storageKey به S3 منتقل و پرونده‌های ContentFile به‌روز می‌شوند؛ هیچ فایل محلی حذف نمی‌شود و اجرای دوم همه‌ی موارد را به‌عنوان موجود در S3 رد می‌کند.',
+  'tests.stage28.rbacAndZeroSecretLeakInLogs.name':
+    'گارد دسترسی settings.manage و عدم افشای SecretAccessKey در تمام گزارش‌های لاگ',
+  'tests.stage28.rbacAndZeroSecretLeakInLogs.desc':
+    'همکار بدون مجوز ۴۰۳+WARN و عضو ۴۰۴ می‌گیرند، ابزار انتقال با S3 تنظیم‌نشده خطای S3_NOT_CONFIGURED می‌دهد و SecretAccessKey هرگز در هیچ لاگی ثبت نمی‌شود.',
+  'tests.stage28.verifiedCleanupAndDisconnectFallback.name':
+    'پاک‌سازی تأییدشده‌ی محلی، پایداری دانلود S3، بازگشت فوری به محلی و IndexedDB v20',
+  'tests.stage28.verifiedCleanupAndDisconnectFallback.desc':
+    'پس از حذف تأییدشده‌ی فایل‌های محلی، دانلود از S3 موفق است؛ با قطع S3 و بازگشت به محلی خطای کنترل‌شده بدون کرش و افشای Secret رخ می‌دهد و پایگاه‌داده نسخه‌ی ۲۰ با Stage 3 سازگار است.',
 } as const;
 
 export type ResourceKey = keyof typeof faResources;

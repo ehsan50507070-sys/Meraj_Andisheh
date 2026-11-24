@@ -110,6 +110,10 @@ export class IndexedDbContentRepository implements IContentRepository {
     return inserted.sort((a, b) => a.sortOrder - b.sortOrder || a.id - b.id);
   }
 
+  public async updateFile(file: ContentFile): Promise<void> {
+    await this.dataStore.putRecord(STORE_NAMES.CONTENT_FILES, file);
+  }
+
   public async getTopicIdsByContentId(contentId: number): Promise<number[]> {
     const links = await this.dataStore.getAllByIndex<ContentTopic>(
       STORE_NAMES.CONTENT_TOPICS,
