@@ -51,7 +51,7 @@ const VALID_PRESETS: readonly DashboardRangePreset[] = [
   'custom',
 ] as const;
 
-function parseDateBoundaryMs(
+export function parseDateBoundaryMs(
   raw: string | null | undefined,
   boundary: 'start' | 'end',
 ): number | null {
@@ -97,7 +97,7 @@ function parseDateBoundaryMs(
     : Date.UTC(year, monthIndex, day, 23, 59, 59, 999);
 }
 
-function resolveDateRange(
+export function resolveDashboardDateRange(
   clock: IClock,
   filter: DashboardFilter,
 ):
@@ -290,7 +290,7 @@ export class AnalyticsDashboardService {
       topLimit: filter?.topLimit,
     };
 
-    const resolvedRange = resolveDateRange(this.clock, normalizedFilter);
+    const resolvedRange = resolveDashboardDateRange(this.clock, normalizedFilter);
     if (!resolvedRange.ok) {
       this.logger?.info('DASHBOARD_INVALID_DATE_RANGE', {
         actorId: actor?.id ?? null,

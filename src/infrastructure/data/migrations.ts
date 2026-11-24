@@ -37,6 +37,7 @@ export const STORE_NAMES = {
   FILM_INFOS: 'filmInfos',
   BOOK_INFOS: 'bookInfos',
   ANNOUNCEMENTS: 'announcements',
+  DAILY_STATS: 'dailyStats',
 } as const;
 
 export const STAGE3_OBJECT_STORES: readonly string[] = [
@@ -122,6 +123,10 @@ export const STAGE24_OBJECT_STORES: readonly string[] = [
 
 export const STAGE26_OBJECT_STORES: readonly string[] = [
   STORE_NAMES.ANNOUNCEMENTS,
+] as const;
+
+export const STAGE27_OBJECT_STORES: readonly string[] = [
+  STORE_NAMES.DAILY_STATS,
 ] as const;
 
 interface IndexSpec {
@@ -541,6 +546,18 @@ const STAGE26_STORE_SPECS: readonly StoreSpec[] = [
   },
 ];
 
+const STAGE27_STORE_SPECS: readonly StoreSpec[] = [
+  {
+    name: STORE_NAMES.DAILY_STATS,
+    keyPath: ['date', 'ageGroupId', 'rootTopicId'],
+    indexes: [
+      { name: 'date', keyPath: 'date' },
+      { name: 'ageGroupId', keyPath: 'ageGroupId' },
+      { name: 'rootTopicId', keyPath: 'rootTopicId' },
+    ],
+  },
+];
+
 export const DATABASE_MIGRATIONS: readonly MigrationStep[] = [
   {
     version: 1,
@@ -777,6 +794,14 @@ export const DATABASE_MIGRATIONS: readonly MigrationStep[] = [
           value: '1',
           updatedAtUtc: new Date().toISOString(),
         });
+      }
+    },
+  },
+  {
+    version: 19,
+    up: (db, transaction) => {
+      for (const spec of STAGE27_STORE_SPECS) {
+        ensureStore(db, transaction, spec);
       }
     },
   },

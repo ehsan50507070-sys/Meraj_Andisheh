@@ -92,3 +92,69 @@ export interface BasicDashboardStats {
   weeklyStats: PeriodStatRow[];
   integrity: EventIntegrityReport;
 }
+
+export interface DailyStatRecord {
+  /** UTC date key in YYYY-MM-DD format */
+  date: string;
+  /** AgeGroup id, or 0 when null / unspecified */
+  ageGroupId: number;
+  /** Root Topic id, or 0 when null / uncategorized */
+  rootTopicId: number;
+  views: number;
+  downloads: number;
+  /** ISO 8601 UTC timestamp of the aggregation run */
+  updatedAt: string;
+}
+
+export interface DailyTrendChartPoint {
+  dateKey: string;
+  jalaliLabel: string;
+  views: number;
+  downloads: number;
+}
+
+export interface AgeGroupStatBreakdown {
+  ageGroupId: number;
+  ageGroupName: string;
+  themeKey: string | null;
+  views: number;
+  downloads: number;
+  viewsSharePercent: number;
+  downloadsSharePercent: number;
+}
+
+export interface RootTopicStatBreakdown {
+  rootTopicId: number;
+  rootTopicName: string;
+  views: number;
+  downloads: number;
+  totalInteractions: number;
+}
+
+export interface AdvancedDashboardAnalytics {
+  appliedPreset: DashboardRangePreset;
+  fromIso: string | null;
+  toIso: string | null;
+  trendSeries: DailyTrendChartPoint[];
+  byAgeGroup: AgeGroupStatBreakdown[];
+  byRootTopic: RootTopicStatBreakdown[];
+  totalAggregatedViews: number;
+  totalAggregatedDownloads: number;
+  lastAggregatedAt: string | null;
+}
+
+export interface DailyAggregationOptions {
+  /** Optional inclusive start UTC date key (YYYY-MM-DD) */
+  fromDateKey?: string;
+  /** Optional inclusive end UTC date key (YYYY-MM-DD) */
+  toDateKey?: string;
+}
+
+export interface DailyAggregationResult {
+  processedViewEvents: number;
+  processedDownloadEvents: number;
+  writtenRecordsCount: number;
+  deletedStaleRecordsCount: number;
+  aggregatedAt: string;
+}
+

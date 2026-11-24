@@ -4,6 +4,7 @@ import {
   Download,
   ExternalLink,
   Eye,
+  FileSpreadsheet,
   RefreshCw,
   ShieldCheck,
   TrendingUp,
@@ -11,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import type {
+  AdvancedDashboardAnalytics,
   BasicDashboardStats,
   DashboardFilter,
   DashboardRangePreset,
@@ -18,6 +20,7 @@ import type {
   RankedContentStat,
 } from '../../../core/domain/analytics';
 import { ContentStatus } from '../../../core/domain/content';
+import { buildAdvancedAnalyticsCsv } from '../../../core/services/analyticsCsvService';
 import {
   dateToJalali,
   formatJalaliDate,
@@ -25,6 +28,11 @@ import {
   jalaliToUtcRangeBounds,
 } from '../../../core/services/jalaliCalendarService';
 import { useAuth } from '../../auth/AuthContext';
+import {
+  AgeGroupBreakdownChart,
+  DailyTrendChart,
+  RootTopicBreakdownChart,
+} from '../../components/charts';
 import { Alert, Button, JalaliDatePicker } from '../../components/ui';
 import type { ResourceKey } from '../../resources/fa';
 import { toPersianDigits } from '../../resources/formatters';
@@ -64,6 +72,26 @@ function formatJalaliIsoUtcPersian(isoTimestamp: string | null | undefined): str
   }
   const j = dateToJalali(parsed, true);
   return formatJalaliDate(j.jy, j.jm, j.jd, true);
+}
+
+function formatJalaliDateTimeLocalPersian(isoTimestamp: string | null | undefined): string {
+  if (!isoTimestamp) {
+    return '—';
+  }
+  const parsed = new Date(isoTimestamp);
+  if (Number.isNaN(parsed.getTime())) {
+    return '—';
+  }
+  const j = dateToJalali(parsed, false);
+  const datePart = formatJalaliDate(j.jy, j.jm, j.jd, true);
+  const hh = String(parsed.getHours()).padStart(2, '0');
+  const mm = String(parsed.getMinutes()).padStart(2, '0');
+  return `${datePart} · ${toPersianDigits(`${hh}:${mm}`)}`;
+}
+
+function getTodayJalaliFilenameSlug(): string {
+  const today = getTodayJalali(false);
+  return formatJalaliDate(today.jy, today.jm, today.jd, false).replace(/\//g, '-');
 }
 
 function getStatusLabelKey(status: ContentStatus): ResourceKey {
@@ -219,8 +247,15 @@ export function AdminDashboardPage({ currentRoute }: AdminDashboardPageProps) {
   const [periodTab, setPeriodTab] = useState<PeriodTabKey>('daily');
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isAggregating, setIsAggregating] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [actionFeedback, setActionFeedback] = useState<{
+    variant: 'success' | 'info';
+    message: string;
+  } | null>(null);
   const [stats, setStats] = useState<BasicDashboardStats | null>(null);
+  const [advancedAnalytics, setAdvancedAnalytics] =
+    useState<AdvancedDashboardAnalytics | null>(null);
 
   const loadStats = useCallback(
     async (filter: Partial<DashboardFilter>) => {
@@ -231,19 +266,34 @@ export function AdminDashboardPage({ currentRoute }: AdminDashboardPageProps) {
       setErrorMessage(null);
       try {
         await appContainer.ensureInitializedAtStartup();
-        const result = await appContainer.analyticsDashboardService.getBasicDashboardStatsAsync(
-          currentUser,
-          filter,
-        );
-        if (!result.ok) {
-          if (result.errorCode === 'INVALID_DATE_RANGE') {
+        const [basicResult, advancedResult] = await Promise.all([
+          appContainer.analyticsDashboardService.getBasicDashboardStatsAsync(
+            currentUser,
+            filter,
+          ),
+          appContainer.advancedAnalyticsService.getAdvancedDashboardAnalyticsAsync(
+            currentUser,
+            filter,
+            {
+              unknownAgeGroupLabel: t('admin.dashboard.advanced.unknownAgeGroup'),
+              uncategorizedTopicLabel: t('admin.dashboard.advanced.uncategorizedTopic'),
+            },
+          ),
+        ]);
+        if (!basicResult.ok) {
+          if (basicResult.errorCode === 'INVALID_DATE_RANGE') {
             setErrorMessage(t('admin.dashboard.error.INVALID_DATE_RANGE'));
           } else {
             setErrorMessage(t('admin.dashboard.error.generic'));
           }
           return;
         }
-        setStats(result.data);
+        setStats(basicResult.data);
+        if (advancedResult.ok) {
+          setAdvancedAnalytics(advancedResult.data);
+        } else if (advancedResult.errorCode === 'INVALID_DATE_RANGE') {
+          setErrorMessage(t('admin.dashboard.error.INVALID_DATE_RANGE'));
+        }
       } catch {
         setErrorMessage(t('admin.dashboard.error.generic'));
       } finally {
@@ -289,11 +339,83 @@ export function AdminDashboardPage({ currentRoute }: AdminDashboardPageProps) {
   };
 
   const handleRefresh = () => {
+    setActionFeedback(null);
     if (selectedPreset === 'custom') {
       runCustomJalaliFilter(customFromDate, customToDate);
       return;
     }
     void loadStats({ preset: selectedPreset });
+  };
+
+  const handleRunManualAggregation = async () => {
+    if (!currentUser || isAggregating) {
+      return;
+    }
+    setIsAggregating(true);
+    setErrorMessage(null);
+    setActionFeedback(null);
+    try {
+      await appContainer.ensureInitializedAtStartup();
+      const result = await appContainer.advancedAnalyticsService.runManualAggregationAsync(
+        currentUser,
+      );
+      if (!result.ok) {
+        setErrorMessage(t('admin.dashboard.error.generic'));
+        return;
+      }
+      setActionFeedback({
+        variant: 'success',
+        message: t('admin.dashboard.advanced.aggregationSuccess', {
+          records: toPersianDigits(result.data.writtenRecordsCount),
+          views: toPersianDigits(result.data.processedViewEvents),
+          downloads: toPersianDigits(result.data.processedDownloadEvents),
+        }),
+      });
+      if (selectedPreset === 'custom') {
+        runCustomJalaliFilter(customFromDate, customToDate);
+      } else {
+        await loadStats({ preset: selectedPreset });
+      }
+    } catch {
+      setErrorMessage(t('admin.dashboard.error.generic'));
+    } finally {
+      setIsAggregating(false);
+    }
+  };
+
+  const handleExportCsv = () => {
+    if (!advancedAnalytics) {
+      return;
+    }
+    const csvContent = buildAdvancedAnalyticsCsv(advancedAnalytics, {
+      trendSectionTitle: t('admin.dashboard.csv.trendSectionTitle'),
+      ageGroupSectionTitle: t('admin.dashboard.csv.ageGroupSectionTitle'),
+      rootTopicSectionTitle: t('admin.dashboard.csv.rootTopicSectionTitle'),
+      colDateJalali: t('admin.dashboard.csv.colDateJalali'),
+      colDateKey: t('admin.dashboard.csv.colDateKey'),
+      colAgeGroup: t('admin.dashboard.csv.colAgeGroup'),
+      colRootTopic: t('admin.dashboard.csv.colRootTopic'),
+      colViews: t('admin.dashboard.csv.colViews'),
+      colViewsShare: t('admin.dashboard.csv.colViewsShare'),
+      colDownloads: t('admin.dashboard.csv.colDownloads'),
+      colDownloadsShare: t('admin.dashboard.csv.colDownloadsShare'),
+      colTotalInteractions: t('admin.dashboard.csv.colTotalInteractions'),
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const objectUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = objectUrl;
+    link.download = `meraj-andisheh-analytics-${getTodayJalaliFilenameSlug()}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(objectUrl);
+
+    setActionFeedback({
+      variant: 'info',
+      message: t('admin.dashboard.advanced.csvExportSuccess'),
+    });
   };
 
   const periodRows: readonly PeriodStatRow[] = useMemo(() => {
@@ -346,18 +468,51 @@ export function AdminDashboardPage({ currentRoute }: AdminDashboardPageProps) {
                     : t('admin.dashboard.activeWindowAllHint')}
                 </p>
               ) : null}
+              <p className="text-xs text-[var(--color-muted)] tabular-nums-strict">
+                {advancedAnalytics?.lastAggregatedAt
+                  ? t('admin.dashboard.advanced.lastAggregatedLabel', {
+                      datetime: formatJalaliDateTimeLocalPersian(
+                        advancedAnalytics.lastAggregatedAt,
+                      ),
+                    })
+                  : t('admin.dashboard.advanced.lastAggregatedNever')}
+              </p>
             </div>
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              disabled={isLoading}
-              startIcon={<RefreshCw className="w-3.5 h-3.5" />}
-              className="shrink-0 self-start whitespace-nowrap"
-            >
-              {t('admin.dashboard.refreshButton')}
-            </Button>
+            <div className="flex flex-wrap items-center gap-2 shrink-0 self-start">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExportCsv}
+                disabled={isLoading || !advancedAnalytics}
+                startIcon={<FileSpreadsheet className="w-3.5 h-3.5" />}
+                className="whitespace-nowrap shrink-0"
+              >
+                {t('admin.dashboard.advanced.exportCsvButton')}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => void handleRunManualAggregation()}
+                disabled={isLoading || isAggregating}
+                startIcon={<RefreshCw className="w-3.5 h-3.5" />}
+                className="whitespace-nowrap shrink-0"
+              >
+                {isAggregating
+                  ? t('admin.dashboard.advanced.runningAggregationButton')
+                  : t('admin.dashboard.advanced.runAggregationButton')}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRefresh}
+                disabled={isLoading}
+                startIcon={<RefreshCw className="w-3.5 h-3.5" />}
+                className="whitespace-nowrap shrink-0"
+              >
+                {t('admin.dashboard.refreshButton')}
+              </Button>
+            </div>
           </div>
 
           {/* Preset Filter Bar */}
@@ -425,6 +580,9 @@ export function AdminDashboardPage({ currentRoute }: AdminDashboardPageProps) {
             ) : null}
 
             {errorMessage ? <Alert variant="error" message={errorMessage} /> : null}
+            {actionFeedback ? (
+              <Alert variant={actionFeedback.variant} message={actionFeedback.message} />
+            ) : null}
           </div>
         </section>
 
@@ -509,6 +667,22 @@ export function AdminDashboardPage({ currentRoute }: AdminDashboardPageProps) {
                   {t('admin.dashboard.emptyRangeBody')}
                 </p>
               </section>
+            ) : null}
+
+            {/* Stage 27 Advanced Analytics Charts */}
+            {advancedAnalytics ? (
+              <div className="space-y-6">
+                <DailyTrendChart
+                  points={advancedAnalytics.trendSeries}
+                  totalViews={advancedAnalytics.totalAggregatedViews}
+                  totalDownloads={advancedAnalytics.totalAggregatedDownloads}
+                />
+
+                <section className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-stretch">
+                  <AgeGroupBreakdownChart items={advancedAnalytics.byAgeGroup} />
+                  <RootTopicBreakdownChart items={advancedAnalytics.byRootTopic} />
+                </section>
+              </div>
             ) : null}
 
             {/* Two-Column Top Content Lists */}

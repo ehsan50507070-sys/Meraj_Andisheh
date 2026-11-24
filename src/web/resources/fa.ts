@@ -4,7 +4,7 @@ export const faResources = {
   'app.subtitle': 'پلتفرم بانک محتوای فارسی',
   'app.stageLabel': 'مرحله {stage} از {total}',
   'app.stageName':
-    'نوار اخبار و اطلاعیه‌ی فوری (نمایش اولویت‌دار بالای هدر پشت کلید NewsTicker، بستن در نشست و مدیریت در پنل ظاهر)',
+    'آمار پیشرفته (تجمیع شبانه‌ی غیرتکراری، نمودارهای روند، رده‌ی سنی و موضوع ریشه، خروجی CSV اکسل فارسی)',
   'app.footerNote': 'پلتفرم معراج اندیشه · بانک محتوای فارسی متناسب با هر رده سنی',
 
   // Themes
@@ -3492,6 +3492,84 @@ export const faResources = {
     'کنترل دسترسی layout.manage، اعتبارسنجی لینک ناامن و بررسی IndexedDB v18',
   'tests.stage26.rbacSecurityValidationAndIdbV18.desc':
     'همکار بدون مجوز ۴۰۳+WARN و عضو ۴۰۴ می‌گیرند، لینک javascript: و بازه تاریخ معکوس با ۴۰۰ رد می‌شوند و جدول announcements در نسخه ۱۸ مهاجرت و پشتیبان‌گیری می‌شود.',
+
+  // Stage 27: Advanced Analytics, Nightly DailyStat Aggregation, Local Charts & Excel CSV Export
+  'admin.dashboard.advanced.exportCsvButton': 'دانلود خروجی اکسل (CSV)',
+  'admin.dashboard.advanced.runAggregationButton': 'به‌روزرسانی تجمیع آمار',
+  'admin.dashboard.advanced.runningAggregationButton': 'در حال تجمیع آمار...',
+  'admin.dashboard.advanced.lastAggregatedLabel': 'آخرین تجمیع آمار روزانه: {datetime}',
+  'admin.dashboard.advanced.lastAggregatedNever': 'آخرین تجمیع آمار روزانه: هنوز اجرا نشده است',
+  'admin.dashboard.advanced.aggregationSuccess':
+    'تجمیع آمار روزانه با موفقیت به‌روزرسانی شد ({records} رکورد، {views} بازدید و {downloads} دانلود).',
+  'admin.dashboard.advanced.csvExportSuccess':
+    'فایل CSV سازگار با اکسل فارسی با موفقیت آماده و بارگیری شد.',
+  'admin.dashboard.advanced.unknownAgeGroup': 'نامشخص (بدون رده سنی)',
+  'admin.dashboard.advanced.uncategorizedTopic': 'بدون دسته‌بندی موضوعی',
+  'admin.dashboard.advanced.ageTransparencyNote':
+    'آمار تفکیک رده ی سنی به صورت کاملاً تجمعی و ناشناس نمایش داده می شود و مبتنی بر انتخاب خوداظهاری کاربران در سایت است.',
+
+  'admin.dashboard.charts.viewsLegend': 'بازدید شمرده‌شده',
+  'admin.dashboard.charts.downloadsLegend': 'دانلودها',
+  'admin.dashboard.charts.totalInteractionsLegend': 'مجموع تعامل',
+  'admin.dashboard.charts.percentValue': '{percent}٪',
+  'admin.dashboard.charts.countSummary': 'بازدید: {views} · دانلود: {downloads}',
+  'admin.dashboard.charts.tooltipHint': 'روی نقاط یا ستون‌های نمودار حرکت کنید یا با صفحه‌کلید انتخاب نمایید تا جزئیات عددی نمایش داده شود.',
+
+  'admin.dashboard.charts.trend.title': 'نمودار روند بازدید و دانلود روزانه',
+  'admin.dashboard.charts.trend.subtitle':
+    'مقایسه‌ی روند روزانه‌ی بازدیدهای شمرده‌شده و دانلودها در بازه‌ی انتخابی بر اساس جدول تجمیع‌شده',
+  'admin.dashboard.charts.trend.ariaLabel': 'نمودار خطی روند روزانه بازدید و دانلود',
+  'admin.dashboard.charts.trend.empty': 'در این بازه داده‌ی تجمیع‌شده‌ای برای رسم نمودار روند وجود ندارد.',
+  'admin.dashboard.charts.trend.totalBadge': '{views} بازدید · {downloads} دانلود',
+
+  'admin.dashboard.charts.ageGroup.title': 'تفکیک آمار بر اساس رده‌ی سنی',
+  'admin.dashboard.charts.ageGroup.subtitle':
+    'مقایسه‌ی سهم بازدیدها و دانلودهای ثبت‌شده در هر رده‌ی سنی سامانه',
+  'admin.dashboard.charts.ageGroup.ariaLabel': 'نمودار ستونی تفکیک بازدید و دانلود بر اساس رده سنی',
+  'admin.dashboard.charts.ageGroup.empty': 'در این بازه هنوز داده‌ای برای تفکیک رده‌ی سنی ثبت نشده است.',
+  'admin.dashboard.charts.ageGroup.viewsShareLabel': 'سهم بازدید: {percent}٪',
+  'admin.dashboard.charts.ageGroup.downloadsShareLabel': 'سهم دانلود: {percent}٪',
+
+  'admin.dashboard.charts.rootTopic.title': 'تفکیک آمار بر اساس موضوع ریشه',
+  'admin.dashboard.charts.rootTopic.subtitle':
+    'رتبه‌بندی موضوعات اصلی بر اساس مجموع بازدیدها و دانلودها در بازه‌ی انتخابی',
+  'admin.dashboard.charts.rootTopic.ariaLabel': 'نمودار افقی تفکیک تعامل‌ها بر اساس موضوع ریشه',
+  'admin.dashboard.charts.rootTopic.empty': 'در این بازه هیچ رویدادی به موضوعات ریشه منتسب نشده است.',
+
+  'admin.dashboard.csv.trendSectionTitle': 'روند روزانه بازدید و دانلود',
+  'admin.dashboard.csv.ageGroupSectionTitle': 'تفکیک آمار بر اساس رده سنی',
+  'admin.dashboard.csv.rootTopicSectionTitle': 'تفکیک آمار بر اساس موضوع ریشه',
+  'admin.dashboard.csv.colDateJalali': 'تاریخ شمسی',
+  'admin.dashboard.csv.colDateKey': 'تاریخ میلادی (UTC)',
+  'admin.dashboard.csv.colAgeGroup': 'رده سنی',
+  'admin.dashboard.csv.colRootTopic': 'موضوع ریشه',
+  'admin.dashboard.csv.colViews': 'بازدید شمرده شده',
+  'admin.dashboard.csv.colViewsShare': 'سهم بازدید (٪)',
+  'admin.dashboard.csv.colDownloads': 'تعداد دانلود',
+  'admin.dashboard.csv.colDownloadsShare': 'سهم دانلود (٪)',
+  'admin.dashboard.csv.colTotalInteractions': 'مجموع تعامل (بازدید + دانلود)',
+
+  // Stage 27 Unit Tests
+  'tests.stage27.idempotentAggregation.name':
+    'تجمیع غیرتکراری، نگاشت موضوع فرعی به ریشه و fallback صفر برای مقادیر null',
+  'tests.stage27.idempotentAggregation.desc':
+    'اجرای چندباره‌ی aggregateDailyStatsAsync اعداد را دو برابر نمی‌کند؛ بازدیدهای isCounted=false کنار گذاشته شده و رده‌ی سنی یا موضوع نامشخص با ۰ ذخیره می‌شوند.',
+  'tests.stage27.advancedAnalyticsBreakdown.name':
+    'فیلتر بازه‌های زمانی و تحلیل تفکیکی روند، رده‌ی سنی و موضوع ریشه در AdvancedAnalyticsService',
+  'tests.stage27.advancedAnalyticsBreakdown.desc':
+    'روند روزانه به ترتیب صعودی با تاریخ شمسی، تفکیک رده‌ی سنی با درصد سهم و موضوعات ریشه به ترتیب نزولی مجموع تعامل محاسبه می‌شوند.',
+  'tests.stage27.csvExportBomAndEscaping.name':
+    'تولید خروجی CSV سازگار با اکسل فارسی (UTF-8 BOM و نقل‌قول امن ویرگول/گیومه)',
+  'tests.stage27.csvExportBomAndEscaping.desc':
+    'خروجی CSV با کاراکتر \\uFEFF آغاز می‌شود، هر سه جدول فارسی را شامل است و عنوان‌های دارای ویرگول، گیومه یا پیشوند فرمولی را امن‌سازی می‌کند.',
+  'tests.stage27.backgroundJobScheduleAndLock.name':
+    'اجرای دوره‌ای کار شبانه‌ی DailyStatsAggregationJob و جلوگیری از اجرای هم‌زمان',
+  'tests.stage27.backgroundJobScheduleAndLock.desc':
+    'کار پس‌زمینه با FakeClock در زمان مقرر اجرا شده، از هم‌پوشانی اجرای هم‌زمان جلوگیری می‌کند و با گذشت ۲۴ ساعت دوباره به‌روزرسانی می‌شود.',
+  'tests.stage27.rbacDashboardViewAndIdbV19.name':
+    'کنترل دسترسی dashboard.view روی آمار پیشرفته و مهاجرت IndexedDB v19 (جدول dailyStats)',
+  'tests.stage27.rbacDashboardViewAndIdbV19.desc':
+    'همکار بدون مجوز کد ۴۰۳ با لاگ WARN و عضو/مهمان ۴۰۴ می‌گیرند؛ جدول dailyStats با کلید ترکیبی [date, ageGroupId, rootTopicId] و ایندکس‌ها در نسخه‌ی ۱۹ ایجاد می‌شود.',
 } as const;
 
 export type ResourceKey = keyof typeof faResources;

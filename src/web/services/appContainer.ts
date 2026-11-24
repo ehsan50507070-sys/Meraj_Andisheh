@@ -1,3 +1,4 @@
+import { AdvancedAnalyticsService } from '../../core/services/advancedAnalyticsService';
 import { AnalyticsDashboardService } from '../../core/services/analyticsDashboardService';
 import { AnnouncementService } from '../../core/services/announcementService';
 import { AuthService } from '../../core/services/authService';
@@ -9,6 +10,7 @@ import { ContentDetailService } from '../../core/services/contentDetailService';
 import { ContentIntegrityService } from '../../core/services/contentIntegrityService';
 import { ContentManagementService } from '../../core/services/contentManagementService';
 import { ContentRequestService } from '../../core/services/contentRequestService';
+import { DailyStatAggregationService } from '../../core/services/dailyStatAggregationService';
 import { DownloadService } from '../../core/services/downloadService';
 import { FileUploadService } from '../../core/services/fileUploadService';
 import { FilmPortalService } from '../../core/services/filmPortalService';
@@ -44,6 +46,7 @@ import { IndexedDbBookRepository } from '../../infrastructure/data/IndexedDbBook
 import { IndexedDbCommentRepository } from '../../infrastructure/data/IndexedDbCommentRepository';
 import { IndexedDbContentRepository } from '../../infrastructure/data/IndexedDbContentRepository';
 import { IndexedDbContentRequestRepository } from '../../infrastructure/data/IndexedDbContentRequestRepository';
+import { IndexedDbDailyStatRepository } from '../../infrastructure/data/IndexedDbDailyStatRepository';
 import { IndexedDbDataStore } from '../../infrastructure/data/IndexedDbDataStore';
 import { IndexedDbDownloadEventRepository } from '../../infrastructure/data/IndexedDbDownloadEventRepository';
 import { IndexedDbFilmRepository } from '../../infrastructure/data/IndexedDbFilmRepository';
@@ -57,6 +60,7 @@ import { LocalSessionTokenStore } from '../../infrastructure/data/LocalSessionTo
 import { DatabaseSeeder } from '../../infrastructure/data/seed';
 import { ensureStage18LayoutSeededAsync } from '../../infrastructure/data/stage18LayoutSeed';
 import { BackupScheduler } from '../../infrastructure/jobs/BackupScheduler';
+import { DailyStatsAggregationJob } from '../../infrastructure/jobs/DailyStatsAggregationJob';
 import { AppLogger } from '../../infrastructure/logging/AppLogger';
 import { DevEmailSender } from '../../infrastructure/messaging/DevEmailSender';
 import { DevSmsSender } from '../../infrastructure/messaging/DevSmsSender';
@@ -86,6 +90,7 @@ export interface AppContainer {
   contentRequestRepository: IndexedDbContentRequestRepository;
   layoutRepository: IndexedDbLayoutRepository;
   announcementRepository: IndexedDbAnnouncementRepository;
+  dailyStatRepository: IndexedDbDailyStatRepository;
   userTopicAffinityRepository: IndexedDbUserTopicAffinityRepository;
   filmRepository: IndexedDbFilmRepository;
   bookRepository: IndexedDbBookRepository;
@@ -128,6 +133,9 @@ export interface AppContainer {
   layoutManagementService: LayoutManagementService;
   announcementService: AnnouncementService;
   analyticsDashboardService: AnalyticsDashboardService;
+  dailyStatAggregationService: DailyStatAggregationService;
+  advancedAnalyticsService: AdvancedAnalyticsService;
+  dailyStatsAggregationJob: DailyStatsAggregationJob;
   backupService: BackupService;
   backupScheduler: BackupScheduler;
   profileService: ProfileService;
@@ -159,6 +167,7 @@ const commentRepository = new IndexedDbCommentRepository(dataStore);
 const contentRequestRepository = new IndexedDbContentRequestRepository(dataStore);
 const layoutRepository = new IndexedDbLayoutRepository(dataStore);
 const announcementRepository = new IndexedDbAnnouncementRepository(dataStore);
+const dailyStatRepository = new IndexedDbDailyStatRepository(dataStore);
 const userTopicAffinityRepository = new IndexedDbUserTopicAffinityRepository(dataStore);
 const filmRepository = new IndexedDbFilmRepository(dataStore);
 const bookRepository = new IndexedDbBookRepository(dataStore);
@@ -376,6 +385,25 @@ const analyticsDashboardService = new AnalyticsDashboardService({
   downloadEventRepository,
   contentRepository,
   permissionPolicyService,
+  clock,
+  logger,
+});
+const dailyStatAggregationService = new DailyStatAggregationService(
+  dataStore,
+  clock,
+  logger,
+);
+const advancedAnalyticsService = new AdvancedAnalyticsService({
+  dailyStatRepository,
+  dailyStatAggregationService,
+  adminRepository,
+  taxonomyRepository,
+  permissionPolicyService,
+  clock,
+  logger,
+});
+const dailyStatsAggregationJob = new DailyStatsAggregationJob({
+  aggregationService: dailyStatAggregationService,
   clock,
   logger,
 });
@@ -619,6 +647,7 @@ export const appContainer: AppContainer = {
   contentRequestRepository,
   layoutRepository,
   announcementRepository,
+  dailyStatRepository,
   userTopicAffinityRepository,
   filmRepository,
   bookRepository,
@@ -661,6 +690,9 @@ export const appContainer: AppContainer = {
   layoutManagementService,
   announcementService,
   analyticsDashboardService,
+  dailyStatAggregationService,
+  advancedAnalyticsService,
+  dailyStatsAggregationJob,
   backupService,
   backupScheduler,
   profileService,

@@ -108,11 +108,13 @@ export default function App() {
     void appContainer.ensureInitializedAtStartup().then(() => {
       if (active) {
         appContainer.backupScheduler.start();
+        appContainer.dailyStatsAggregationJob.start();
       }
     });
     return () => {
       active = false;
       appContainer.backupScheduler.stop();
+      appContainer.dailyStatsAggregationJob.stop();
     };
   }, []);
 
