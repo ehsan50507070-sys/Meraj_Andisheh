@@ -1,4 +1,5 @@
 import { AnalyticsDashboardService } from '../../core/services/analyticsDashboardService';
+import { AnnouncementService } from '../../core/services/announcementService';
 import { AuthService } from '../../core/services/authService';
 import { BackupService } from '../../core/services/backupService';
 import { BookPortalService } from '../../core/services/bookPortalService';
@@ -35,6 +36,7 @@ import { SystemClock } from '../../infrastructure/clock/SystemClock';
 import { envConfig } from '../../infrastructure/config/envConfig';
 import { IndexedDbAccountCleanupRepository } from '../../infrastructure/data/IndexedDbAccountCleanupRepository';
 import { IndexedDbAdminRepository } from '../../infrastructure/data/IndexedDbAdminRepository';
+import { IndexedDbAnnouncementRepository } from '../../infrastructure/data/IndexedDbAnnouncementRepository';
 import { IndexedDbAuthRepository } from '../../infrastructure/data/IndexedDbAuthRepository';
 import { IndexedDbBackupRepository } from '../../infrastructure/data/IndexedDbBackupRepository';
 import { IndexedDbBackupSnapshotProvider } from '../../infrastructure/data/IndexedDbBackupSnapshotProvider';
@@ -62,6 +64,7 @@ import { BrowserPasswordHasher } from '../../infrastructure/security/BrowserPass
 import { HmacDownloadTokenProtector } from '../../infrastructure/security/HmacDownloadTokenProtector';
 import { BrowserAffinityCookieStorage } from '../../infrastructure/storage/BrowserAffinityCookieStorage';
 import { BrowserAgeCookieStorage } from '../../infrastructure/storage/BrowserAgeCookieStorage';
+import { BrowserSessionAnnouncementDismissStorage } from '../../infrastructure/storage/BrowserSessionAnnouncementDismissStorage';
 import { BrowserVisitorIdStorage } from '../../infrastructure/storage/BrowserVisitorIdStorage';
 import { LocalIndexedDbFileStorage } from '../../infrastructure/storage/LocalIndexedDbFileStorage';
 import { t } from '../resources/i18n';
@@ -82,6 +85,7 @@ export interface AppContainer {
   commentRepository: IndexedDbCommentRepository;
   contentRequestRepository: IndexedDbContentRequestRepository;
   layoutRepository: IndexedDbLayoutRepository;
+  announcementRepository: IndexedDbAnnouncementRepository;
   userTopicAffinityRepository: IndexedDbUserTopicAffinityRepository;
   filmRepository: IndexedDbFilmRepository;
   bookRepository: IndexedDbBookRepository;
@@ -93,6 +97,7 @@ export interface AppContainer {
   agePreferenceStorage: BrowserAgeCookieStorage;
   guestAffinityStorage: BrowserAffinityCookieStorage;
   visitorIdStorage: BrowserVisitorIdStorage;
+  announcementDismissStorage: BrowserSessionAnnouncementDismissStorage;
   passwordHasher: BrowserPasswordHasher;
   emailSender: DevEmailSender;
   smsSender: DevSmsSender;
@@ -121,6 +126,7 @@ export interface AppContainer {
   bookPortalService: BookPortalService;
   homePageService: HomePageService;
   layoutManagementService: LayoutManagementService;
+  announcementService: AnnouncementService;
   analyticsDashboardService: AnalyticsDashboardService;
   backupService: BackupService;
   backupScheduler: BackupScheduler;
@@ -152,6 +158,7 @@ const interactionRepository = new IndexedDbInteractionRepository(dataStore);
 const commentRepository = new IndexedDbCommentRepository(dataStore);
 const contentRequestRepository = new IndexedDbContentRequestRepository(dataStore);
 const layoutRepository = new IndexedDbLayoutRepository(dataStore);
+const announcementRepository = new IndexedDbAnnouncementRepository(dataStore);
 const userTopicAffinityRepository = new IndexedDbUserTopicAffinityRepository(dataStore);
 const filmRepository = new IndexedDbFilmRepository(dataStore);
 const bookRepository = new IndexedDbBookRepository(dataStore);
@@ -163,6 +170,7 @@ const fileStorage = new LocalIndexedDbFileStorage(dataStore, clock);
 const agePreferenceStorage = new BrowserAgeCookieStorage();
 const guestAffinityStorage = new BrowserAffinityCookieStorage();
 const visitorIdStorage = new BrowserVisitorIdStorage();
+const announcementDismissStorage = new BrowserSessionAnnouncementDismissStorage();
 const passwordHasher = new BrowserPasswordHasher();
 const sessionTokenStore = new LocalSessionTokenStore(envConfig.sessionStorageKey);
 const emailSender = new DevEmailSender(logger, t('logs.devEmailPrefix'));
@@ -355,6 +363,14 @@ const layoutManagementService = new LayoutManagementService({
   fileStorage,
   logger,
 });
+const announcementService = new AnnouncementService({
+  announcementRepository,
+  adminRepository,
+  dismissStorage: announcementDismissStorage,
+  permissionPolicyService,
+  clock,
+  logger,
+});
 const analyticsDashboardService = new AnalyticsDashboardService({
   viewEventRepository,
   downloadEventRepository,
@@ -517,6 +533,27 @@ export async function ensureStage25StoryGeneratorDefaultFlagAsync(
   });
 }
 
+export const STAGE26_NEWS_TICKER_FLAG_META_KEY =
+  'stage26_news_ticker_default_enabled_v1';
+
+export async function ensureStage26NewsTickerDefaultFlagAsync(
+  store: IndexedDbDataStore = dataStore,
+): Promise<void> {
+  const existingMeta = await store.getMeta(STAGE26_NEWS_TICKER_FLAG_META_KEY);
+  if (existingMeta) {
+    return;
+  }
+  await store.putRecord(STORE_NAMES.FEATURE_FLAGS, {
+    key: 'NewsTicker',
+    isEnabled: true,
+  });
+  await store.setMeta({
+    key: STAGE26_NEWS_TICKER_FLAG_META_KEY,
+    value: '1',
+    updatedAtUtc: clock.nowUtcIso(),
+  });
+}
+
 let startupRecordedInSession = false;
 let startupInitPromise: Promise<void> | null = null;
 
@@ -548,6 +585,7 @@ function ensureInitializedAtStartup(): Promise<void> {
         await ensureStage23FilmsDefaultFlagAsync(dataStore);
         await ensureStage24BooksDefaultFlagAsync(dataStore);
         await ensureStage25StoryGeneratorDefaultFlagAsync(dataStore);
+        await ensureStage26NewsTickerDefaultFlagAsync(dataStore);
         await ensureStage18LayoutSeededAsync(dataStore);
         await initialSuperAdminService.bootstrapFromEnvIfConfigured(
           envConfig.initialSuperAdminEmail,
@@ -580,6 +618,7 @@ export const appContainer: AppContainer = {
   commentRepository,
   contentRequestRepository,
   layoutRepository,
+  announcementRepository,
   userTopicAffinityRepository,
   filmRepository,
   bookRepository,
@@ -591,6 +630,7 @@ export const appContainer: AppContainer = {
   agePreferenceStorage,
   guestAffinityStorage,
   visitorIdStorage,
+  announcementDismissStorage,
   passwordHasher,
   emailSender,
   smsSender,
@@ -619,6 +659,7 @@ export const appContainer: AppContainer = {
   bookPortalService,
   homePageService,
   layoutManagementService,
+  announcementService,
   analyticsDashboardService,
   backupService,
   backupScheduler,

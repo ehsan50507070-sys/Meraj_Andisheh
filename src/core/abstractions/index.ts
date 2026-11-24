@@ -10,3 +10,5 @@ export * from './fileStorage';
 export * from './taxonomyRepository';
 export * from './searchNormalizer';
 export * from './contentRepository';
+export * from './announcementDismissStorage';
+export * from './announcementRepository';

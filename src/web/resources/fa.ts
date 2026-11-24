@@ -4,7 +4,7 @@ export const faResources = {
   'app.subtitle': 'پلتفرم بانک محتوای فارسی',
   'app.stageLabel': 'مرحله {stage} از {total}',
   'app.stageName':
-    'تولید استوری (خروجی ۱۰۸۰×۱۹۲۰ PNG در ۳ قالب بومی، کنترل دسترسی اعضا و ثبت رویداد استوری)',
+    'نوار اخبار و اطلاعیه‌ی فوری (نمایش اولویت‌دار بالای هدر پشت کلید NewsTicker، بستن در نشست و مدیریت در پنل ظاهر)',
   'app.footerNote': 'پلتفرم معراج اندیشه · بانک محتوای فارسی متناسب با هر رده سنی',
 
   // Themes
@@ -2474,6 +2474,7 @@ export const faResources = {
   'admin.layout.tab.slides': 'اسلایدر صفحه اصلی',
   'admin.layout.tab.shelves': 'قفسه‌های صفحه اصلی',
   'admin.layout.tab.pages': 'صفحات ثابت (فوتر)',
+  'admin.layout.tab.announcements': 'نوار اخبار',
 
   // Tab 1: Hero Slides
   'admin.layout.slides.sectionTitle': 'مدیریت اسلایدهای صفحه اصلی ({count})',
@@ -3409,6 +3410,88 @@ export const faResources = {
     'ارتقای IndexedDB به نسخه‌ی ۱۷ و روشن‌شدن خودکار کلید StoryGenerator',
   'tests.stage25.migrationV17DefaultFlag.desc':
     'مهاجرت نسخه ۱۶ به ۱۷ در IndexedDB و راه‌اندازی سامانه کلید StoryGenerator را بدون شکستن تست‌های بذر اولیه روشن می‌کند.',
+
+  // Stage 26: News Ticker & Urgent Announcements
+  'newsTicker.ariaLabel': 'نوار اخبار و اطلاعیه‌های فوری',
+  'newsTicker.badge': 'خبر فوری',
+  'newsTicker.linkAction': 'مشاهده',
+  'newsTicker.dismissAria': 'بستن این اطلاعیه تا پایان نشست فعلی',
+  'newsTicker.dismissLabel': 'بستن',
+
+  'admin.layout.announcements.sectionTitle': 'اطلاعیه‌های نوار اخبار ({count})',
+  'admin.layout.announcements.addButton': 'افزودن اطلاعیه جدید',
+  'admin.layout.announcements.flagDisabledNotice':
+    'کلید ماژول «نوار خبر و اطلاعیه‌ها» (NewsTicker) در حال حاضر خاموش است؛ تا زمان فعال‌سازی از بخش تنظیمات، نوار اخبار در صفحات عمومی نمایش داده نمی‌شود.',
+  'admin.layout.announcements.openSettingsButton': 'مدیریت کلید ماژول‌ها',
+  'admin.layout.announcements.emptyTitle': 'هنوز هیچ اطلاعیه‌ای ثبت نشده است.',
+  'admin.layout.announcements.emptyBody':
+    'با ثبت اطلاعیه‌ی زمان‌بندی‌شده، مهم‌ترین خبر یا اطلاعیه‌ی سایت در بالاترین بخش صفحات عمومی نمایش داده می‌شود.',
+  'admin.layout.announcements.status.ActiveNow': 'در حال نمایش',
+  'admin.layout.announcements.status.Scheduled': 'در صف زمان‌بندی',
+  'admin.layout.announcements.status.Expired': 'منقضی‌شده',
+  'admin.layout.announcements.status.Disabled': 'غیرفعال',
+  'admin.layout.announcements.priorityBadge': 'اولویت: {priority}',
+  'admin.layout.announcements.dateRangeLabel': 'بازه نمایش: از {start} تا {end}',
+  'admin.layout.announcements.linkBadge': 'لینک پیوست',
+  'admin.layout.announcements.toggleEnable': 'فعالسازی',
+  'admin.layout.announcements.toggleDisable': 'غیرفعالسازی',
+
+  'admin.layout.announcements.modalCreateTitle': 'افزودن اطلاعیه جدید',
+  'admin.layout.announcements.modalEditTitle': 'ویرایش اطلاعیه',
+  'admin.layout.announcements.textLabel': 'متن اطلاعیه',
+  'admin.layout.announcements.textPlaceholder':
+    'متن کوتاه و شفاف اطلاعیه برای نمایش در نوار بالای هدر (حداکثر ۲۵۰ نویسه)...',
+  'admin.layout.announcements.charCounter': '{current} / {max} نویسه',
+  'admin.layout.announcements.linkInputLabel':
+    'لینک اختیاری (مسیر داخلی با #/ یا نشانی معتبر http/https)',
+  'admin.layout.announcements.linkInputPlaceholder':
+    '#/content یا https://example.com',
+  'admin.layout.announcements.linkInputHint':
+    'اختیاری است؛ در صورت ورود فقط لینک داخلی غیرمدیریتی (#/...) یا نشانی معتبر http/https مجاز است.',
+  'admin.layout.announcements.startsAtDateLabel': 'تاریخ شروع نمایش (شمسی)',
+  'admin.layout.announcements.endsAtDateLabel': 'تاریخ پایان نمایش (شمسی)',
+  'admin.layout.announcements.hourLabel': 'ساعت',
+  'admin.layout.announcements.minuteLabel': 'دقیقه',
+  'admin.layout.announcements.priorityLabel': 'اولویت نمایش (عدد بزرگ‌تر اول)',
+  'admin.layout.announcements.priorityHint':
+    'اعداد با ارقام فارسی، عربی یا انگلیسی پذیرفته می‌شوند (مثلاً ۱۰، ٥ یا 10).',
+  'admin.layout.announcements.isActiveLabel':
+    'اطلاعیه فعال باشد و در صورت قرار گرفتن در بازه زمانی در نوار اخبار نمایش داده شود',
+  'admin.layout.confirmDeleteAnnouncement': 'آیا از حذف این اطلاعیه اطمینان دارید؟',
+  'admin.layout.feedback.announcementSaved': 'اطلاعیه با موفقیت ذخیره شد.',
+  'admin.layout.feedback.announcementDeleted': 'اطلاعیه با موفقیت حذف شد.',
+  'admin.layout.announcements.error.textInvalid':
+    'متن اطلاعیه الزامی است و نباید بیشتر از ۲۵۰ نویسه باشد.',
+  'admin.layout.announcements.error.linkInvalid':
+    'لینک واردشده معتبر نیست؛ فقط مسیر داخلی غیرمدیریتی (#/...) یا نشانی http/https مجاز است.',
+  'admin.layout.announcements.error.invalidDate':
+    'تاریخ شروع یا پایان واردشده معتبر نیست.',
+  'admin.layout.announcements.error.invalidDateRange':
+    'تاریخ و ساعت پایان نمایش باید اکیداً بعد از تاریخ و ساعت شروع نمایش باشد.',
+  'admin.layout.announcements.error.invalidPriority':
+    'مقدار اولویت باید یک عدد صحیح معتبر باشد.',
+
+  // Stage 26 Unit Tests
+  'tests.stage26.timeBoundaryActiveWindow.name':
+    'اعتبارسنجی بازه زمانی اطلاعیه با ساعت جعلی (شروع، میانه و لحظه‌ی انقضا)',
+  'tests.stage26.timeBoundaryActiveWindow.desc':
+    'اطلاعیه از دیروز تا فردا فعال است؛ پیش از startsAt در وضعیت زمان‌بندی (مخفی) و دقیقاً از لحظه endsAt منقضی (مخفی) می‌شود.',
+  'tests.stage26.priorityOrderAndTieBreak.name':
+    'مرتب‌سازی نزولی بر اساس اولویت (priority=10 پیش از priority=5)',
+  'tests.stage26.priorityOrderAndTieBreak.desc':
+    'از میان دو اطلاعیه فعال هم‌زمان، اطلاعیه با اولویت بالاتر در صدر قرار می‌گیرد و پس از بسته شدن آن در نشست، اطلاعیه بعدی نمایش داده می‌شود.',
+  'tests.stage26.featureFlagNewsTickerGate.name':
+    'کنترل کلید ماژول NewsTicker در حالت خاموش و روشن',
+  'tests.stage26.featureFlagNewsTickerGate.desc':
+    'با خاموشی FeatureFlag("NewsTicker") سرویس خروجی خالی برمی‌گرداند و با روشن‌شدن، اطلاعیه فعال نمایش داده می‌شود.',
+  'tests.stage26.sessionDismissAndNewSession.name':
+    'بستن اطلاعیه تا پایان نشست (SessionStorage) و بازگشت در نشست تازه',
+  'tests.stage26.sessionDismissAndNewSession.desc':
+    'پس از بستن یک اطلاعیه در نشست فعلی دیگر نمایش داده نمی‌شود، اما در نشست جدید (حافظه نشست تازه) دوباره فعال می‌گردد.',
+  'tests.stage26.rbacSecurityValidationAndIdbV18.name':
+    'کنترل دسترسی layout.manage، اعتبارسنجی لینک ناامن و بررسی IndexedDB v18',
+  'tests.stage26.rbacSecurityValidationAndIdbV18.desc':
+    'همکار بدون مجوز ۴۰۳+WARN و عضو ۴۰۴ می‌گیرند، لینک javascript: و بازه تاریخ معکوس با ۴۰۰ رد می‌شوند و جدول announcements در نسخه ۱۸ مهاجرت و پشتیبان‌گیری می‌شود.',
 } as const;
 
 export type ResourceKey = keyof typeof faResources;

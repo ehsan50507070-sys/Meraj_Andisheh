@@ -8,6 +8,7 @@ import {
   FileText,
   Image as ImageIcon,
   Layers,
+  Megaphone,
   Plus,
   Power,
   Trash2,
@@ -24,21 +25,41 @@ import {
 } from 'react';
 import {
   HOME_SHELF_TYPES,
+  MAX_ANNOUNCEMENT_LINK_URL,
+  MAX_ANNOUNCEMENT_TEXT,
   MAX_HERO_SLIDE_LINK_URL,
   MAX_HERO_SLIDE_SUBTITLE,
   MAX_HERO_SLIDE_TITLE,
   MAX_HOME_SHELF_TITLE,
   MAX_STATIC_PAGE_SLUG,
   MAX_STATIC_PAGE_TITLE,
+  type AnnouncementComputedStatus,
+  type AnnouncementItem,
   type HeroSlide,
   type HomeShelf,
   type HomeShelfType,
   type StaticPage,
 } from '../../../core/domain/layout';
 import type { AgeGroup, Topic } from '../../../core/domain/taxonomy';
+import type { AdminAnnouncementRow } from '../../../core/services/announcementService';
+import {
+  dateToJalali,
+  formatJalaliDate,
+  getTodayJalali,
+  jalaliToGregorian,
+  parseJalaliInput,
+} from '../../../core/services/jalaliCalendarService';
 import type { TopicTreeNode } from '../../../core/services/taxonomyService';
 import { useAuth } from '../../auth/AuthContext';
-import { Alert, Button, FormField, Modal, Tag, type SelectOption } from '../../components/ui';
+import {
+  Alert,
+  Button,
+  FormField,
+  JalaliDatePicker,
+  Modal,
+  Tag,
+  type SelectOption,
+} from '../../components/ui';
 import type { ResourceKey } from '../../resources/fa';
 import { toPersianDigits } from '../../resources/formatters';
 import { t } from '../../resources/i18n';
@@ -49,7 +70,98 @@ export interface AdminLayoutPageProps {
   currentRoute: string;
 }
 
-type LayoutTabKey = 'slides' | 'shelves' | 'pages';
+type LayoutTabKey = 'slides' | 'shelves' | 'pages' | 'announcements';
+
+const HOUR_OPTIONS: readonly string[] = Array.from({ length: 24 }, (_, h) =>
+  String(h).padStart(2, '0'),
+);
+const MINUTE_OPTIONS: readonly string[] = Array.from({ length: 60 }, (_, m) =>
+  String(m).padStart(2, '0'),
+);
+
+function padTwoDigits(val: number): string {
+  return String(val).padStart(2, '0');
+}
+
+function formatAnnouncementJalaliDateTime(isoTimestamp: string): string {
+  const d = new Date(isoTimestamp);
+  if (Number.isNaN(d.getTime())) {
+    return '—';
+  }
+  const j = dateToJalali(d, false);
+  const dateStr = formatJalaliDate(j.jy, j.jm, j.jd, true);
+  const timeStr = toPersianDigits(
+    `${padTwoDigits(d.getHours())}:${padTwoDigits(d.getMinutes())}`,
+  );
+  return `${dateStr} · ${timeStr}`;
+}
+
+function splitIsoToJalaliAndTime(isoTimestamp: string): {
+  jalaliDate: string;
+  hour: string;
+  minute: string;
+} {
+  const d = new Date(isoTimestamp);
+  if (Number.isNaN(d.getTime())) {
+    const today = getTodayJalali(false);
+    return {
+      jalaliDate: formatJalaliDate(today.jy, today.jm, today.jd, true),
+      hour: '00',
+      minute: '00',
+    };
+  }
+  const j = dateToJalali(d, false);
+  return {
+    jalaliDate: formatJalaliDate(j.jy, j.jm, j.jd, true),
+    hour: padTwoDigits(d.getHours()),
+    minute: padTwoDigits(d.getMinutes()),
+  };
+}
+
+function combineJalaliAndTimeToIso(
+  jalaliDateStr: string,
+  hourStr: string,
+  minuteStr: string,
+): string | null {
+  const parsed = parseJalaliInput(jalaliDateStr);
+  if (!parsed) {
+    return null;
+  }
+  const hour = Number.parseInt(hourStr, 10);
+  const minute = Number.parseInt(minuteStr, 10);
+  if (
+    !Number.isInteger(hour) ||
+    hour < 0 ||
+    hour > 23 ||
+    !Number.isInteger(minute) ||
+    minute < 0 ||
+    minute > 59
+  ) {
+    return null;
+  }
+  const g = jalaliToGregorian(parsed.jy, parsed.jm, parsed.jd);
+  const dt = new Date(g.gy, g.gm - 1, g.gd, hour, minute, 0, 0);
+  if (Number.isNaN(dt.getTime())) {
+    return null;
+  }
+  return dt.toISOString();
+}
+
+function getAnnouncementStatusVariant(
+  status: AnnouncementComputedStatus,
+): 'success' | 'primary' | 'neutral' | 'warning' {
+  switch (status) {
+    case 'ActiveNow':
+      return 'success';
+    case 'Scheduled':
+      return 'primary';
+    case 'Expired':
+      return 'neutral';
+    case 'Disabled':
+    default:
+      return 'warning';
+  }
+}
 
 interface FlattenedTopicOption {
   id: number;
@@ -89,7 +201,7 @@ function flattenTopicTree(
 }
 
 export function AdminLayoutPage({ currentRoute }: AdminLayoutPageProps) {
-  const { currentUser } = useAuth();
+  const { currentUser, isNewsTickerEnabled } = useAuth();
   const [activeTab, setActiveTab] = useState<LayoutTabKey>('slides');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -97,6 +209,10 @@ export function AdminLayoutPage({ currentRoute }: AdminLayoutPageProps) {
   const [slides, setSlides] = useState<HeroSlide[]>([]);
   const [shelves, setShelves] = useState<HomeShelf[]>([]);
   const [pages, setPages] = useState<StaticPage[]>([]);
+  const [announcementRows, setAnnouncementRows] = useState<AdminAnnouncementRow[]>([]);
+  const [announcementFlagEnabled, setAnnouncementFlagEnabled] = useState<boolean>(
+    isNewsTickerEnabled,
+  );
   const [ageGroups, setAgeGroups] = useState<AgeGroup[]>([]);
   const [topics, setTopics] = useState<Topic[]>([]);
   const [topicTree, setTopicTree] = useState<TopicTreeNode[]>([]);
@@ -146,8 +262,26 @@ export function AdminLayoutPage({ currentRoute }: AdminLayoutPageProps) {
     sortOrder: string;
   } | null>(null);
 
+  const [announcementModal, setAnnouncementModal] = useState<{
+    mode: 'create' | 'edit';
+    editingId?: number;
+    text: string;
+    linkUrl: string;
+    startDate: string;
+    startHour: string;
+    startMinute: string;
+    endDate: string;
+    endHour: string;
+    endMinute: string;
+    priority: string;
+    isActive: boolean;
+  } | null>(null);
+  const [announcementModalError, setAnnouncementModalError] = useState<string | null>(
+    null,
+  );
+
   const [deleteTarget, setDeleteTarget] = useState<{
-    kind: 'slide' | 'shelf' | 'page';
+    kind: 'slide' | 'shelf' | 'page' | 'announcement';
     id: number;
     label: string;
   } | null>(null);
@@ -170,12 +304,14 @@ export function AdminLayoutPage({ currentRoute }: AdminLayoutPageProps) {
         slidesRes,
         shelvesRes,
         pagesRes,
+        announcementsRes,
         loadedAges,
         loadedTopics,
       ] = await Promise.all([
         appContainer.layoutManagementService.listHeroSlidesAdmin(currentUser),
         appContainer.layoutManagementService.listHomeShelvesAdmin(currentUser),
         appContainer.layoutManagementService.listStaticPagesAdmin(currentUser),
+        appContainer.announcementService.listAdminAnnouncementsAsync(currentUser),
         appContainer.taxonomyRepository.getAllAgeGroups(),
         appContainer.taxonomyRepository.getAllTopics(),
       ]);
@@ -211,6 +347,10 @@ export function AdminLayoutPage({ currentRoute }: AdminLayoutPageProps) {
       }
       if (pagesRes.ok && pagesRes.data) {
         setPages(pagesRes.data);
+      }
+      if (announcementsRes.ok && announcementsRes.data) {
+        setAnnouncementRows(announcementsRes.data.rows);
+        setAnnouncementFlagEnabled(announcementsRes.data.isFeatureEnabled);
       }
 
       setAgeGroups(
@@ -601,6 +741,138 @@ export function AdminLayoutPage({ currentRoute }: AdminLayoutPageProps) {
     }
   };
 
+  // ==================== Announcement Handlers ====================
+
+  const openCreateAnnouncement = () => {
+    setFeedback(null);
+    setAnnouncementModalError(null);
+    const nowDate = appContainer.clock.now();
+    const startParts = splitIsoToJalaliAndTime(nowDate.toISOString());
+    const endDateObj = new Date(nowDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const endParts = splitIsoToJalaliAndTime(endDateObj.toISOString());
+
+    setAnnouncementModal({
+      mode: 'create',
+      text: '',
+      linkUrl: '',
+      startDate: startParts.jalaliDate,
+      startHour: '00',
+      startMinute: '00',
+      endDate: endParts.jalaliDate,
+      endHour: '23',
+      endMinute: '59',
+      priority: toPersianDigits(10),
+      isActive: true,
+    });
+  };
+
+  const openEditAnnouncement = (item: AnnouncementItem) => {
+    setFeedback(null);
+    setAnnouncementModalError(null);
+    const startParts = splitIsoToJalaliAndTime(item.startsAt);
+    const endParts = splitIsoToJalaliAndTime(item.endsAt);
+
+    setAnnouncementModal({
+      mode: 'edit',
+      editingId: item.id,
+      text: item.text,
+      linkUrl: item.linkUrl ?? '',
+      startDate: startParts.jalaliDate,
+      startHour: startParts.hour,
+      startMinute: startParts.minute,
+      endDate: endParts.jalaliDate,
+      endHour: endParts.hour,
+      endMinute: endParts.minute,
+      priority: toPersianDigits(item.priority),
+      isActive: item.isActive,
+    });
+  };
+
+  const handleSaveAnnouncement = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!currentUser || !announcementModal) {
+      return;
+    }
+
+    const startsAtIso = combineJalaliAndTimeToIso(
+      announcementModal.startDate,
+      announcementModal.startHour,
+      announcementModal.startMinute,
+    );
+    const endsAtIso = combineJalaliAndTimeToIso(
+      announcementModal.endDate,
+      announcementModal.endHour,
+      announcementModal.endMinute,
+    );
+
+    if (!startsAtIso || !endsAtIso) {
+      setAnnouncementModalError(t('admin.layout.announcements.error.invalidDate'));
+      return;
+    }
+
+    setIsSaving(true);
+    setFeedback(null);
+    setAnnouncementModalError(null);
+    try {
+      const res = await appContainer.announcementService.saveAnnouncementAsync(
+        currentUser,
+        {
+          id: announcementModal.editingId,
+          text: announcementModal.text,
+          linkUrl: announcementModal.linkUrl,
+          startsAt: startsAtIso,
+          endsAt: endsAtIso,
+          priority: announcementModal.priority,
+          isActive: announcementModal.isActive,
+        },
+      );
+
+      if (!res.ok) {
+        const errMsg = t(
+          (res.messageKey ?? 'admin.layout.error.notFound') as ResourceKey,
+        );
+        setAnnouncementModalError(errMsg);
+        return;
+      }
+
+      setAnnouncementModal(null);
+      window.dispatchEvent(new Event('meraj:announcements-changed'));
+      setFeedback({
+        variant: 'success',
+        message: t('admin.layout.feedback.announcementSaved'),
+      });
+      await loadAll();
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleToggleAnnouncement = async (item: AnnouncementItem) => {
+    if (!currentUser) {
+      return;
+    }
+    setIsSaving(true);
+    setFeedback(null);
+    try {
+      const res =
+        await appContainer.announcementService.toggleAnnouncementActiveAsync(
+          currentUser,
+          item.id,
+          !item.isActive,
+        );
+      if (res.ok) {
+        window.dispatchEvent(new Event('meraj:announcements-changed'));
+        setFeedback({
+          variant: 'success',
+          message: t('admin.layout.feedback.announcementSaved'),
+        });
+        await loadAll();
+      }
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   // ==================== Delete Handler ====================
 
   const handleConfirmDelete = async () => {
@@ -632,7 +904,7 @@ export function AdminLayoutPage({ currentRoute }: AdminLayoutPageProps) {
             message: t('admin.layout.feedback.shelfDeleted'),
           });
         }
-      } else {
+      } else if (deleteTarget.kind === 'page') {
         const res = await appContainer.layoutManagementService.deleteStaticPage(
           currentUser,
           deleteTarget.id,
@@ -642,6 +914,19 @@ export function AdminLayoutPage({ currentRoute }: AdminLayoutPageProps) {
           setFeedback({
             variant: 'success',
             message: t('admin.layout.feedback.pageDeleted'),
+          });
+        }
+      } else {
+        const res =
+          await appContainer.announcementService.deleteAnnouncementAsync(
+            currentUser,
+            deleteTarget.id,
+          );
+        if (res.ok) {
+          window.dispatchEvent(new Event('meraj:announcements-changed'));
+          setFeedback({
+            variant: 'success',
+            message: t('admin.layout.feedback.announcementDeleted'),
           });
         }
       }
@@ -687,6 +972,11 @@ export function AdminLayoutPage({ currentRoute }: AdminLayoutPageProps) {
               { key: 'slides', label: t('admin.layout.tab.slides'), icon: ImageIcon },
               { key: 'shelves', label: t('admin.layout.tab.shelves'), icon: Layers },
               { key: 'pages', label: t('admin.layout.tab.pages'), icon: FileText },
+              {
+                key: 'announcements',
+                label: t('admin.layout.tab.announcements'),
+                icon: Megaphone,
+              },
             ] as const
           ).map((tab) => {
             const Icon = tab.icon;
@@ -1116,6 +1406,143 @@ export function AdminLayoutPage({ currentRoute }: AdminLayoutPageProps) {
                             kind: 'page',
                             id: page.id,
                             label: page.title,
+                          })
+                        }
+                        startIcon={<Trash2 className="w-3.5 h-3.5" />}
+                      >
+                        {t('admin.layout.slides.deleteButton')}
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* Tab 4: Announcements / News Ticker */}
+        {activeTab === 'announcements' && (
+          <section className="space-y-4">
+            {!announcementFlagEnabled && (
+              <div className="rounded-[var(--radius-card)] border border-[var(--color-warning-border)] bg-[var(--color-warning-bg)] p-4 flex flex-wrap items-center justify-between gap-3">
+                <p className="text-xs sm:text-sm text-[var(--color-warning-text)] leading-relaxed">
+                  {t('admin.layout.announcements.flagDisabledNotice')}
+                </p>
+                <a
+                  href="#/admin/settings"
+                  className="inline-flex items-center gap-1.5 min-h-[34px] px-3 py-1.5 rounded-[var(--radius-control)] border border-[var(--color-border-strong)] bg-[var(--color-surface)] text-xs font-semibold text-[var(--color-text)] hover:bg-[var(--color-surface-alt)] transition-colors whitespace-nowrap"
+                >
+                  <span>{t('admin.layout.announcements.openSettingsButton')}</span>
+                </a>
+              </div>
+            )}
+
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-base sm:text-lg font-bold text-[var(--color-text)] tabular-nums-strict">
+                {t('admin.layout.announcements.sectionTitle', {
+                  count: toPersianDigits(announcementRows.length),
+                })}
+              </h2>
+              <Button
+                variant="primary"
+                onClick={openCreateAnnouncement}
+                startIcon={<Plus className="w-4 h-4" />}
+              >
+                {t('admin.layout.announcements.addButton')}
+              </Button>
+            </div>
+
+            {isLoading ? (
+              <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-card)] p-6 text-center text-sm text-[var(--color-muted)]">
+                {t('home.page.loading')}
+              </div>
+            ) : announcementRows.length === 0 ? (
+              <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-card)] p-8 text-center space-y-2">
+                <h3 className="text-base font-bold text-[var(--color-text)]">
+                  {t('admin.layout.announcements.emptyTitle')}
+                </h3>
+                <p className="text-xs sm:text-sm text-[var(--color-muted)]">
+                  {t('admin.layout.announcements.emptyBody')}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {announcementRows.map(({ item, computedStatus }) => (
+                  <div
+                    key={item.id}
+                    className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-card)] p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4"
+                  >
+                    <div className="space-y-2 min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Tag
+                          label={t(
+                            `admin.layout.announcements.status.${computedStatus}` as ResourceKey,
+                          )}
+                          variant={getAnnouncementStatusVariant(computedStatus)}
+                        />
+                        <Tag
+                          label={t('admin.layout.announcements.priorityBadge', {
+                            priority: toPersianDigits(item.priority),
+                          })}
+                          variant="accent"
+                        />
+                        {item.linkUrl && (
+                          <Tag
+                            label={t('admin.layout.announcements.linkBadge')}
+                            variant="neutral"
+                          />
+                        )}
+                      </div>
+
+                      <p className="text-sm sm:text-base font-semibold text-[var(--color-text)] leading-relaxed break-words">
+                        {item.text}
+                      </p>
+
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[var(--color-muted)] tabular-nums-strict">
+                        <span>
+                          {t('admin.layout.announcements.dateRangeLabel', {
+                            start: formatAnnouncementJalaliDateTime(item.startsAt),
+                            end: formatAnnouncementJalaliDateTime(item.endsAt),
+                          })}
+                        </span>
+                        {item.linkUrl && (
+                          <span dir="ltr" className="font-mono text-[var(--color-primary)] truncate max-w-xs">
+                            {item.linkUrl}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2 shrink-0">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={isSaving}
+                        onClick={() => void handleToggleAnnouncement(item)}
+                        startIcon={<Power className="w-3.5 h-3.5" />}
+                      >
+                        {item.isActive
+                          ? t('admin.layout.announcements.toggleDisable')
+                          : t('admin.layout.announcements.toggleEnable')}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={isSaving}
+                        onClick={() => openEditAnnouncement(item)}
+                        startIcon={<Edit3 className="w-3.5 h-3.5" />}
+                      >
+                        {t('admin.layout.slides.editButton')}
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        disabled={isSaving}
+                        onClick={() =>
+                          setDeleteTarget({
+                            kind: 'announcement',
+                            id: item.id,
+                            label: item.text,
                           })
                         }
                         startIcon={<Trash2 className="w-3.5 h-3.5" />}
@@ -1590,6 +2017,270 @@ export function AdminLayoutPage({ currentRoute }: AdminLayoutPageProps) {
         </Modal>
       )}
 
+      {/* Announcement Create/Edit Modal */}
+      {announcementModal && (
+        <Modal
+          open
+          onClose={() => !isSaving && setAnnouncementModal(null)}
+          title={
+            announcementModal.mode === 'create'
+              ? t('admin.layout.announcements.modalCreateTitle')
+              : t('admin.layout.announcements.modalEditTitle')
+          }
+        >
+          <form onSubmit={(e) => void handleSaveAnnouncement(e)} className="space-y-4">
+            {announcementModalError && (
+              <Alert
+                variant="error"
+                message={announcementModalError}
+                onDismiss={() => setAnnouncementModalError(null)}
+              />
+            )}
+
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between gap-2">
+                <label
+                  htmlFor="announcement-text"
+                  className="block text-sm font-medium text-[var(--color-text)]"
+                >
+                  {t('admin.layout.announcements.textLabel')}
+                </label>
+                <span className="text-xs text-[var(--color-muted)] tabular-nums-strict">
+                  {t('admin.layout.announcements.charCounter', {
+                    current: toPersianDigits(announcementModal.text.length),
+                    max: toPersianDigits(MAX_ANNOUNCEMENT_TEXT),
+                  })}
+                </span>
+              </div>
+              <textarea
+                id="announcement-text"
+                rows={3}
+                required
+                maxLength={MAX_ANNOUNCEMENT_TEXT}
+                value={announcementModal.text}
+                onChange={(e) =>
+                  setAnnouncementModal((prev) =>
+                    prev ? { ...prev, text: e.target.value } : null,
+                  )
+                }
+                placeholder={t('admin.layout.announcements.textPlaceholder')}
+                className="w-full px-3 py-2 text-sm leading-relaxed rounded-[var(--radius-control)] border border-[var(--color-border-strong)] bg-[var(--color-surface)] text-[var(--color-text)] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--color-primary)]"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label
+                htmlFor="announcement-link"
+                className="block text-sm font-medium text-[var(--color-text)]"
+              >
+                {t('admin.layout.announcements.linkInputLabel')}
+              </label>
+              <input
+                id="announcement-link"
+                type="text"
+                dir="ltr"
+                maxLength={MAX_ANNOUNCEMENT_LINK_URL}
+                value={announcementModal.linkUrl}
+                onChange={(e) =>
+                  setAnnouncementModal((prev) =>
+                    prev ? { ...prev, linkUrl: e.target.value } : null,
+                  )
+                }
+                placeholder={t('admin.layout.announcements.linkInputPlaceholder')}
+                className="w-full min-h-[42px] px-3 py-2 text-sm font-mono text-left rounded-[var(--radius-control)] border border-[var(--color-border-strong)] bg-[var(--color-surface)] text-[var(--color-text)] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--color-primary)]"
+              />
+              <p className="text-xs text-[var(--color-muted)]">
+                {t('admin.layout.announcements.linkInputHint')}
+              </p>
+            </div>
+
+            {/* Start Date (Jalali) & Time */}
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+              <div className="sm:col-span-6">
+                <JalaliDatePicker
+                  id="announcement-starts-at-date"
+                  label={t('admin.layout.announcements.startsAtDateLabel')}
+                  required
+                  value={announcementModal.startDate}
+                  onChange={(value) =>
+                    setAnnouncementModal((prev) =>
+                      prev ? { ...prev, startDate: value } : null,
+                    )
+                  }
+                />
+              </div>
+              <div className="sm:col-span-3 space-y-1.5">
+                <label
+                  htmlFor="announcement-start-hour"
+                  className="block text-xs sm:text-sm font-medium text-[var(--color-text)]"
+                >
+                  {t('admin.layout.announcements.hourLabel')}
+                </label>
+                <select
+                  id="announcement-start-hour"
+                  value={announcementModal.startHour}
+                  onChange={(e) =>
+                    setAnnouncementModal((prev) =>
+                      prev ? { ...prev, startHour: e.target.value } : null,
+                    )
+                  }
+                  className="w-full min-h-[42px] px-2.5 py-2 text-sm rounded-[var(--radius-control)] border border-[var(--color-border-strong)] bg-[var(--color-surface)] text-[var(--color-text)] tabular-nums-strict focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--color-primary)]"
+                >
+                  {HOUR_OPTIONS.map((hh) => (
+                    <option key={hh} value={hh}>
+                      {toPersianDigits(hh)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="sm:col-span-3 space-y-1.5">
+                <label
+                  htmlFor="announcement-start-minute"
+                  className="block text-xs sm:text-sm font-medium text-[var(--color-text)]"
+                >
+                  {t('admin.layout.announcements.minuteLabel')}
+                </label>
+                <select
+                  id="announcement-start-minute"
+                  value={announcementModal.startMinute}
+                  onChange={(e) =>
+                    setAnnouncementModal((prev) =>
+                      prev ? { ...prev, startMinute: e.target.value } : null,
+                    )
+                  }
+                  className="w-full min-h-[42px] px-2.5 py-2 text-sm rounded-[var(--radius-control)] border border-[var(--color-border-strong)] bg-[var(--color-surface)] text-[var(--color-text)] tabular-nums-strict focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--color-primary)]"
+                >
+                  {MINUTE_OPTIONS.map((mm) => (
+                    <option key={mm} value={mm}>
+                      {toPersianDigits(mm)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* End Date (Jalali) & Time */}
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+              <div className="sm:col-span-6">
+                <JalaliDatePicker
+                  id="announcement-ends-at-date"
+                  label={t('admin.layout.announcements.endsAtDateLabel')}
+                  required
+                  value={announcementModal.endDate}
+                  onChange={(value) =>
+                    setAnnouncementModal((prev) =>
+                      prev ? { ...prev, endDate: value } : null,
+                    )
+                  }
+                />
+              </div>
+              <div className="sm:col-span-3 space-y-1.5">
+                <label
+                  htmlFor="announcement-end-hour"
+                  className="block text-xs sm:text-sm font-medium text-[var(--color-text)]"
+                >
+                  {t('admin.layout.announcements.hourLabel')}
+                </label>
+                <select
+                  id="announcement-end-hour"
+                  value={announcementModal.endHour}
+                  onChange={(e) =>
+                    setAnnouncementModal((prev) =>
+                      prev ? { ...prev, endHour: e.target.value } : null,
+                    )
+                  }
+                  className="w-full min-h-[42px] px-2.5 py-2 text-sm rounded-[var(--radius-control)] border border-[var(--color-border-strong)] bg-[var(--color-surface)] text-[var(--color-text)] tabular-nums-strict focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--color-primary)]"
+                >
+                  {HOUR_OPTIONS.map((hh) => (
+                    <option key={hh} value={hh}>
+                      {toPersianDigits(hh)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="sm:col-span-3 space-y-1.5">
+                <label
+                  htmlFor="announcement-end-minute"
+                  className="block text-xs sm:text-sm font-medium text-[var(--color-text)]"
+                >
+                  {t('admin.layout.announcements.minuteLabel')}
+                </label>
+                <select
+                  id="announcement-end-minute"
+                  value={announcementModal.endMinute}
+                  onChange={(e) =>
+                    setAnnouncementModal((prev) =>
+                      prev ? { ...prev, endMinute: e.target.value } : null,
+                    )
+                  }
+                  className="w-full min-h-[42px] px-2.5 py-2 text-sm rounded-[var(--radius-control)] border border-[var(--color-border-strong)] bg-[var(--color-surface)] text-[var(--color-text)] tabular-nums-strict focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--color-primary)]"
+                >
+                  {MINUTE_OPTIONS.map((mm) => (
+                    <option key={mm} value={mm}>
+                      {toPersianDigits(mm)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label
+                htmlFor="announcement-priority"
+                className="block text-sm font-medium text-[var(--color-text)]"
+              >
+                {t('admin.layout.announcements.priorityLabel')}
+              </label>
+              <input
+                id="announcement-priority"
+                type="text"
+                inputMode="numeric"
+                value={announcementModal.priority}
+                onChange={(e) =>
+                  setAnnouncementModal((prev) =>
+                    prev ? { ...prev, priority: e.target.value } : null,
+                  )
+                }
+                className="w-full min-h-[42px] px-3 py-2 text-sm tabular-nums-strict rounded-[var(--radius-control)] border border-[var(--color-border-strong)] bg-[var(--color-surface)] text-[var(--color-text)] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--color-primary)]"
+              />
+              <p className="text-xs text-[var(--color-muted)]">
+                {t('admin.layout.announcements.priorityHint')}
+              </p>
+            </div>
+
+            <label className="flex items-center gap-2.5 text-sm text-[var(--color-text)] cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={announcementModal.isActive}
+                onChange={(e) =>
+                  setAnnouncementModal((prev) =>
+                    prev ? { ...prev, isActive: e.target.checked } : null,
+                  )
+                }
+                className="w-4 h-4 accent-[var(--color-primary)]"
+              />
+              <span>{t('admin.layout.announcements.isActiveLabel')}</span>
+            </label>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--color-border)]">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isSaving}
+                onClick={() => setAnnouncementModal(null)}
+              >
+                {t('admin.layout.cancelButton')}
+              </Button>
+              <Button type="submit" variant="primary" disabled={isSaving}>
+                {isSaving
+                  ? t('admin.layout.savingButton')
+                  : t('admin.layout.saveButton')}
+              </Button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
       {/* Delete Confirmation Modal */}
       {deleteTarget && (
         <Modal
@@ -1603,7 +2294,9 @@ export function AdminLayoutPage({ currentRoute }: AdminLayoutPageProps) {
                 ? t('admin.layout.confirmDeleteSlide')
                 : deleteTarget.kind === 'shelf'
                   ? t('admin.layout.confirmDeleteShelf')
-                  : t('admin.layout.confirmDeletePage')}
+                  : deleteTarget.kind === 'page'
+                    ? t('admin.layout.confirmDeletePage')
+                    : t('admin.layout.confirmDeleteAnnouncement')}
             </p>
             <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--color-border)]">
               <Button

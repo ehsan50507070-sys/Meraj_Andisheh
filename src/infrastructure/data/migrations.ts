@@ -36,6 +36,7 @@ export const STORE_NAMES = {
   BACKUP_ARCHIVES: 'backupArchives',
   FILM_INFOS: 'filmInfos',
   BOOK_INFOS: 'bookInfos',
+  ANNOUNCEMENTS: 'announcements',
 } as const;
 
 export const STAGE3_OBJECT_STORES: readonly string[] = [
@@ -117,6 +118,10 @@ export const STAGE23_OBJECT_STORES: readonly string[] = [
 
 export const STAGE24_OBJECT_STORES: readonly string[] = [
   STORE_NAMES.BOOK_INFOS,
+] as const;
+
+export const STAGE26_OBJECT_STORES: readonly string[] = [
+  STORE_NAMES.ANNOUNCEMENTS,
 ] as const;
 
 interface IndexSpec {
@@ -522,6 +527,20 @@ const STAGE24_STORE_SPECS: readonly StoreSpec[] = [
   },
 ];
 
+const STAGE26_STORE_SPECS: readonly StoreSpec[] = [
+  {
+    name: STORE_NAMES.ANNOUNCEMENTS,
+    keyPath: 'id',
+    autoIncrement: true,
+    indexes: [
+      { name: 'by_isActive', keyPath: 'isActive' },
+      { name: 'by_priority', keyPath: 'priority' },
+      { name: 'by_startsAt', keyPath: 'startsAt' },
+      { name: 'by_endsAt', keyPath: 'endsAt' },
+    ],
+  },
+];
+
 export const DATABASE_MIGRATIONS: readonly MigrationStep[] = [
   {
     version: 1,
@@ -731,6 +750,30 @@ export const DATABASE_MIGRATIONS: readonly MigrationStep[] = [
       if (oldVersion > 0 && transaction && db.objectStoreNames.contains(STORE_NAMES.META)) {
         transaction.objectStore(STORE_NAMES.META).put({
           key: 'stage25_story_generator_default_enabled_v1',
+          value: '1',
+          updatedAtUtc: new Date().toISOString(),
+        });
+      }
+    },
+  },
+  {
+    version: 18,
+    up: (db, transaction, oldVersion) => {
+      for (const spec of STAGE26_STORE_SPECS) {
+        ensureStore(db, transaction, spec);
+      }
+      if (
+        oldVersion > 0 &&
+        transaction &&
+        db.objectStoreNames.contains(STORE_NAMES.FEATURE_FLAGS)
+      ) {
+        transaction
+          .objectStore(STORE_NAMES.FEATURE_FLAGS)
+          .put({ key: 'NewsTicker', isEnabled: true });
+      }
+      if (oldVersion > 0 && transaction && db.objectStoreNames.contains(STORE_NAMES.META)) {
+        transaction.objectStore(STORE_NAMES.META).put({
+          key: 'stage26_news_ticker_default_enabled_v1',
           value: '1',
           updatedAtUtc: new Date().toISOString(),
         });

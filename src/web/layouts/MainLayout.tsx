@@ -14,6 +14,7 @@ import { resolveThemeKey, type ThemeKey } from '../../core/services/themeService
 import { envConfig } from '../../infrastructure/config/envConfig';
 import { useAuth } from '../auth/AuthContext';
 import { HeaderSearchBox } from '../components/HeaderSearchBox';
+import { NewsTickerBar } from '../components/NewsTickerBar';
 import { TopicMegaMenu, TopicMobileAccordion } from '../components/TopicMegaMenu';
 import { useAge } from '../context/AgeContext';
 import { toPersianDigits } from '../resources/formatters';
@@ -239,6 +240,9 @@ export function MainLayout({
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--color-bg)] text-[var(--color-text)] overflow-x-hidden">
+      {/* Stage 26: Full-width Urgent News Ticker directly above sticky Header */}
+      <NewsTickerBar currentRoute={currentRoute} />
+
       {/* Sticky Top Header (compact for mobile <= 15% viewport height) */}
       <header className="sticky top-0 z-40 bg-[var(--color-surface)] border-b border-[var(--color-border)]">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">

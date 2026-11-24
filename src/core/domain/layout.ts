@@ -22,6 +22,14 @@ export const MAX_HOME_SHELF_TITLE = 120;
 export const MAX_STATIC_PAGE_TITLE = 150;
 export const MAX_STATIC_PAGE_SLUG = 120;
 export const MAX_STATIC_PAGE_BODY = 50000;
+export const MAX_ANNOUNCEMENT_TEXT = 250;
+export const MAX_ANNOUNCEMENT_LINK_URL = 500;
+
+export type AnnouncementComputedStatus =
+  | 'ActiveNow'
+  | 'Scheduled'
+  | 'Expired'
+  | 'Disabled';
 
 export interface HeroSlide {
   id: number;
@@ -50,4 +58,16 @@ export interface StaticPage {
   body: string;
   showInFooter: boolean;
   sortOrder: number;
+}
+
+export interface AnnouncementItem {
+  id: number;
+  text: string;
+  linkUrl: string | null;
+  startsAt: string;
+  endsAt: string;
+  isActive: boolean;
+  priority: number;
+  createdAt: string;
+  updatedAt: string;
 }
