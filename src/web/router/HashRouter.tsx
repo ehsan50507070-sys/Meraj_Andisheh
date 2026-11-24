@@ -9,6 +9,7 @@ import { AdminStorageTestPage } from '../admin/AdminStorageTestPage';
 import { AdminUsersPage } from '../admin/AdminUsersPage';
 import { AdminContentFormPage } from '../admin/pages/AdminContentFormPage';
 import { AdminContentListPage } from '../admin/pages/AdminContentListPage';
+import { AdminBackupPage } from '../admin/pages/AdminBackupPage';
 import { AdminCommentsPage } from '../admin/pages/AdminCommentsPage';
 import { AdminDashboardPage } from '../admin/pages/AdminDashboardPage';
 import { AdminLayoutPage } from '../admin/pages/AdminLayoutPage';
@@ -321,6 +322,8 @@ export function HashRouter({ routes, defaultRoute }: HashRouterProps) {
         return <AdminRequestsPage currentRoute={routeState.fullHash} />;
       case 'layout':
         return <AdminLayoutPage currentRoute={routeState.fullHash} />;
+      case 'backup':
+        return <AdminBackupPage currentRoute={routeState.fullHash} />;
       case 'content': {
         const lowerPath = routeState.path.toLowerCase();
         if (lowerPath === '/admin/content/smart-import') {

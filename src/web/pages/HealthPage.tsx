@@ -43,6 +43,7 @@ import { stage17Tests } from '../../tests/stage17.tests';
 import { stage18Tests } from '../../tests/stage18.tests';
 import { stage19Tests } from '../../tests/stage19.tests';
 import { stage20Tests } from '../../tests/stage20.tests';
+import { stage21Tests } from '../../tests/stage21.tests';
 import { runUnitTests } from '../../tests/testRunner';
 import { useAuth } from '../auth/AuthContext';
 import { useAge } from '../context/AgeContext';
@@ -83,6 +84,7 @@ const ALL_UNIT_TESTS = [
   ...stage18Tests,
   ...stage19Tests,
   ...stage20Tests,
+  ...stage21Tests,
 ];
 
 const ARCHITECTURE_LAYERS: ReadonlyArray<{

@@ -1,5 +1,6 @@
 import { AnalyticsDashboardService } from '../../core/services/analyticsDashboardService';
 import { AuthService } from '../../core/services/authService';
+import { BackupService } from '../../core/services/backupService';
 import { CommentService } from '../../core/services/commentService';
 import { ContentCatalogService } from '../../core/services/contentCatalogService';
 import { ContentDetailService } from '../../core/services/contentDetailService';
@@ -31,6 +32,8 @@ import { envConfig } from '../../infrastructure/config/envConfig';
 import { IndexedDbAccountCleanupRepository } from '../../infrastructure/data/IndexedDbAccountCleanupRepository';
 import { IndexedDbAdminRepository } from '../../infrastructure/data/IndexedDbAdminRepository';
 import { IndexedDbAuthRepository } from '../../infrastructure/data/IndexedDbAuthRepository';
+import { IndexedDbBackupRepository } from '../../infrastructure/data/IndexedDbBackupRepository';
+import { IndexedDbBackupSnapshotProvider } from '../../infrastructure/data/IndexedDbBackupSnapshotProvider';
 import { IndexedDbCommentRepository } from '../../infrastructure/data/IndexedDbCommentRepository';
 import { IndexedDbContentRepository } from '../../infrastructure/data/IndexedDbContentRepository';
 import { IndexedDbContentRequestRepository } from '../../infrastructure/data/IndexedDbContentRequestRepository';
@@ -45,6 +48,7 @@ import { STORE_NAMES } from '../../infrastructure/data/migrations';
 import { LocalSessionTokenStore } from '../../infrastructure/data/LocalSessionTokenStore';
 import { DatabaseSeeder } from '../../infrastructure/data/seed';
 import { ensureStage18LayoutSeededAsync } from '../../infrastructure/data/stage18LayoutSeed';
+import { BackupScheduler } from '../../infrastructure/jobs/BackupScheduler';
 import { AppLogger } from '../../infrastructure/logging/AppLogger';
 import { DevEmailSender } from '../../infrastructure/messaging/DevEmailSender';
 import { DevSmsSender } from '../../infrastructure/messaging/DevSmsSender';
@@ -74,6 +78,8 @@ export interface AppContainer {
   layoutRepository: IndexedDbLayoutRepository;
   userTopicAffinityRepository: IndexedDbUserTopicAffinityRepository;
   accountCleanupRepository: IndexedDbAccountCleanupRepository;
+  backupRepository: IndexedDbBackupRepository;
+  backupSnapshotProvider: IndexedDbBackupSnapshotProvider;
   downloadTokenProtector: HmacDownloadTokenProtector;
   fileStorage: LocalIndexedDbFileStorage;
   agePreferenceStorage: BrowserAgeCookieStorage;
@@ -106,6 +112,8 @@ export interface AppContainer {
   homePageService: HomePageService;
   layoutManagementService: LayoutManagementService;
   analyticsDashboardService: AnalyticsDashboardService;
+  backupService: BackupService;
+  backupScheduler: BackupScheduler;
   profileService: ProfileService;
   searchSuggestionService: SearchSuggestionService;
   smartImportService: SmartImportService;
@@ -134,6 +142,8 @@ const contentRequestRepository = new IndexedDbContentRequestRepository(dataStore
 const layoutRepository = new IndexedDbLayoutRepository(dataStore);
 const userTopicAffinityRepository = new IndexedDbUserTopicAffinityRepository(dataStore);
 const accountCleanupRepository = new IndexedDbAccountCleanupRepository(dataStore);
+const backupRepository = new IndexedDbBackupRepository(dataStore, clock);
+const backupSnapshotProvider = new IndexedDbBackupSnapshotProvider(dataStore);
 const downloadTokenProtector = new HmacDownloadTokenProtector();
 const fileStorage = new LocalIndexedDbFileStorage(dataStore, clock);
 const agePreferenceStorage = new BrowserAgeCookieStorage();
@@ -315,6 +325,20 @@ const analyticsDashboardService = new AnalyticsDashboardService({
   clock,
   logger,
 });
+const backupService = new BackupService({
+  backupLogRepository: backupRepository,
+  backupStorage: backupRepository,
+  snapshotProvider: backupSnapshotProvider,
+  permissionPolicyService,
+  clock,
+  logger,
+});
+const backupScheduler = new BackupScheduler({
+  backupService,
+  backupLogRepository: backupRepository,
+  clock,
+  logger,
+});
 const profileService = new ProfileService({
   authRepository,
   contentRepository,
@@ -444,6 +468,8 @@ export const appContainer: AppContainer = {
   layoutRepository,
   userTopicAffinityRepository,
   accountCleanupRepository,
+  backupRepository,
+  backupSnapshotProvider,
   downloadTokenProtector,
   fileStorage,
   agePreferenceStorage,
@@ -476,6 +502,8 @@ export const appContainer: AppContainer = {
   homePageService,
   layoutManagementService,
   analyticsDashboardService,
+  backupService,
+  backupScheduler,
   profileService,
   searchSuggestionService,
   smartImportService,

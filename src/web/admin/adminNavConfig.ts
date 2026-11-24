@@ -114,7 +114,6 @@ export const ADMIN_ROUTES: readonly AdminRouteSpec[] = [
     labelKey: 'admin.nav.backup',
     requirement: 'backup.manage',
     permissionDescKey: 'permissions.backup.manage.desc',
-    isPlaceholder: true,
   },
   {
     id: 'staff',

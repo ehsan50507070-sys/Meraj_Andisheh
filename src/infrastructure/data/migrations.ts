@@ -32,6 +32,8 @@ export const STORE_NAMES = {
   HOME_SHELVES: 'homeShelves',
   STATIC_PAGES: 'staticPages',
   USER_TOPIC_AFFINITIES: 'userTopicAffinities',
+  BACKUP_LOGS: 'backupLogs',
+  BACKUP_ARCHIVES: 'backupArchives',
 } as const;
 
 export const STAGE3_OBJECT_STORES: readonly string[] = [
@@ -100,6 +102,11 @@ export const STAGE18_OBJECT_STORES: readonly string[] = [
 
 export const STAGE20_OBJECT_STORES: readonly string[] = [
   STORE_NAMES.USER_TOPIC_AFFINITIES,
+] as const;
+
+export const STAGE21_OBJECT_STORES: readonly string[] = [
+  STORE_NAMES.BACKUP_LOGS,
+  STORE_NAMES.BACKUP_ARCHIVES,
 ] as const;
 
 interface IndexSpec {
@@ -462,6 +469,25 @@ const STAGE20_STORE_SPECS: readonly StoreSpec[] = [
   },
 ];
 
+const STAGE21_STORE_SPECS: readonly StoreSpec[] = [
+  {
+    name: STORE_NAMES.BACKUP_LOGS,
+    keyPath: 'id',
+    autoIncrement: true,
+    indexes: [
+      { name: 'by_startedAt', keyPath: 'startedAt' },
+      { name: 'by_kind', keyPath: 'kind' },
+      { name: 'by_status', keyPath: 'status' },
+      { name: 'by_filePath', keyPath: 'filePath' },
+    ],
+  },
+  {
+    name: STORE_NAMES.BACKUP_ARCHIVES,
+    keyPath: 'filePath',
+    indexes: [{ name: 'by_createdAt', keyPath: 'createdAt' }],
+  },
+];
+
 export const DATABASE_MIGRATIONS: readonly MigrationStep[] = [
   {
     version: 1,
@@ -596,6 +622,14 @@ export const DATABASE_MIGRATIONS: readonly MigrationStep[] = [
     version: 13,
     up: (db, transaction) => {
       for (const spec of STAGE20_STORE_SPECS) {
+        ensureStore(db, transaction, spec);
+      }
+    },
+  },
+  {
+    version: 14,
+    up: (db, transaction) => {
+      for (const spec of STAGE21_STORE_SPECS) {
         ensureStore(db, transaction, spec);
       }
     },

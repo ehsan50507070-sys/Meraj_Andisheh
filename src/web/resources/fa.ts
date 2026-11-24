@@ -3,7 +3,7 @@ export const faResources = {
   'app.name': 'معراج اندیشه',
   'app.subtitle': 'پلتفرم بانک محتوای فارسی',
   'app.stageLabel': 'مرحله {stage} از {total}',
-  'app.stageName': 'شخصی‌سازی هوشمند و توصیه‌گر موضوعی',
+  'app.stageName': 'پشتیبان‌گیری هفتگی، نگهداری ۴ نسخه و بازیابی آزمایشی',
   'app.footerNote': 'پلتفرم معراج اندیشه · بانک محتوای فارسی متناسب با هر رده سنی',
 
   // Themes
@@ -2776,6 +2776,156 @@ export const faResources = {
     'ایمنی سخت کودک در پیشنهادها، پاک‌سازی کامل قاعده ۶.۷ و بررسی IndexedDB v13',
   'tests.stage20.childSafetyAndRule67Purge.desc':
     'در رده کودک حتی با امتیاز موضوع بالا، محتوای بزرگسالان در پیشنهادها نمی‌آید؛ حذف حساب ۶.۷ رکوردهای userTopicAffinities را پاک می‌کند و ObjectStore نسخه ۱۳ در IndexedDB تایید می‌شود.',
+
+  // Stage 21: Backup, 4-Version Retention, Sandbox Test Restore & Full Restore (#/admin/backup)
+  'admin.backup.title': 'پشتیبان‌گیری و بازیابی پایگاه داده',
+  'admin.backup.subtitle':
+    'تهیه‌ی پشتیبان کامل از همه‌ی جداول و فایل‌های ذخیره‌شده (.bak با امضای یکپارچگی SHA-256)، اجرای زمان‌بند هفتگی، نگهداری خودکار ۴ نسخه‌ی آخر و آزمایش بازیابی بدون خطر.',
+  'admin.backup.refreshButton': 'بروزرسانی فهرست',
+  'admin.backup.manualBackupButton': 'گرفتن پشتیبان دستی (.bak)',
+  'admin.backup.manualBackupRunning': 'در حال تهیه پشتیبان کامل...',
+  'admin.backup.loading': 'در حال بارگذاری تاریخچه و وضعیت پشتیبان‌گیری...',
+
+  'admin.backup.status.schedulerLabel': 'وضعیت زمان‌بند خودکار',
+  'admin.backup.status.schedulerWeekly': 'زمان‌بند هفتگی فعال (هر ۷ روز یک‌بار)',
+  'admin.backup.status.schedulerDev1Min': 'حالت تست توسعه فعال (هر ۱ دقیقه)',
+  'admin.backup.status.schedulerStopped': 'متوقف‌شده',
+  'admin.backup.status.lastSuccessLabel': 'آخرین پشتیبان موفق',
+  'admin.backup.status.noSuccessYet': 'هنوز پشتیبانی ثبت نشده است',
+  'admin.backup.status.retainedCountLabel': 'نسخه‌های نگهداری‌شده',
+  'admin.backup.status.retainedCountValue': '{count} از {max} نسخه',
+  'admin.backup.status.totalSizeLabel': 'حجم مجموع ۴ نسخه‌ی اخیر',
+  'admin.backup.status.nextRunCountdown': 'اجرای خودکار بعدی تا {seconds} ثانیه دیگر',
+  'admin.backup.status.nextRunImminent': 'در آستانه اجرای زمان‌بندی‌شده...',
+  'admin.backup.status.nextRunWeeklyAt': 'زمان اجرای خودکار بعدی: {date}',
+
+  'admin.backup.devMode.title': 'تست زمان‌بند در محیط توسعه (فقط Dev)',
+  'admin.backup.devMode.desc':
+    'با فعال‌سازی این کلید، بازه زمان‌بند پشتیبان‌گیری موقتاً از ۷ روز به ۱ دقیقه کاهش می‌یابد تا چرخه خودکار و حذف نسخه‌های قدیمی‌تر از ۴ نسخه را زنده مشاهده کنید.',
+  'admin.backup.devMode.toggleLabel': 'حالت تست زمان‌بندی (هر ۱ دقیقه)',
+  'admin.backup.devMode.toggleAria': 'تغییر حالت زمان‌بندی تست ۱ دقیقه‌ای',
+
+  'admin.backup.history.title': 'تاریخچه‌ی پشتیبان‌گیری‌ها (BackupLog)',
+  'admin.backup.history.subtitle':
+    'فقط ۴ نسخه‌ی موفق آخر روی فضای ذخیره‌سازی نگهداری می‌شوند و فایل‌های قدیمی‌تر برای جلوگیری از رشد بی‌رویه فضا به‌طور خودکار پاک می‌گردند.',
+  'admin.backup.history.emptyTitle': 'هنوز هیچ رویداد پشتیبانی ثبت نشده است.',
+  'admin.backup.history.emptyDesc':
+    'با کلیک روی دکمه‌ی «گرفتن پشتیبان دستی (.bak)» اولین نسخه‌ی کامل را بسازید.',
+
+  'admin.backup.table.colDate': 'تاریخ شروع و پایان (شمسی)',
+  'admin.backup.table.colKind': 'نوع',
+  'admin.backup.table.colStatus': 'وضعیت',
+  'admin.backup.table.colFile': 'نام فایل (.bak)',
+  'admin.backup.table.colSize': 'حجم',
+  'admin.backup.table.colRetention': 'وضعیت نگهداری',
+  'admin.backup.table.colActions': 'اقدامات',
+
+  'admin.backup.kind.Manual': 'دستی',
+  'admin.backup.kind.Scheduled': 'زمان‌بندی‌شده',
+  'admin.backup.logStatus.Succeeded': 'موفق',
+  'admin.backup.logStatus.Running': 'در حال اجرا',
+  'admin.backup.logStatus.Failed': 'ناموفق',
+  'admin.backup.retention.retained': 'نگهداری‌شده در ۴ نسخه‌ی آخر',
+  'admin.backup.retention.pruned': 'پاک‌سازی‌شده طبق قانون ۴ نسخه',
+
+  'admin.backup.actions.download': 'دانلود فایل (.bak)',
+  'admin.backup.actions.testRestore': 'تست بازیابی آزمایشی',
+  'admin.backup.actions.testingRestore': 'در حال تست...',
+  'admin.backup.actions.noArchive': 'فایل حذف شده است',
+
+  'admin.backup.feedback.manualSuccess':
+    'پشتیبان دستی با موفقیت ساخته شد ({fileName}).',
+  'admin.backup.feedback.manualPruned':
+    'پشتیبان دستی ساخته شد ({fileName}) و {count} نسخه‌ی قدیمی‌تر از ۴ نسخه پاک‌سازی گردید.',
+  'admin.backup.feedback.downloadStarted':
+    'دریافت فایل پشتیبان «{fileName}» آغاز شد.',
+  'admin.backup.feedback.sandboxSuccess':
+    'تست بازیابی روی دیتابیس آزمایشی ({dbName}) با موفقیت کامل تایید شد: {tables} جدول، {records} رکورد، {files} فایل پیوست ({contents} محتوا، {users} کاربر، {topics} موضوع) بازگردانی و بررسی شدند و داده‌ی اصلی سایت دست‌نخورده باقی ماند.',
+  'admin.backup.feedback.primaryRestoreSuccess':
+    'بازیابی کامل روی دیتابیس اصلی سایت ({dbName}) انجام شد ({tables} جدول، {records} رکورد، {files} فایل). لطفاً برای همگام‌سازی کامل نشست و رابط کاربری صفحه را تازه‌سازی کنید.',
+  'admin.backup.feedback.reloadPageButton': 'تازه‌سازی صفحه اکنون',
+
+  'admin.backup.error.FORBIDDEN': 'شما مجوز لازم برای مدیریت پشتیبان‌گیری (backup.manage) را ندارید.',
+  'admin.backup.error.ARCHIVE_NOT_FOUND': 'فایل آرشیو پشتیبان مورد نظر در مخزن یافت نشد یا پاک‌سازی شده است.',
+  'admin.backup.error.BACKUP_CORRUPTED':
+    'فایل پشتیبان نامعتبر یا دستکاری‌شده است (بررسی ساختار یا امضای SHA-256 رد شد).',
+  'admin.backup.error.CONFIRMATION_REQUIRED':
+    'برای بازگردانی کامل روی دیتابیس اصلی تأیید صریح دو مرحله‌ای الزامی است.',
+  'admin.backup.error.BACKUP_FAILED': 'خطا در تهیه‌ی پشتیبان کامل؛ لطفاً لاگ‌ها را بررسی کنید.',
+  'admin.backup.error.RESTORE_FAILED': 'بازیابی اطلاعات با خطا مواجه شد و داده‌ی اصلی تغییر نکرد.',
+  'admin.backup.error.fileReadFailed': 'امکان خواندن فایل انتخاب‌شده از سیستم شما وجود نداشت.',
+
+  // Restore Panel & Preview
+  'admin.backup.restore.title': 'بازیابی از فایل پشتیبان (.bak)',
+  'admin.backup.restore.subtitle':
+    'فایل پشتیبان دانلودشده را انتخاب کنید تا ابتدا امضای SHA-256 و خلاصه محتویات آن بررسی شود؛ سپس می‌توانید بدون تغییر داده‌ی فعلی روی دیتابیس آزمایشی تست کنید یا بازیابی کامل انجام دهید.',
+  'admin.backup.restore.fileInputLabel': 'انتخاب فایل پشتیبان (.bak یا .json)',
+  'admin.backup.restore.selectedFileName': 'فایل انتخاب‌شده: {name}',
+  'admin.backup.restore.checksumValidBadge': 'امضای یکپارچگی SHA-256 معتبر است',
+  'admin.backup.restore.previewCreatedAt': 'زمان ثبت پشتیبان: {date}',
+  'admin.backup.restore.previewDbVersion': 'نسخه ساختار دیتابیس: {version}',
+  'admin.backup.restore.previewSummary':
+    'شامل {tables} جدول، {records} رکورد و {files} فایل باینری پیوست',
+  'admin.backup.restore.previewEntities':
+    'جزئیات کلیدی: {contents} محتوا · {users} کاربر · {topics} موضوع',
+  'admin.backup.restore.sandboxButton':
+    'بازیابی روی دیتابیس آزمایشی (بدون تغییر داده‌ی فعلی)',
+  'admin.backup.restore.sandboxRunning': 'در حال تست در دیتابیس آزمایشی...',
+  'admin.backup.restore.primaryButton':
+    'بازیابی کامل روی سایت (جایگزینی داده‌های فعلی)',
+  'admin.backup.restore.clearFileButton': 'انتخاب فایل دیگر',
+
+  // Primary Restore Confirmation Modal
+  'admin.backup.confirmModal.title': 'هشدار جدی: جایگزینی کامل داده‌های فعلی سایت',
+  'admin.backup.confirmModal.warningBody':
+    'با تایید این عملیات، تمام محتواها، کاربران، نظرات، تنظیمات، جانمایی‌ها و فایل‌های فعلی پایگاه داده‌ی اصلی پاک شده و دقیقاً با داده‌های فایل پشتیبان انتخاب‌شده (تاریخ ثبت: {date}) جایگزین می‌شوند. تاریخچه‌ی پشتیبان‌گیری‌های قبلی برای امنیت حفظ می‌گردد.',
+  'admin.backup.confirmModal.checkboxLabel':
+    'متوجه هستم که این عمل داده‌های فعلی سایت را جایگزین می‌کند و بازگشت‌پذیر نیست (مگر با داشتن فایل پشتیبان جدیدتر).',
+  'admin.backup.confirmModal.cancelButton': 'انصراف و بازگشت',
+  'admin.backup.confirmModal.confirmButton': 'تایید نهایی و بازگردانی کامل',
+  'admin.backup.confirmModal.confirmRunning': 'در حال بازگردانی کامل...',
+
+  // Step-by-Step Restore Guide
+  'admin.backup.guide.title': 'راهنمای گام‌به‌گام بازیابی و نگهداری امن',
+  'admin.backup.guide.subtitle':
+    'برای اطمینان از بازیابی موفق در شرایط اضطراری یا انتقال سرور، مراحل زیر را به ترتیب دنبال کنید:',
+  'admin.backup.guide.step1Title': '۱. دانلود منظم نسخه‌های پشتیبان به سیستم یا سرور بیرونی',
+  'admin.backup.guide.step1Desc':
+    'فایل‌های .bak ساخته‌شده را به‌صورت دوره‌ای دانلود و در حافظه‌ی امن خارج از مرورگر یا سرور اصلی نگهداری کنید.',
+  'admin.backup.guide.step2Title': '۲. آزمایش بدون خطر پیش از جایگزینی (Sandbox Test)',
+  'admin.backup.guide.step2Desc':
+    'پیش از هرگونه بازیابی روی سایت اصلی، فایل .bak را بارگذاری کرده و ابتدا دکمه‌ی «بازیابی روی دیتابیس آزمایشی» را بزنید تا سلامت فایل، امضای SHA-256، رکوردها و فایل‌های پیوست روی یک دیتابیس جداگانه بدون تغییر داده‌ی فعلی بررسی شوند.',
+  'admin.backup.guide.step3Title': '۳. گرفتن پشتیبان فوری پیش از بازیابی نهایی',
+  'admin.backup.guide.step3Desc':
+    'اگر هم‌اکنون داده‌های مهمی روی سایت وجود دارد، پیش از جایگزینی داده‌ها یک پشتیبان دستی تازه بگیرید و دانلود کنید تا در صورت نیاز به وضعیت فعلی برگردید.',
+  'admin.backup.guide.step4Title': '۴. جایگزینی کامل و تازه‌سازی مرورگر',
+  'admin.backup.guide.step4Desc':
+    'پس از اطمینان، گزینه‌ی «بازیابی کامل روی سایت» را تایید کنید و پس از پایان پیام موفقیت، صفحه را تازه‌سازی نمایید تا تمام کش‌ها و نشست‌های کاربری همگام شوند.',
+  'admin.backup.guide.futureNoteTitle': 'نکته توسعه آتی (ذخیره‌سازی خودکار خارج از سایت):',
+  'admin.backup.guide.futureNoteDesc':
+    'معماری پشتیبان‌گیری بر پایه‌ی واسط مجرد ذخیره‌سازی طراحی شده است؛ در نسخه‌های آینده امکان ارسال خودکار فایل‌های .bak رمزگذاری‌شده به سرویس‌های ابری (مانند S3 یا سرور دوم پشتیبان) بدون تغییر منطق هسته قابل افزودن است.',
+
+  // Stage 21 Unit Tests
+  'tests.stage21.manualBackupAndLog.name':
+    'پشتیبان‌گیری دستی و ثبت کامل رکورد BackupLog با فایل .bak و امضای SHA-256',
+  'tests.stage21.manualBackupAndLog.desc':
+    'مدیرکل یا همکار دارای backup.manage پشتیبان دستی می‌گیرد؛ رکورد Succeeded با filePath معتبر (.bak)، sizeBytes>0، checksumSha256 ۶۴کاراکتری و isRetained=true ثبت می‌شود.',
+  'tests.stage21.schedulerAndRetention4.name':
+    'زمان‌بند ۱ دقیقه‌ای با FakeClock، اجرای ۵ پشتیبان متوالی و قانون نگهداری دقیق ۴ نسخه',
+  'tests.stage21.schedulerAndRetention4.desc':
+    'در ۳۰ ثانیه زمان‌بند اجرا نمی‌شود؛ پس از ۵ تیک ۶۵ثانیه‌ای، دقیقاً ۵ پشتیبان ثبت می‌شوند، نسخه‌ی اول پاک‌سازی (isRetained=false) شده و فایل آن حذف می‌گردد و دقیقاً ۴ آرشیو باقی می‌ماند.',
+  'tests.stage21.sandboxRestoreVerification.name':
+    'تست بازیابی واقعی روی دیتابیس آزمایشی (MerajAndisheh_RestoreTestDB) با فایل و محتوا',
+  'tests.stage21.sandboxRestoreVerification.desc':
+    'محتوا و فایل واقعی پشتیبان‌گیری و با testRestoreOnSandboxAsync در دیتابیس آزمایشی بازیابی و تایید می‌شوند بدون آن‌که داده‌ی دیتابیس اصلی تغییر کند.',
+  'tests.stage21.corruptedChecksumRejected.name':
+    'تشخیص دستکاری ۱ کاراکتر از فایل .bak و رد فوری با BACKUP_CORRUPTED',
+  'tests.stage21.corruptedChecksumRejected.desc':
+    'تغییر کوچک‌ترین کاراکتر در محتوای فایل .bak یا خراب‌بودن JSON توسط بررسی امضای SHA-256 شناسایی شده و بدون لمس دیتابیس رد می‌شود.',
+  'tests.stage21.rbacAndIdbV14.name':
+    'کنترل دسترسی backup.manage (۴۰۳+WARN، ۴۰۴ برای عضو) و بررسی IndexedDB v14',
+  'tests.stage21.rbacAndIdbV14.desc':
+    'همکار بدون backup.manage کد ۴۰۳ با لاگ WARN و عضو/مهمان ۴۰۴ می‌گیرند؛ جداول backupLogs و backupArchives در IndexedDB نسخه‌ی ۱۴ تایید می‌شوند.',
 } as const;
 
 export type ResourceKey = keyof typeof faResources;

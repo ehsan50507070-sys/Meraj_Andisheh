@@ -290,6 +290,20 @@ export class IndexedDbDataStore implements IDataStore {
     });
   }
 
+  public async clearStore(storeName: string): Promise<void> {
+    const db = await this.getDatabase();
+
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(storeName, 'readwrite');
+      const store = tx.objectStore(storeName);
+      store.clear();
+
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error ?? new Error('INDEXEDDB_CLEAR_STORE_FAILED'));
+      tx.onabort = () => reject(tx.error ?? new Error('INDEXEDDB_TX_ABORTED'));
+    });
+  }
+
   public async setMeta(record: MetaRecord): Promise<void> {
     await this.putRecord(this.metaStoreName, record);
   }

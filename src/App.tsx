@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { envConfig } from './infrastructure/config/envConfig';
 import { AuthProvider } from './web/auth/AuthContext';
 import { AgeGateModal } from './web/components/AgeGateModal';
@@ -91,6 +92,19 @@ const routes: HashRouteConfig[] = [
 ];
 
 export default function App() {
+  useEffect(() => {
+    let active = true;
+    void appContainer.ensureInitializedAtStartup().then(() => {
+      if (active) {
+        appContainer.backupScheduler.start();
+      }
+    });
+    return () => {
+      active = false;
+      appContainer.backupScheduler.stop();
+    };
+  }, []);
+
   return (
     <AuthProvider>
       <AgeProvider>
